@@ -9,7 +9,7 @@ setuptools.setup(
       description="Criptocurrency backtesting framework",
       long_description=open("README.md", "r").read(),
       long_description_content_type="text/markdown",
-      url="https://github.com/qbitartifacts/tradingkit",
+      url="https://github.com/logictraders/tradingkit",
       packages=setuptools.find_namespace_packages(where="src", include=['tradingkit.*']),
       package_dir={"": "src"},
       entry_points={

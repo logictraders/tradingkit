@@ -1,5 +1,5 @@
 # TradingKit
-This file shows the basic usage for TradingKit, for more docs, please see the [Wiki](https://github.com/QbitArtifacts/tradingkit/wiki)
+This file shows the basic usage for TradingKit, for more docs, please see the [Wiki](https://github.com/Logictraders/tradingkit/wiki)
 
 ![stable](https://img.shields.io/badge/stable-1.1.0-blue)
 ![coverage](https://img.shields.io/badge/coverage-37%25-orange)
@@ -16,7 +16,7 @@ the recommended (and unique supported way) to install TradingKit si via **pip**.
 ### Instructions for unix
 ```bash
 # clone repo
-git clone git@github.com:qbitartifacts/tradingkit.git
+git clone git@github.com:logictraders/tradingkit.git
 cd tradingkit
 
 # create and activate virtual environment (venv)

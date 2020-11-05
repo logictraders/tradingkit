@@ -17,7 +17,7 @@ from tradingkit.strategy.strategy import Strategy
 class TestIssue64(TestCase):
     """
     This test demonstrates the issue #64 malfunction
-    see https://github.com/QbitArtifacts/tradingkit/issues/64
+    see https://github.com/Logictraders/tradingkit/issues/64
     """
 
     def test_demonstrate(self):
