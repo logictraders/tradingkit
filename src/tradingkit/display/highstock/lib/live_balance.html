@@ -1,0 +1,424 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Trading Chart</title>
+
+		<style type="text/css">
+
+		</style>
+	</head>
+	<body>
+<script src="code/highstock.js"></script>
+<script src="code/modules/exporting.js"></script>
+<script src="code/modules/export-data.js"></script>
+
+<div id="container" style="height: 800px; min-width: 310px"></div>
+
+
+<script type="text/javascript">
+
+
+//import Highcharts from '../parts/Globals.js';
+		Highcharts.createElement('link', {
+			href: 'https://fonts.googleapis.com/css?family=Unica+One',
+			rel: 'stylesheet',
+			type: 'text/css'
+		}, null, document.getElementsByTagName('head')[0]);
+		Highcharts.theme = {
+			colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
+				'#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+			chart: {
+				backgroundColor: {
+					linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+					stops: [
+						[0, '#2a2a2b'],
+						[1, '#3e3e40']
+					]
+				},
+				style: {
+					fontFamily: '\'Unica One\', sans-serif'
+				},
+				plotBorderColor: '#606063'
+			},
+			title: {
+				style: {
+					color: '#E0E0E3',
+					textTransform: 'uppercase',
+					fontSize: '20px'
+				}
+			},
+			subtitle: {
+				style: {
+					color: '#E0E0E3',
+					textTransform: 'uppercase'
+				}
+			},
+			xAxis: {
+				gridLineColor: '#707073',
+				labels: {
+					style: {
+						color: '#E0E0E3'
+					}
+				},
+				lineColor: '#707073',
+				minorGridLineColor: '#505053',
+				tickColor: '#707073',
+				title: {
+					style: {
+						color: '#A0A0A3'
+					}
+				}
+			},
+			yAxis: {
+				gridLineColor: '#707073',
+				labels: {
+					style: {
+						color: '#E0E0E3'
+					}
+				},
+				lineColor: '#707073',
+				minorGridLineColor: '#505053',
+				tickColor: '#707073',
+				tickWidth: 1,
+				title: {
+					style: {
+						color: '#A0A0A3'
+					}
+				}
+			},
+			tooltip: {
+				backgroundColor: 'rgba(0, 0, 0, 0.85)',
+				style: {
+					color: '#F0F0F0'
+				}
+			},
+			plotOptions: {
+				series: {
+					dataLabels: {
+						color: '#F0F0F3',
+						style: {
+							fontSize: '13px'
+						}
+					},
+					marker: {
+						lineColor: '#333'
+					}
+				},
+				boxplot: {
+					fillColor: '#505053'
+				},
+				candlestick: {
+					lineColor: 'white'
+				},
+				errorbar: {
+					color: 'white'
+				}
+			},
+			legend: {
+				backgroundColor: 'rgba(0, 0, 0, 0.5)',
+				itemStyle: {
+					color: '#E0E0E3'
+				},
+				itemHoverStyle: {
+					color: '#FFF'
+				},
+				itemHiddenStyle: {
+					color: '#606063'
+				},
+				title: {
+					style: {
+						color: '#C0C0C0'
+					}
+				}
+			},
+			credits: {
+				style: {
+					color: '#666'
+				}
+			},
+			labels: {
+				style: {
+					color: '#707073'
+				}
+			},
+			drilldown: {
+				activeAxisLabelStyle: {
+					color: '#F0F0F3'
+				},
+				activeDataLabelStyle: {
+					color: '#F0F0F3'
+				}
+			},
+			navigation: {
+				buttonOptions: {
+					symbolStroke: '#DDDDDD',
+					theme: {
+						fill: '#505053'
+					}
+				}
+			},
+			// scroll charts
+			rangeSelector: {
+				buttonTheme: {
+					fill: '#505053',
+					stroke: '#000000',
+					style: {
+						color: '#CCC'
+					},
+					states: {
+						hover: {
+							fill: '#707073',
+							stroke: '#000000',
+							style: {
+								color: 'white'
+							}
+						},
+						select: {
+							fill: '#000003',
+							stroke: '#000000',
+							style: {
+								color: 'white'
+							}
+						}
+					}
+				},
+				inputBoxBorderColor: '#505053',
+				inputStyle: {
+					backgroundColor: '#333',
+					color: 'silver'
+				},
+				labelStyle: {
+					color: 'silver'
+				}
+			},
+			navigator: {
+				handles: {
+					backgroundColor: '#666',
+					borderColor: '#AAA'
+				},
+				outlineColor: '#CCC',
+				maskFill: 'rgba(255,255,255,0.1)',
+				series: {
+					color: '#7798BF',
+					lineColor: '#A6C7ED'
+				},
+				xAxis: {
+					gridLineColor: '#505053'
+				}
+			},
+			scrollbar: {
+				barBackgroundColor: '#808083',
+				barBorderColor: '#808083',
+				buttonArrowColor: '#CCC',
+				buttonBackgroundColor: '#606063',
+				buttonBorderColor: '#606063',
+				rifleColor: '#FFF',
+				trackBackgroundColor: '#404043',
+				trackBorderColor: '#404043'
+			}
+		};
+
+		Highcharts.setOptions(Highcharts.theme);
+
+	var value = 0,
+		_data = [],
+		initial_equity = 0,
+		quote = "",
+		websocket = new WebSocket("ws://127.0.0.1:6788/");
+
+
+	websocket.onopen = function (event) {
+		websocket.send(JSON.stringify({action: 'register'}));
+		websocket.send(JSON.stringify({action: 'start'}));
+	}
+
+	websocket.onmessage = function (event) {
+		payload = JSON.parse(event.data);
+		if (payload.type == "start"){
+			console.log("start");
+			console.log(payload);
+			initial_equity = payload.data.price.equity[0][1];
+			quote = payload.data.assets[0].quote;
+			window.chart = start(payload.data);
+		}
+		else{
+			if (payload.type == "price"){
+				window.chart.series[0].addPoint(payload.data.pos_vol, true, false);
+				window.chart.series[1].addPoint(payload.data.equity, true, false);
+				window.chart.series[2].addPoint(payload.data.hold, true, false);
+				var q_equity = ((payload.data.equity[1] / initial_equity - 1) * 100).toFixed(2)
+				_title = 'Simulation Equity: '+ (payload.data.equity[1]).toFixed(2) +' '+ 
+					quote+',        Profit: ' + q_equity + " %";
+				window.chart.setTitle({ text: _title });
+			}
+		}
+	};
+
+		
+function start(initial_data) {
+
+  var _title = "",
+		dataLength = initial_data['price']['equity'].length,
+		// set the allowed units for data grouping
+		groupingUnits = [[
+			'minute',  // unit name
+			[1, 5, 30] // allowed multiples
+		], [
+			'hour',
+			[1, 6, 12]
+		]];
+		
+	var q_equity = ((initial_data['price']['equity'][dataLength-1][1] / initial_data['price']['equity'][0][1] - 1) * 100).toFixed(2)
+	_title = 'Simulation Equity: '+ (initial_data['price']['equity'][dataLength-1][1]).toFixed(2) +' '+ 
+	initial_data['assets'][0]['quote']+',        Profit: ' + q_equity + " %";
+
+// Create the chart
+chart =  Highcharts.stockChart('container', {
+	
+	chart: {
+		zoomType: 'x'
+	},
+
+    time: {
+        useUTC: false
+    },
+
+rangeSelector: {
+		buttons: [{
+			type: 'minute',
+			count: 10,
+			text: '10m'
+		},{
+			type: 'minute',
+			count: 30,
+			text: '30m'
+		},{
+			type: 'hour',
+			count: 1,
+			text: '1h'
+		}, {
+			type: 'hour',
+			count: 3,
+			text: '3h'
+		}, {
+			type: 'hour',
+			count: 6,
+			text: '6h'
+		}, {
+			type: 'day',
+			count: 1,
+			text: '1d'
+		},{
+			type: 'week',
+			count: 1,
+			text: '1w'
+		}, {
+			type: 'month',
+			count: 1,
+			text: '1M'
+		},{
+			type: 'all',
+			text: 'All'
+		}],
+		inputEnabled: true, // it supports only days
+		selected: 8 // all
+	},
+
+    title: {
+        text: _title
+    },
+	
+	
+	
+	yAxis: [{
+			labels: {
+				align: 'right',
+				x: -3
+			},
+			title: {
+				text: 'Position'
+			},
+			height: '50%',
+			lineWidth: 2,
+			resize: {
+				enabled: true
+			}
+		}, {
+			labels: {
+				align: 'right',
+				x: -3
+			},
+			title: {
+				text: 'Equity'
+			},
+			top: '50%',
+			height: '50%',
+			offset: 0,
+			lineWidth: 2,
+			resize: {
+					enabled: true
+				}
+		}],
+		
+	tooltip: {
+		split: true
+	},
+
+
+    series: [{
+		type: 'area',
+		name: 'Position',
+		color: 'orange',
+		data: initial_data['price']['pos_vol'],
+		tooltip: {
+			pointFormatter: function() {
+				return '<strong>Position: ' + this.y.toFixed(2) +' '+initial_data['assets'][0]['quote']+'<strong><br><strong>Leverage: ' + 
+				((this.y / initial_data['price']['equity'][this.index][1]) * 100).toFixed(2) + ' %'
+			  }
+			},
+		dataGrouping: {
+			units: groupingUnits
+		}
+	},{
+		type: 'area',
+		name: 'Equity',
+		color: 'blue',
+		data: initial_data['price']['equity'],
+		yAxis: 1,
+		tooltip: {
+			pointFormatter: function() {
+				return '<strong>Equity: ' + this.y.toFixed(2) +' '+initial_data['assets'][0]['quote']+'<strong><br><strong>Profit: ' + 
+				((this.y / initial_data['price']['equity'][0][1] - 1) * 100).toFixed(2) + ' %'
+			  }
+		},
+		dataGrouping: {
+			units: groupingUnits
+		}
+	}, {
+		//type: 'area',
+		name: 'Hold',
+		color: 'black  ',
+		data: initial_data['price']['hold'],
+		yAxis: 1,
+		tooltip: {
+			pointFormatter: function() {
+				return '<strong>Hold: ' + this.y.toFixed(2) + ' '+initial_data['assets'][0]['quote']+'<strong><br><strong>Profit: ' + 
+				((this.y / initial_data['price']['hold'][0][1] - 1) * 100).toFixed(2) + ' %'
+			  }
+			},
+		dataGrouping: {
+			units: groupingUnits
+		}
+	}
+	
+	]
+});
+return chart;
+}
+
+
+		</script>
+	</body>
+</html>

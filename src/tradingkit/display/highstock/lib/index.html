@@ -1,0 +1,532 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Trading Chart</title>
+
+	<style type="text/css">
+
+	</style>
+</head>
+<body>
+
+<script src="code/highstock.js"></script>
+<script src="code/modules/data.js"></script>
+<script src="code/modules/drag-panes.js"></script>
+<script src="code/modules/exporting.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+<div id="container" style="height: 800px; min-width: 310px"></div>
+
+
+<script type="text/javascript">
+
+	$.getJSON("data/orders_data.json", function(series) {
+
+
+		Highcharts.createElement('link', {
+			href: 'https://fonts.googleapis.com/css?family=Unica+One',
+			rel: 'stylesheet',
+			type: 'text/css'
+		}, null, document.getElementsByTagName('head')[0]);
+		Highcharts.theme = {
+			colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
+				'#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+			chart: {
+				backgroundColor: {
+					linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+					stops: [
+						[0, '#2a2a2b'],
+						[1, '#3e3e40']
+					]
+				},
+				style: {
+					fontFamily: '\'Unica One\', sans-serif'
+				},
+				plotBorderColor: '#606063'
+			},
+			title: {
+				style: {
+					color: '#E0E0E3',
+					textTransform: 'uppercase',
+					fontSize: '20px'
+				}
+			},
+			subtitle: {
+				style: {
+					color: '#E0E0E3',
+					textTransform: 'uppercase'
+				}
+			},
+			xAxis: {
+				gridLineColor: '#707073',
+				labels: {
+					style: {
+						color: '#E0E0E3'
+					}
+				},
+				lineColor: '#707073',
+				minorGridLineColor: '#505053',
+				tickColor: '#707073',
+				title: {
+					style: {
+						color: '#A0A0A3'
+					}
+				}
+			},
+			yAxis: {
+				gridLineColor: '#707073',
+				labels: {
+					style: {
+						color: '#E0E0E3'
+					}
+				},
+				lineColor: '#707073',
+				minorGridLineColor: '#505053',
+				tickColor: '#707073',
+				tickWidth: 1,
+				title: {
+					style: {
+						color: '#A0A0A3'
+					}
+				}
+			},
+			tooltip: {
+				backgroundColor: 'rgba(0, 0, 0, 0.85)',
+				style: {
+					color: '#F0F0F0'
+				}
+			},
+			plotOptions: {
+				series: {
+					dataLabels: {
+						color: '#F0F0F3',
+						style: {
+							fontSize: '13px'
+						}
+					},
+					marker: {
+						lineColor: '#333'
+					}
+				},
+				boxplot: {
+					fillColor: '#505053'
+				},
+				candlestick: {
+					lineColor: 'white'
+				},
+				errorbar: {
+					color: 'white'
+				}
+			},
+			legend: {
+				backgroundColor: 'rgba(0, 0, 0, 0.5)',
+				itemStyle: {
+					color: '#E0E0E3'
+				},
+				itemHoverStyle: {
+					color: '#FFF'
+				},
+				itemHiddenStyle: {
+					color: '#606063'
+				},
+				title: {
+					style: {
+						color: '#C0C0C0'
+					}
+				}
+			},
+			credits: {
+				style: {
+					color: '#666'
+				}
+			},
+			labels: {
+				style: {
+					color: '#707073'
+				}
+			},
+			drilldown: {
+				activeAxisLabelStyle: {
+					color: '#F0F0F3'
+				},
+				activeDataLabelStyle: {
+					color: '#F0F0F3'
+				}
+			},
+			navigation: {
+				buttonOptions: {
+					symbolStroke: '#DDDDDD',
+					theme: {
+						fill: '#505053'
+					}
+				}
+			},
+			// scroll charts
+			rangeSelector: {
+				buttonTheme: {
+					fill: '#505053',
+					stroke: '#000000',
+					style: {
+						color: '#CCC'
+					},
+					states: {
+						hover: {
+							fill: '#707073',
+							stroke: '#000000',
+							style: {
+								color: 'white'
+							}
+						},
+						select: {
+							fill: '#000003',
+							stroke: '#000000',
+							style: {
+								color: 'white'
+							}
+						}
+					}
+				},
+				inputBoxBorderColor: '#505053',
+				inputStyle: {
+					backgroundColor: '#333',
+					color: 'silver'
+				},
+				labelStyle: {
+					color: 'silver'
+				}
+			},
+			navigator: {
+				handles: {
+					backgroundColor: '#666',
+					borderColor: '#AAA'
+				},
+				outlineColor: '#CCC',
+				maskFill: 'rgba(255,255,255,0.1)',
+				series: {
+					color: '#7798BF',
+					lineColor: '#A6C7ED'
+				},
+				xAxis: {
+					gridLineColor: '#505053'
+				}
+			},
+			scrollbar: {
+				barBackgroundColor: '#808083',
+				barBorderColor: '#808083',
+				buttonArrowColor: '#CCC',
+				buttonBackgroundColor: '#606063',
+				buttonBorderColor: '#606063',
+				rifleColor: '#FFF',
+				trackBackgroundColor: '#404043',
+				trackBorderColor: '#404043'
+			}
+		};
+
+		Highcharts.setOptions(Highcharts.theme);
+
+
+		// split the data set into ohlc and volume
+		var _title = "",
+			//dataLength = data.length,
+			// set the allowed units for data grouping
+			groupingUnits = [[
+				'minute',                         // unit name
+				[1, 5, 30]                             // allowed multiples
+			], [
+				'hour',
+				[1, 6, 12]
+			]],
+			i = 0;
+		
+		last_index = series["equity"]["data"].length - 1
+		_title = 'Simulation Equity: ' +series["equity"]["data"][last_index][1].toFixed(2)+ ' '+ series['assets']['quote'] + ',   ' +
+				'Simulation Profit: '+((series["equity"]["data"][last_index][1] / series["equity"]["data"][0][1] - 1) * 100).toFixed(2) + " %";
+
+
+		console.log(series)
+		
+		
+		
+
+		// create the chart
+	chart = Highcharts.stockChart('container', {
+		
+		       chart: {
+					zoomType: 'x'
+				},
+
+			rangeSelector: {
+				buttons: [{
+					type: 'minute',
+					count: 5,
+					text: '5m'
+				},{
+					type: 'minute',
+					count: 10,
+					text: '10m'
+				},{
+					type: 'minute',
+					count: 30,
+					text: '30m'
+				},{
+					type: 'hour',
+					count: 1,
+					text: '1h'
+				}, {
+					type: 'hour',
+					count: 3,
+					text: '3h'
+				}, {
+					type: 'hour',
+					count: 6,
+					text: '6h'
+				}, {
+					type: 'day',
+					count: 1,
+					text: '1d'
+				},{
+					type: 'week',
+					count: 1,
+					text: '1w'
+				}, {
+					type: 'month',
+					count: 1,
+					text: '1M'
+				},{
+					type: 'all',
+					text: 'All'
+				}],
+				inputEnabled: true, // it supports only days
+				selected: 9 // all
+			},
+
+			title: {
+				text: _title
+			},
+
+			yAxis: [{
+				labels: {
+					align: 'right',
+					x: -3
+				},
+				title: {
+					text: 'OHLC & Psition avg Price'
+				},
+				height: '60%',
+				lineWidth: 2,
+				resize: {
+					enabled: true
+				}
+			}, {
+				labels: {
+					align: 'right',
+					x: -3
+				},
+				title: {
+					text: series["position"]["name"]
+				},
+				top: '60%',
+				height: '20%',
+				offset: 0,
+				lineWidth: 2,
+				resize: {
+					enabled: true
+				}
+			}, {
+				labels: {
+					align: 'right',
+					x: -3
+				},
+				title: {
+					text: series["equity"]["name"]
+				},
+				top: '80%',
+				height: '20%',
+				offset: 0,
+				lineWidth: 2,
+				resize: {
+					enabled: true
+				}
+			}
+			],
+
+			navigator: {
+				series: {
+					color: '#000000',
+					type: 'column',
+					data: series["volume"]["data"]
+				}
+
+			},
+			series: [{
+				type: 'candlestick',
+				name: 'Price',
+				zIndex:10,
+				data: series["OHLC"]["data"],
+				upColor: 'green',
+				//lineColor: 'red',
+				color: 'red',
+				//lineColor: 'black',
+				dataGrouping: {
+					units: groupingUnits
+				}
+			},{
+				name: series["position_price"]["name"],
+				data: series["position_price"]["data"],
+				lineColor: 'orange'
+
+			},{	
+				type: 'scatter',
+				data: series["buy"]["data"],
+				zIndex:100,
+				marker: {
+                radius: 6,
+				symbol: 'circle',
+				fillColor: 'blue',
+				lineColor: 'white'
+				},
+				tooltip: {
+					pointFormatter: function() {
+							return '<strong>' + series["buy"]["data"][this.index][2] +'<strong>'
+						  }
+					}
+			},{	
+				type: 'scatter',
+				data: series["sell"]["data"],
+				zIndex:100,
+				marker: {
+                radius: 6,
+				symbol: 'circle',
+				fillColor: 'red',
+				lineColor: 'white'
+				},
+				tooltip: {
+					pointFormatter: function() {
+							return '<strong>' + series["sell"]["data"][this.index][2] +'<strong>'
+						  }
+					}
+			},{
+				name: series["liq_price"]["name"],
+				data: series["liq_price"]["data"],
+				zIndex:80,
+				lineColor: 'red',
+
+			},{
+				type: 'area',
+				name: series["position"]["name"],
+				color: 'orange',
+				data: series["position"]["data"],
+				yAxis: 1,
+				tooltip: {
+				pointFormatter: function() {
+					return '<strong>'+series["position"]["name"]+': ' + this.y.toFixed(2) +' '+series['assets']['quote']+'<strong><br><strong>Leverage: ' + 
+					((Math.abs(this.y) / series["equity"]["data"][this.index][1])).toFixed(2) + ' X'
+				  }
+				},
+				dataGrouping: {
+					units: groupingUnits
+				}
+
+			}, {
+				type: 'area',
+				name: series["equity"]["name"],
+				color: 'blue',
+				data: series["equity"]["data"],
+				yAxis: 2,
+				tooltip: {
+				pointFormatter: function() {
+					return '<strong>'+series["equity"]["name"]+': ' + this.y.toFixed(2) +' '+series['assets']['quote']+'<strong><br><strong>Profit: ' + 
+					((this.y / series["equity"]["data"][0][1] - 1) * 100).toFixed(2) + ' %'
+				  }
+				},
+				dataGrouping: {
+					units: groupingUnits
+				}
+			}, {
+				//type: 'area',
+				name: series["hold"]["name"],
+				color: 'black  ',
+				data: series["hold"]["data"],
+				yAxis: 2,
+				tooltip: {
+				pointFormatter: function() {
+					return '<strong>'+series["hold"]["name"]+': ' + this.y.toFixed(2) + ' '+series['assets']['quote']+'<strong><br><strong>Profit: ' + 
+					((this.y / series["hold"]["data"][0][1] - 1) * 100).toFixed(2) + ' %'
+				  }
+				},
+				dataGrouping: {
+					units: groupingUnits
+				}
+			}, {
+					name: "wallet",
+					color: 'black  ',
+					data: series["base_equity"]["data"],
+					yAxis: 2,
+					dataGrouping: {
+						units: groupingUnits
+					}
+				}
+		]
+	});
+			
+		chart.addSeries({	
+					type: 'scatter',
+					data: series["open_buy"]["data"],
+					zIndex:100,
+					marker: {
+					radius: 1,
+					symbol: 'circle',
+					fillColor: 'blue',
+					lineColor: 'white'
+					},
+					tooltip: {
+						pointFormatter: function() {
+								return '<strong>' + series["open_buy"]["data"][this.index][2] +'<strong>'
+							  }
+						}
+				});
+				
+		chart.addSeries({	
+				type: 'scatter',
+				data: series["open_sell"]["data"],
+				zIndex:100,
+				marker: {
+                radius: 1,
+				symbol: 'circle',
+				fillColor: 'red',
+				lineColor: 'white'
+				},
+				tooltip: {
+					pointFormatter: function() {
+							return '<strong>' + series["open_sell"]["data"][this.index][2] +'<strong>'
+						  }
+					}
+			});			
+		
+							
+		for (i; i < series["buy_series"]["series"].length; i += 1) {
+			chart.addSeries({	
+					name: series["buy_series"]["name"],
+					data: series["buy_series"]["series"][i],
+					zIndex:80,
+					lineColor: 'blue',
+					dataGrouping: {enabled: false}});
+		};
+		i = 0;
+			
+		for (i; i < series["sell_series"]["series"].length; i += 1) {
+			chart.addSeries({	
+					name: series["sell_series"]["name"],
+					data: series["sell_series"]["series"][i],
+					zIndex:80,
+					lineColor: 'red',
+					dataGrouping: {enabled: false}});
+		};
+	
+	});
+
+</script>
+</body>
+</html>

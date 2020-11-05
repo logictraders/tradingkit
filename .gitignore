@@ -1,0 +1,8 @@
+# IDE
+.idea
+
+# Python
+venv
+**.egg-info
+**.pyc
+.coverage

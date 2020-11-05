@@ -1,0 +1,123 @@
+{
+
+  "kraken": {
+    "class": "ccxt.kraken",
+    "arguments": [
+      {
+        "apiKey": "%env(KRAKEN_KEY)%",
+        "secret": "%env(KRAKEN_SECRET)%"
+      }
+    ]
+  },
+  "bitmex": {
+    "class": "ccxt.bitmex",
+    "arguments": [
+      {
+        "apiKey": "%env(BITMEX_KEY)%",
+        "secret": "%env(BITMEX_SECRET)%"
+      }
+    ]
+  },
+  "bitmex_testnet": {
+    "class": "ccxt.bitmex",
+    "arguments": [
+      {
+        "apiKey": "%env(BITMEX_KEY)%",
+        "secret": "%env(BITMEX_SECRET)%"
+      }
+    ],
+    "calls": {
+      "set_sandbox_mode": [true]
+    }
+  },
+  "testex": {
+    "class": "tradingkit.exchange.testex.TestEX",
+    "arguments": [
+      {
+        "balance": {
+          "EUR": "%env(float:INITIAL_BALANCE_EUR:100000)%",
+          "BTC": "%env(float:INITIAL_BALANCE_BTC:0)%"
+        },
+        "fees": {
+          "maker": "%env(float:MAKER_FEE:0.0016)%",
+          "taker": "%env(float:TAKER_FEE:0.0026)%"
+        }
+      }
+    ]
+  },
+  "bitmex_backtest": {
+    "class": "tradingkit.exchange.bitmex_backtest.BitmexBacktest",
+    "arguments": [
+      {
+        "balance": {
+          "USD": "%env(float:INITIAL_BALANCE_USD:0)%",
+          "BTC": "%env(float:INITIAL_BALANCE_BTC:10)%"
+        },
+        "fees": {
+          "maker": "%env(float:MAKER_FEE:-0.00025)%",
+          "taker": "%env(float:TAKER_FEE:0.0075)%"
+        }
+      }
+    ]
+  },
+  "kraken_backtest_feeder": {
+    "class": "tradingkit.data.feed.backtest_feeder.BacktestFeeder",
+    "arguments": {
+      "exchange": "kraken",
+      "symbol": "%env(SYMBOL)%",
+      "since8601": "@since",
+      "to8601": "@to"
+    }
+  },
+  "kraken_funding_backtest_feeder": {
+    "class": "tradingkit.data.feed.funding_backtest_feeder.FundingBacktestFeeder",
+    "arguments": {
+      "exchange": "kraken",
+      "symbol": "%env(SYMBOL)%",
+      "since8601": "@since",
+      "to8601": "@to"
+    }
+  },
+  "bitmex_testnet_feeder": {
+    "class": "tradingkit.data.feed.bitmex_feeder.BitmexFeeder",
+    "arguments": [
+      {
+        "apiKey": "%env(BITMEX_KEY)%",
+        "secret": "%env(BITMEX_SECRET)%"
+      },
+      true
+    ]
+  },
+  "bitmex_feeder": {
+    "class": "tradingkit.data.feed.bitmex_feeder.BitmexFeeder",
+    "arguments": [
+      {
+        "apiKey": "%env(BITMEX_KEY)%",
+        "secret": "%env(BITMEX_SECRET)%"
+      },
+      false
+    ]
+  },
+  "highstock": {
+    "class": "tradingkit.display.highstock.highstock_plotter.HighstockPlotter"
+  },
+  "plotly": {
+    "class": "tradingkit.display.plotly_plotter.PlotlyPlotter"
+  },
+  "plotter": "@highstock",
+  "bridge": {
+    "class": "tradingkit.exchange.bridge_exchange.BridgeExchange",
+    "arguments": ["@exchange"]
+  },
+  "outlier_trade_filter": {
+    "class": "tradingkit.data.adapter.outlier_trade_filter.OutlierTradeFilter",
+    "arguments": [
+      "%env(float:MAX_PRICE_CHANGE_SINGLE_TRADE:0.05)%"
+    ]
+  },
+  "exchange": "@testex",
+  "feeder": "@kraken_backtest_feeder",
+  "feeder_adapters": [],
+  "since": "2020-01-01 00:00:00+00:00",
+  "to": "2021-01-01 00:00:00+00:00"
+}
