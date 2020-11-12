@@ -24,5 +24,6 @@ jobs:
         env:
           PYPI_PASS: ${{ secrets.STAGE_PYPI_TOKEN }}
         run: |
+          source venv/bin/activate
           pip install twine
           twine upload -u __token__ -p ${PYPI_PASS} --repository testpypi dist/*
