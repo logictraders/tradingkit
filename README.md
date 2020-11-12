@@ -1,7 +1,7 @@
 # TradingKit
 This file shows the basic usage for TradingKit, for more docs, please see the [Wiki](https://github.com/Logictraders/tradingkit/wiki)
 
-![stable](https://img.shields.io/badge/stable-1.1.0-blue)
+![stable](https://img.shields.io/badge/stable-1.1.3-blue)
 ![coverage](https://img.shields.io/badge/coverage-37%25-orange)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 

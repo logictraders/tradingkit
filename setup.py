@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
       name="tradingkit",
-      version="1.1.0",
+      version="1.1.3",
       author="QBit Artifacts, SL",
       author_email="lluis@logictraders.com",
       license="Propietary",
