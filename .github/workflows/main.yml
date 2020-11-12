@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  coverage:
+  build-n-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Obtaining the code
