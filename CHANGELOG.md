@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.3](https://github.com/logictraders/tradingkit/compare/v1.1.2...v1.1.3) (2020-11-12)
+
+
+### Bug Fixes
+
+* **github:** changed master branch to main ([5c1f0f6](https://github.com/logictraders/tradingkit/commit/5c1f0f615162e37780aa3520357ff87caacf473d))
+* **github:** fixes in workflows ([5096357](https://github.com/logictraders/tradingkit/commit/50963574991da87e031b01a3177ca02fdf38fd35))
+* **github:** fixes in workflows II ([152bbea](https://github.com/logictraders/tradingkit/commit/152bbea3908b016e358d4df29a0a8359338a7c2b))
+* **version:** bumped versions ([3d02967](https://github.com/logictraders/tradingkit/commit/3d029673af6d11cac1ef8adfef3900161bb84c68))
+
 ### [1.1.2](https://github.com/logictraders/tradingkit/compare/v1.1.1...v1.1.2) (2020-11-12)
 
 
