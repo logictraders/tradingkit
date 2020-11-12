@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.2](https://github.com/logictraders/tradingkit/compare/v1.1.1...v1.1.2) (2020-11-12)
+
+
+### Bug Fixes
+
+* **github:** removed coverage wf ([ca44ff6](https://github.com/logictraders/tradingkit/commit/ca44ff6ab306e16dbceba0c7a04287fe691d811d))
+
 ### [1.1.1](https://github.com/logictraders/tradingkit/compare/v1.1.0...v1.1.1) (2020-11-12)
 
 
