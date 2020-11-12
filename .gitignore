@@ -6,3 +6,5 @@ venv
 **.egg-info
 **.pyc
 .coverage
+build
+dist
