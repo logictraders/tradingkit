@@ -3,7 +3,7 @@ name: Build & Deploy [STAGE]
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   coverage:
