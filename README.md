@@ -7,45 +7,30 @@ This file shows the basic usage for TradingKit, for more docs, please see the [W
 
 ## Requirements
 - python 3.7+
-- python virtual environment (venv)
 - pip
 
 ## Installation
-the recommended (and unique supported way) to install TradingKit si via **pip**.
+the recommended way to install TradingKit si via **PyPi**.
 
-### Instructions for unix
+### Install from [PyPi](https://pypi.org/project/tradingkit/)
 ```bash
-# clone repo
-git clone git@github.com:logictraders/tradingkit.git
-cd tradingkit
-
-# create and activate virtual environment (venv)
-python -m venv venv
-source venv/bin/activate
-
-# install the package for development
-pip install -e .
+pip3 install tradingkit
 ```
 
-### Instructions for windows
+### Install from [Source](https://github.com/logictraders/tradingkit)
 ```bash
-# TODO...
+git clone https://github.com/logictraders/tradingkit
+cd tradingkit
+# Optional, uncomment the line below if you want a specific version
+# git checkout v1.1.5
+python3 setup.py install
 ```
 
 ## Creating strategies
-In order to create new strategies you need **5 steps**
+In order to create new strategies you need **4 steps**
+
 ### Create separate project
 Create new python3.7+ project, no need to do anymore in this step.
-
-### Install virtualenv and dependencies
-To do this step need to install previously TradingKit with the installation steps described above.
-```bash
-cd my_project
-python -m venv venv
-source venv/bin/activate
-pip install ccxt
-pip install -e ../tradingkit
-```
 
 ### Creating strategy class
 create a class extending from `tradingkit.strategy.strategy.Strategy`
