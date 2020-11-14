@@ -1,7 +1,7 @@
 import setuptools
 setuptools.setup(
       name="tradingkit",
-      version="1.1.13",
+      version="1.1.14",
       author="QBit Artifacts, SL",
       author_email="lluis@logictraders.com",
       license="MIT",
@@ -11,7 +11,6 @@ setuptools.setup(
       url="https://github.com/logictraders/tradingkit",
       packages=setuptools.find_namespace_packages(where="src", include=['tradingkit.*']),
       package_dir={"": "src"},
-      package_data={"tradingkit": ["config/*"]},
       include_package_data=True,
       entry_points={
             "console_scripts": [
