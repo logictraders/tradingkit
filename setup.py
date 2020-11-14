@@ -11,7 +11,7 @@ setuptools.setup(
       url="https://github.com/logictraders/tradingkit",
       packages=setuptools.find_namespace_packages(where="src", include=['tradingkit.*']),
       package_dir={"": "src"},
-      data_files=[("tradingkit", ["src/tradingkit/config/config.json"])],
+      package_data={"tradingkit": ["src/tradingkit/config/*"]},
       entry_points={
             "console_scripts": [
                   "tk = tradingkit.cli.cli:CLI.main"
