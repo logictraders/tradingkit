@@ -1,17 +1,17 @@
 import setuptools
 setuptools.setup(
       name="tradingkit",
-      version="1.1.14",
+      version="1.1.15",
       author="QBit Artifacts, SL",
       author_email="lluis@logictraders.com",
       license="MIT",
-      description="Criptocurrency trading and backtesting framework",
+      description="Trading and backtesting framework for Python",
       long_description=open("README.md", "r").read(),
       long_description_content_type="text/markdown",
       url="https://github.com/logictraders/tradingkit",
       packages=setuptools.find_namespace_packages(where="src", include=['tradingkit.*']),
       package_dir={"": "src"},
-      include_package_data=True,
+      package_data={"tradingkit": ["config/*"]},
       entry_points={
             "console_scripts": [
                   "tk = tradingkit.cli.cli:CLI.main"
