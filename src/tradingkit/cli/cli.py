@@ -1,3 +1,4 @@
+import importlib.resources as res
 import json
 import logging
 import os
@@ -65,7 +66,7 @@ class CLI(Command):
             CLI.command_import(exchange_name, symbol, fetcher, year, months)
         else:
 
-            config = json.loads(System.read_file("config/config.json"))
+            config = json.loads(res.read_text("tradingkit.config", "config.json"))
 
             strategy_dir = args['<strategy_dir>'] or '.'
             System.load_env(strategy_dir, args['--env'])
