@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.18](https://github.com/logictraders/tradingkit/compare/v1.1.5...v1.1.18) (2020-11-16)
+
+
+### Bug Fixes
+
+* **packaging:** adding config data to package ([93fb060](https://github.com/logictraders/tradingkit/commit/93fb06059aaddec6f8d6f5a5f1982956eb0e73ca))
+* **packaging:** changed from setuptools to setuptools_git ([607b9fc](https://github.com/logictraders/tradingkit/commit/607b9fc3aba15d315772edfe67b761b539940e70))
+* **packaging:** created MANIFEST.in ([acabe2f](https://github.com/logictraders/tradingkit/commit/acabe2f603e5a761895357a83c0178cfdae73b26))
+* **packaging:** fixed packaging (several tries & fixes)
+
 ### [1.1.5](https://github.com/logictraders/tradingkit/compare/v1.1.4...v1.1.5) (2020-11-12)
 
 
