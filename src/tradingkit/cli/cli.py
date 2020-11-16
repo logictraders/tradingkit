@@ -71,11 +71,11 @@ class CLI(Command):
             strategy_dir = args['<strategy_dir>'] or '.'
             System.load_env(strategy_dir, args['--env'])
 
-            main_conf = "%s/system/config.json" % os.path.abspath(strategy_dir)
+            main_conf = "%s/config/config.json" % os.path.abspath(strategy_dir)
             if os.path.exists(main_conf):
                 config.update(json.load(open(main_conf, 'r')))
 
-            env_conf = "%s/system/config.%s.json" % (os.path.abspath(strategy_dir), args['--env'])
+            env_conf = "%s/config/config.%s.json" % (os.path.abspath(strategy_dir), args['--env'])
             if os.path.exists(env_conf):
                 config.update(json.load(open(env_conf, 'r')))
 
