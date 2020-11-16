@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/logictraders/tradingkit/compare/v1.1.18...v1.2.0) (2020-11-16)
+
+
+### Features
+
+* **config:** changed config path to <strat>/config/ ([3829e40](https://github.com/logictraders/tradingkit/commit/3829e4001d439612e00d4994e9c3e3b84e89994e))
+
+
+### Bug Fixes
+
+* **config:** fixed config loading ([d6ec103](https://github.com/logictraders/tradingkit/commit/d6ec1037f5472c043b26795038f42d212b68a3dd))
+* **packaging:** added init to config package ([21fe3d5](https://github.com/logictraders/tradingkit/commit/21fe3d5719f80ab6c2017bca1e93f93be0d4c1e6))
+
 ### [1.1.18](https://github.com/logictraders/tradingkit/compare/v1.1.5...v1.1.18) (2020-11-16)
 
 
