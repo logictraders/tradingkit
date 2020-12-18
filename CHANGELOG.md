@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.1](https://github.com/logictraders/tradingkit/compare/v1.2.0...v1.2.1) (2020-12-18)
+
+
+### Bug Fixes
+
+* **deps:** bumped dep version ([46330a9](https://github.com/logictraders/tradingkit/commit/46330a949f681d2db4b57337a81f5f5b1b77e8a5))
+
 ## [1.2.0](https://github.com/logictraders/tradingkit/compare/v1.1.18...v1.2.0) (2020-11-16)
 
 
