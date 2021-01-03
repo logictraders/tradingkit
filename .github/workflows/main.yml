@@ -16,6 +16,7 @@ jobs:
         run: |
           python3 -m venv venv
           source venv/bin/activate
+          python --version
           pip install -r requirements.txt
           pip install wheel
           python setup.py sdist bdist_wheel
