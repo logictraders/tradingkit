@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-n-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Obtaining the code
         uses: actions/checkout@v1
