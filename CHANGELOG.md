@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.4](https://github.com/logictraders/tradingkit/compare/v1.2.3...v1.2.4) (2021-01-03)
+
+
+### Bug Fixes
+
+* **deps:** fixed problems with python deps ([0d32504](https://github.com/logictraders/tradingkit/commit/0d32504e1defc000d84846b1f028d4b3180a4fb6))
+* **github:** bumped workflow builder version to ubuntu 20.04 ([b8a77ce](https://github.com/logictraders/tradingkit/commit/b8a77ce7c144060205e80a1b333e31b3aa6e64b6))
+* **github:** testing with ubuntu 20.04 gh workflow ([a6ab95b](https://github.com/logictraders/tradingkit/commit/a6ab95b344dcc13f151f27536cb3594feddcc7ec))
+
 ### [1.2.3](https://github.com/logictraders/tradingkit/compare/v1.2.2...v1.2.3) (2021-01-03)
 
 
