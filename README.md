@@ -22,7 +22,7 @@ pip3 install tradingkit
 git clone https://github.com/logictraders/tradingkit
 cd tradingkit
 # Optional, uncomment the line below if you want a specific version
-# git checkout v1.1.5
+# git checkout v1.2.3
 python3 setup.py install
 ```
 
