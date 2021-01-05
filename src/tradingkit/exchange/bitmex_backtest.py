@@ -166,8 +166,8 @@ class BitmexBacktest(TestEX):
             if self.position['currentQty'] < 0:
                 sum_same_side_orders = -sum_same_side_orders
 
-            self.position['liquidationPrice'] = self.position['avgEntryPrice'] * (1 - self.balance[base] * mark_price /
-                                                     (self.position['currentQty'] + sum_same_side_orders))
+            self.position['liquidationPrice'] = self.position['avgEntryPrice'] * max(
+                0, (1 - self.balance[base] * mark_price / (self.position['currentQty'] + sum_same_side_orders)))
         else:
             self.position['liquidationPrice'] = None
 
