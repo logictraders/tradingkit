@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.6](https://github.com/logictraders/tradingkit/compare/v1.2.5...v1.2.6) (2021-01-06)
+
+
+### Bug Fixes
+
+* **bitmex_backtest:** added fetch_balance method ([#6](https://github.com/logictraders/tradingkit/issues/6)) ([137a4ba](https://github.com/logictraders/tradingkit/commit/137a4bab28f52d5bd0e5d098c451342ed908ab36))
+* **deps:** updated deps ([7e7a849](https://github.com/logictraders/tradingkit/commit/7e7a8498f4b5209369224f7d7ca98934bd127804))
+* **dummy:** fixed changelog versions ([ab1e4fc](https://github.com/logictraders/tradingkit/commit/ab1e4fc86ea28660140e1890163676f7102f45e8))
+
 ### [1.2.5](https://github.com/logictraders/tradingkit/compare/v1.2.3...v1.2.5) (2021-01-03)
 
 
