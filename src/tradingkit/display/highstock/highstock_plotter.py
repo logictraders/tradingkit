@@ -75,10 +75,6 @@ class HighstockPlotter(Plotter):
         if isinstance(event, Plot):
             plot = event.payload
             if plot['name'].lower() == 'price':
-                if self.balance['position_price'] != 0 and self.balance['position_price'] is not None:
-                    pnl = (plot['data']['close'] / self.balance['position_price'] - 1) * self.balance['position_vol']
-                else:
-                    pnl = 0
                 date = int(datetime.timestamp(datetime.fromisoformat(plot['data']['datetime']))) * 1000
                 self.series['OHLC']['data'].append([date,
                                                     plot['data']['open'],
@@ -92,7 +88,7 @@ class HighstockPlotter(Plotter):
                     liq_price = None
                 self.series['liq_price']['data'].append([date, liq_price])
                 self.series['volume']['data'].append([date, plot['data']['vol']])
-                y = round(self.balance['quote_balance'] + self.balance['base_balance'] * plot['data']['close'] + pnl)
+                y = round(self.balance['quote_balance'] + self.balance['base_balance'] * plot['data']['close'])
                 self.series['equity']['data'].append([date, y])
 
                 self.series['base_equity']['data'].append([date,

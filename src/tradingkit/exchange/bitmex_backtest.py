@@ -187,3 +187,25 @@ class BitmexBacktest(TestEX):
         mark_price = self.fetch_ticker(symbol)['bid']
         self.set_liquidation_price(mark_price, base)
         return response
+
+    def fetch_balance(self):
+        balances = {}
+        symbol = list(self.orderbooks.keys())[0]
+        price = list(self.orderbooks.values())[0]['bids'][0][0]
+        base, quote = symbol.split('/')
+        free_balance = self.fetch_free_balance()
+        balances['free'] = free_balance
+        used_balance = self.fetch_used_balance()
+        balances['total'] = self.balance.copy()
+        for asset in used_balance.keys():
+            if asset == base:
+                pnl = (price / self.position['avgEntryPrice'] * self.position['currentQty'] -
+                       self.position['currentQty']) / price if abs(self.position['currentQty']) > 0 else 0
+                total = self.balance[asset] + pnl
+                balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset], 'total': total}
+                balances['total'][asset] = total
+                balances['info'] = [{'walletBalance': self.balance[asset] * 1e8}]
+            else:
+                balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset], 'total': self.balance[asset]}
+        balances['used'] = used_balance
+        return balances
