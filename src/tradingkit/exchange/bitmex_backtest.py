@@ -188,24 +188,24 @@ class BitmexBacktest(TestEX):
         self.set_liquidation_price(mark_price, base)
         return response
 
-    def fetch_balance(self):
-        balances = {}
-        symbol = list(self.orderbooks.keys())[0]
-        price = list(self.orderbooks.values())[0]['bids'][0][0]
-        base, quote = symbol.split('/')
-        free_balance = self.fetch_free_balance()
-        balances['free'] = free_balance
-        used_balance = self.fetch_used_balance()
-        balances['total'] = self.balance.copy()
-        for asset in used_balance.keys():
-            if asset == base:
-                pnl = (price / self.position['avgEntryPrice'] * self.position['currentQty'] -
-                       self.position['currentQty']) / price if abs(self.position['currentQty']) > 0 else 0
-                total = self.balance[asset] + pnl
-                balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset], 'total': total}
-                balances['total'][asset] = total
-                balances['info'] = [{'walletBalance': self.balance[asset] * 1e8}]
-            else:
-                balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset], 'total': self.balance[asset]}
-        balances['used'] = used_balance
-        return balances
+    def set_liquidation_price(self, mark_price, base):
+        if abs(self.position['currentQty']) > 0:
+            side = 'buy' if self.position['currentQty'] > 0 else 'sell'
+            sum_same_side_orders = sum([o['amount'] for o in self.open_orders.values() if o['side'] == side])
+            if self.position['currentQty'] < 0:
+                sum_same_side_orders = -sum_same_side_orders
+
+            price = list(self.orderbooks.values())[0]['bids'][0][0]
+            available_margin = self.balance[base] - abs(sum_same_side_orders) / price
+
+            bankruptcy_price = 1 / (1 / self.position['avgEntryPrice'] + available_margin / self.position['currentQty'])
+            bankruptcy_value = self.position['currentQty'] * (1 / bankruptcy_price)
+            maintenance_margin = (0.005 * (self.position['currentQty'] / self.position['avgEntryPrice'])) + \
+                                 (0.00075 * bankruptcy_value) + \
+                                 (0.0001 * self.founding_rate['rate'])
+
+            self.position['liquidationPrice'] = 1 / (1 / self.position['avgEntryPrice'] + (available_margin - maintenance_margin) / self.position['currentQty'])
+            if self.position['liquidationPrice'] < 0:
+                self.position['liquidationPrice'] = 100000000.0  # bitmex max liquidation price
+        else:
+            self.position['liquidationPrice'] = None
