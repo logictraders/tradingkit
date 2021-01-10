@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.7](https://github.com/logictraders/tradingkit/compare/v1.2.6...v1.2.7) (2021-01-10)
+
+
+### Bug Fixes
+
+* **bitmex_backtest:** changed liquidation price formula ([#9](https://github.com/logictraders/tradingkit/issues/9)) ([5e0dbd5](https://github.com/logictraders/tradingkit/commit/5e0dbd5e9c31d5852be8695e44f28677baa6a63d))
+
 ### [1.2.6](https://github.com/logictraders/tradingkit/compare/v1.2.5...v1.2.6) (2021-01-06)
 
 
