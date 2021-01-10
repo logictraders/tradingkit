@@ -22,13 +22,15 @@ class Runner:
             chain = exchange
         chain.register(bridge)
         feeder.feed()
-        result = strategy.finish()
-        print("Trading results")
-        for info in result:
-            print("%15s: %10.2f" % (info, result[info]))
-
         if optimize:
-            print("Optimization is not implemented yet")
+            result = strategy.finish(False)
+        else:
+            result = strategy.finish()
+            print("Trading results")
+            for info in result:
+                print("%15s: %10.2f" % (info, result[info]))
 
         if plot:
             plotter.plot()
+
+        return result

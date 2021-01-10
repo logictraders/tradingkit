@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 from setuptools import Command
 
 from tradingkit.cli.runner import Runner
+from tradingkit.cli.optimizer import Optimizer
 from tradingkit.data.feed.feeder import Feeder
 from tradingkit.display.plotter import Plotter
 from tradingkit.strategy.strategy import Strategy
@@ -64,6 +65,8 @@ class CLI(Command):
             year = int(args['--year'])
             months = [int(args['--month'])] if args['--month'] else range(1, 13)
             CLI.command_import(exchange_name, symbol, fetcher, year, months)
+        elif args['--optimize']:
+            Optimizer().optimize(args)
         else:
 
             config = json.loads(res.read_text("tradingkit.config", "config.json"))
