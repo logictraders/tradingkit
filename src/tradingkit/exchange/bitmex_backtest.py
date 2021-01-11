@@ -26,7 +26,7 @@ class BitmexBacktest(TestEX):
                          "markPrice": None
                          }
         self.leverage = 100
-        self.founding_rate = None
+        self.funding_rate = None
 
     def match_order(self, trade, order, price, base, quote):
         # TODO:
@@ -96,7 +96,7 @@ class BitmexBacktest(TestEX):
         if isinstance(event, Funding):
             base, quote = event.payload['symbol'].split('/')
             self.balance[base] -= self.position['currentQty'] * event.payload['rate'] / event.payload['price']
-            self.founding_rate = {"timestamp": event.payload['timestamp'], "rate": event.payload['rate']}
+            self.funding_rate = {"timestamp": event.payload['timestamp'], "rate": event.payload['rate']}
         super().on_event(event)
 
     def execute_liquidation(self, trade):
@@ -152,11 +152,11 @@ class BitmexBacktest(TestEX):
         FundingBasis = FundingRate * (Time Until Funding / Funding Interval)
         FairPrice = IndexPrice * (1 + Funding Basis)
         """
-        if self.founding_rate is None:  # compatibility with no funding feeder
+        if self.funding_rate is None:  # compatibility with no funding feeder
             self.position['markPrice'] = trade['price']
         else:
-            time_until_founding = self.founding_rate['timestamp'] + 28800000 - trade['timestamp']
-            founding_basis = self.founding_rate['rate'] * (time_until_founding / 28800000)
+            time_until_founding = self.funding_rate['timestamp'] + 28800000 - trade['timestamp']
+            founding_basis = self.funding_rate['rate'] * (time_until_founding / 28800000)
             self.position['markPrice'] = trade['price'] * (1 + founding_basis)
 
     def set_liquidation_price(self, mark_price, base):
@@ -200,12 +200,35 @@ class BitmexBacktest(TestEX):
 
             bankruptcy_price = 1 / (1 / self.position['avgEntryPrice'] + available_margin / self.position['currentQty'])
             bankruptcy_value = self.position['currentQty'] * (1 / bankruptcy_price)
+            funding_rate = self.funding_rate['rate'] if self.funding_rate else 0
             maintenance_margin = (0.005 * (self.position['currentQty'] / self.position['avgEntryPrice'])) + \
                                  (0.00075 * bankruptcy_value) + \
-                                 (0.0001 * self.founding_rate['rate'])
+                                 (0.0001 * funding_rate)
 
             self.position['liquidationPrice'] = 1 / (1 / self.position['avgEntryPrice'] + (available_margin - maintenance_margin) / self.position['currentQty'])
             if self.position['liquidationPrice'] < 0:
                 self.position['liquidationPrice'] = 100000000.0  # bitmex max liquidation price
         else:
             self.position['liquidationPrice'] = None
+
+    def fetch_balance(self):
+        balances = {}
+        symbol = list(self.orderbooks.keys())[0]
+        price = list(self.orderbooks.values())[0]['bids'][0][0]
+        base, quote = symbol.split('/')
+        free_balance = self.fetch_free_balance()
+        balances['free'] = free_balance
+        used_balance = self.fetch_used_balance()
+        balances['total'] = self.balance.copy()
+        for asset in used_balance.keys():
+            if asset == base:
+                pnl = (price / self.position['avgEntryPrice'] * self.position['currentQty'] -
+                       self.position['currentQty']) / price if abs(self.position['currentQty']) > 0 else 0
+                total = self.balance[asset] + pnl
+                balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset], 'total': total}
+                balances['total'][asset] = total
+                balances['info'] = [{'walletBalance': self.balance[asset] * 1e8}]
+            else:
+                balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset], 'total': self.balance[asset]}
+        balances['used'] = used_balance
+        return balances
