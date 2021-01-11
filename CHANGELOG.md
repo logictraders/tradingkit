@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.8](https://github.com/logictraders/tradingkit/compare/v1.2.7...v1.2.8) (2021-01-11)
+
+
+### Bug Fixes
+
+* **bitmex_backtest:** added fetch_balance method and allow nullable funding_rate on liquidation price formula ([#10](https://github.com/logictraders/tradingkit/issues/10)) ([6d91049](https://github.com/logictraders/tradingkit/commit/6d91049aed4c547dfc387f36ed590feb742a1ffc))
+* **deps:** updated dependencies ([a4292cc](https://github.com/logictraders/tradingkit/commit/a4292ccc006cda9ca5adcdea1c111a0ccdb1b7e4))
+
 ### [1.2.7](https://github.com/logictraders/tradingkit/compare/v1.2.6...v1.2.7) (2021-01-10)
 
 
