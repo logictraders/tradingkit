@@ -26,7 +26,7 @@ class CLI(Command):
 
     Usage:
       tk run [<strategy_dir>] [-e <env>] [-y <year>] [-m <month>] [--optimize | --plot | --live_plot] [ --show-open-orders | --show-orders] [--loglevel <level>]
-      tk import [-x <exchange>] [-s <symbol>] [-y <year>] [-m <month>]
+      tk import [-x <exchange>] [-s <symbol>] [-y <year>] [-m <month>] [--no-funding | --only-funding]
       tk --help
       tk --version
 
@@ -41,6 +41,8 @@ class CLI(Command):
       --live_plot                        Plot real-time charts.
       --show-open-orders                 Show closed and open orders on chart.
       --show-orders                      Show only closed orders on chart.
+      --no-funding                       Import only trades data
+      --only-funding                     Import only funding rate data
       --loglevel <level>                 Sets the log level [default: error].
       -h, --help                         Show this screen.
       -v, --version                      Show version.
@@ -56,14 +58,21 @@ class CLI(Command):
         logging.basicConfig(level=logging.getLevelName(args['--loglevel'].upper()))
 
         if args['import']:
-            exchange_name = args['--exchange']
-            exchange_class = getattr(ccxt, exchange_name)
-            exchange = exchange_class()
             symbol = args['--symbol']
-            fetcher = CCXTFetcher(exchange)
-            year = int(args['--year'])
-            months = [int(args['--month'])] if args['--month'] else range(1, 13)
-            CLI.command_import(exchange_name, symbol, fetcher, year, months)
+            if not args['--no-funding']:
+                exchange_name = 'bitmex'
+                exchange_class = getattr(ccxt, exchange_name)
+                exchange = exchange_class()
+                CLI.command_import_funding_rate(exchange_name, exchange, symbol)
+            if not args['--only-funding']:
+                exchange_name = args['--exchange']
+                exchange_class = getattr(ccxt, exchange_name)
+                exchange = exchange_class()
+                fetcher = CCXTFetcher(exchange)
+                year = int(args['--year'])
+                months = [int(args['--month'])] if args['--month'] else range(1, 13)
+                CLI.command_import(exchange_name, symbol, fetcher, year, months)
+
         else:
 
             config = json.loads(res.read_text("tradingkit.config", "config.json"))
@@ -121,3 +130,18 @@ class CLI(Command):
             base, quote = symbol.split('/')
             full_filename = '%s/%s-%s_%s-%d-%02d.json' % (import_dir, exchange_name, base, quote, year, month)
             json.dump(trades, open(full_filename, 'w'))
+
+    @staticmethod
+    def command_import_funding_rate(exchange_name, exchange, symbol):
+        pairs_conversion = {'BTC/USD': 'XBTUSD'}
+        funding_data = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500})
+        resp = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500, 'start': len(funding_data)})
+        while len(resp) > 0:
+            for rate in resp:
+                funding_data.append(rate)
+            resp = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500, 'start': len(funding_data)})
+
+        import_dir = System.get_import_dir()
+        base, quote = symbol.split('/')
+        full_filename = '%s/%s_%s-%s_%s.json' % (import_dir, 'funding', exchange_name, base, quote)
+        json.dump(funding_data, open(full_filename, 'w'))
