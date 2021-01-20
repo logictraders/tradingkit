@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/logictraders/tradingkit/compare/v1.2.8...v1.3.0) (2021-01-13)
+
+
+### Features
+
+* **import:** Added ability to download funding rate at import ([#11](https://github.com/logictraders/tradingkit/issues/11)) ([8fe12d0](https://github.com/logictraders/tradingkit/commit/8fe12d0e36be3cdfb8788016c0e6bdbccc030724))
+
+
+### Bug Fixes
+
+* **deps:** updated dependencies ([09229dd](https://github.com/logictraders/tradingkit/commit/09229dd9b271df7e6bc5164cd25d8f516c320561))
+
+### [1.2.8](https://github.com/logictraders/tradingkit/compare/v1.2.7...v1.2.8) (2021-01-11)
+
+
+### Bug Fixes
+
+* **bitmex_backtest:** added fetch_balance method and allow nullable funding_rate on liquidation price formula ([#10](https://github.com/logictraders/tradingkit/issues/10)) ([6d91049](https://github.com/logictraders/tradingkit/commit/6d91049aed4c547dfc387f36ed590feb742a1ffc))
+* **deps:** updated dependencies ([a4292cc](https://github.com/logictraders/tradingkit/commit/a4292ccc006cda9ca5adcdea1c111a0ccdb1b7e4))
+
+### [1.2.7](https://github.com/logictraders/tradingkit/compare/v1.2.6...v1.2.7) (2021-01-10)
+
+
+### Bug Fixes
+
+* **bitmex_backtest:** changed liquidation price formula ([#9](https://github.com/logictraders/tradingkit/issues/9)) ([5e0dbd5](https://github.com/logictraders/tradingkit/commit/5e0dbd5e9c31d5852be8695e44f28677baa6a63d))
+
 ### [1.2.6](https://github.com/logictraders/tradingkit/compare/v1.2.5...v1.2.6) (2021-01-06)
 
 

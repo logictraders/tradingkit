@@ -32,28 +32,27 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
         """Updates the founding rate"""
         if self.founding_rate_data is None:
             import_dir = System.get_import_dir()
-            full_filename = '%s/funding_%s-%s_%s.csv' % (import_dir, exchange, base, quote)
+            full_filename = '%s/funding_bitmex-%s_%s.json' % (import_dir, base, quote)
 
-            with open(full_filename, 'r') as file:
-                reader = csv.reader(file, delimiter='\t')
-                self.founding_rate_data = []
-                first_rate_timestamp = trade['timestamp'] - 8 * 60 * 60 * 1000
-                for row in reader:
-                    date, _, _, rate, _ = row[0].split(',')
-                    rate = float(rate.replace('"', ''))
-                    timestamp = int(parser.isoparse(date).timestamp() * 1000)
-                    if timestamp > first_rate_timestamp:
-                        self.founding_rate_data.append({"timestamp": timestamp,
-                                                        "rate": rate,
-                                                        "date": date,
-                                                        "price": trade['price'],
-                                                        "symbol": trade['symbol']})
-                self.founding_rate_data.reverse()
-                self.dispatch(Funding(self.founding_rate_data[0]))
-                self.next_founding_rate_index += 1
-        elif trade['timestamp'] > self.founding_rate_data[self.next_founding_rate_index]["timestamp"]:
+            self.founding_rate_data = []
+            first_rate_timestamp = trade['timestamp'] - 8 * 60 * 60 * 1000
+            for row in json.load(open(full_filename, 'r')):
+                rate = float(row['fundingRate'])
+                timestamp = int(parser.isoparse(row['timestamp']).timestamp() * 1000)
+                if timestamp > first_rate_timestamp:
+                    self.founding_rate_data.append({"timestamp": timestamp,
+                                                    "rate": rate,
+                                                    "date": row['timestamp'],
+                                                    "price": trade['price'],
+                                                    "symbol": trade['symbol']})
+            self.dispatch(Funding(self.founding_rate_data[0]))
+            self.next_founding_rate_index += 1
+
+        elif self.next_founding_rate_index < len(self.founding_rate_data) and \
+                trade['timestamp'] > self.founding_rate_data[self.next_founding_rate_index]["timestamp"]:
             self.dispatch(Funding(self.founding_rate_data[self.next_founding_rate_index]))
             self.next_founding_rate_index += 1
+
 
 
 
