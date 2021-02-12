@@ -22,6 +22,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.exchange = exchange
         self.closed_orders = {}
         self.orders_history = {}
+        self.peak_balance = 0
+        self.max_drawdown = 0
         self.last_price = None
         self.has_position = True if "bitmex" in str(exchange.__class__) else False
         exchange.seconds()
@@ -140,13 +142,18 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def fetchMarkets(self):
         return self.exchange.fetchMarkets()
 
+    def get_max_draw_down(self):
+        return self.max_drawdown
+
     def plot_balances(self, timestamp, symbol, price):
         balances = self.fetch_balance()['total']
+        free_balances = self.fetch_balance()['free']
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
         base, quote = symbol.split('/')
 
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
+        free_base_balance = balances[base] if base in free_balances else 0
 
         equity = quote_balance + base_balance * price
         base_equity = base_balance + quote_balance / price
@@ -163,6 +170,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             quote_balance, quote,
             base_balance * price, quote, base
         )
+        self.calculate_max_drawdown(free_base_balance, quote_balance)
         self.dispatch(Plot({
             'name': 'Equity',
             'type': 'scatter',
@@ -224,3 +232,13 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             'yaxis': 'price',
             'data': candle,
         }))
+
+    def calculate_max_drawdown(self, base_balance, quote_balance):
+        balance = quote_balance if quote_balance > 0 else base_balance
+
+        if balance > self.peak_balance:
+            self.peak_balance = balance
+
+        drawdown = (balance - self.peak_balance) / self.peak_balance
+        self.max_drawdown = min(self.max_drawdown, drawdown)
+

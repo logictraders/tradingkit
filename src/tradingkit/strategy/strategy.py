@@ -57,5 +57,6 @@ class Strategy(Publisher, Subscriber, ABC):
             "profit": end_equity - self.start_equity,
             "profit_percent": (end_equity - self.start_equity) / self.start_equity * 100.0,
             "quote_balance": int(balance[quote]),
-            "base_balance": balance[base]
+            "base_balance": balance[base],
+            "max_drawdown": self.exchange.get_max_draw_down()
         }
