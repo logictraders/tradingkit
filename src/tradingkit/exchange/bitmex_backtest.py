@@ -212,9 +212,7 @@ class BitmexBacktest(TestEX):
         balances['total'] = self.balance.copy()
         for asset in used_balance.keys():
             if asset == base:
-                pnl = (price / self.position['avgEntryPrice'] * self.position['currentQty'] -
-                       self.position['currentQty']) / price if abs(self.position['currentQty']) > 0 else 0
-                total = self.balance[asset] + pnl
+                total = self.balance[asset]
                 balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset], 'total': total}
                 balances['total'][asset] = total
                 balances['info'] = [{'walletBalance': self.balance[asset] * 1e8}]
@@ -226,10 +224,15 @@ class BitmexBacktest(TestEX):
 
     def fetch_free_balance(self):
         free_balance = self.balance.copy()
+        base, quote = list(self.orderbooks.keys())[0].split('/')
         if len(self.open_orders) > 0:
-            base, quote = list(self.open_orders.values())[0]['symbol'].split('/')
             side = 'buy' if self.position['currentQty'] > 0 else 'sell'
             sum_same_side_orders = sum(
                 [(o['amount'] / o['price']) for o in self.open_orders.values() if o['side'] == side])
             free_balance[base] -= sum_same_side_orders
+        price = list(self.orderbooks.values())[0]['bids'][0][0]
+        if abs(self.position['currentQty']) > 0:
+            pnl = (price / self.position['avgEntryPrice'] * self.position['currentQty'] -
+                   self.position['currentQty']) / price
+            free_balance[base] += pnl
         return free_balance
