@@ -184,7 +184,8 @@ class BitmexBacktest(TestEX):
                 sum_same_side_orders = -sum_same_side_orders
 
             price = list(self.orderbooks.values())[0]['bids'][0][0]
-            available_margin = self.balance[base] - abs(sum_same_side_orders) / price
+            max_cross_leverage = 100
+            available_margin = self.balance[base] - abs(sum_same_side_orders / max_cross_leverage) / price
 
             bankruptcy_price = 1 / (1 / self.position['avgEntryPrice'] + available_margin / self.position['currentQty'])
             bankruptcy_value = self.position['currentQty'] * (1 / bankruptcy_price)
