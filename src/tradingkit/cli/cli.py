@@ -136,14 +136,15 @@ class CLI(Command):
     @staticmethod
     def command_import_funding_rate(exchange_name, exchange, symbol):
         pairs_conversion = {'BTC/USD': 'XBTUSD'}
-        funding_data = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500})
-        resp = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500, 'start': len(funding_data)})
-        while len(resp) > 0:
-            for rate in resp:
-                funding_data.append(rate)
+        if symbol in pairs_conversion:
+            funding_data = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500})
             resp = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500, 'start': len(funding_data)})
+            while len(resp) > 0:
+                for rate in resp:
+                    funding_data.append(rate)
+                resp = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500, 'start': len(funding_data)})
 
-        import_dir = System.get_import_dir()
-        base, quote = symbol.split('/')
-        full_filename = '%s/%s_%s-%s_%s.json' % (import_dir, 'funding', exchange_name, base, quote)
-        json.dump(funding_data, open(full_filename, 'w'))
+            import_dir = System.get_import_dir()
+            base, quote = symbol.split('/')
+            full_filename = '%s/%s_%s-%s_%s.json' % (import_dir, 'funding', exchange_name, base, quote)
+            json.dump(funding_data, open(full_filename, 'w'))
