@@ -66,7 +66,7 @@ class KrakenFeeder(Feeder, Publisher):
 
     def subscribe(self, token):
         api_feed = "book"
-        api_symbol = 'XBT/USD'
+        api_symbol = 'XBT/EUR'
         api_depth = 10
         book_feed = '{"event":"subscribe", "subscription":{"name":"%(feed)s", "depth":%(depth)s}, "pair":["%(symbol)s"]}' % {
             "feed": api_feed, "depth": api_depth, "symbol": api_symbol}
@@ -134,19 +134,26 @@ class KrakenFeeder(Feeder, Publisher):
         elif "book-10" in message:
             keys = message[1].keys()
             if "as" in keys:
-                self.orderbooks[self.symbol_dict[message[-1]]] = {"bids": message[1]["bs"][0][0],
-                                                                  "ascs": message[1]["as"][0][0],
+                self.orderbooks[self.symbol_dict[message[-1]]] = {"bids": [[float(message[1]["bs"][0][0]),
+                                                                           float(message[1]["bs"][0][1])]],
+                                                                  "ascs": [[float(message[1]["as"][0][0]),
+                                                                           float(message[1]["as"][0][1])]],
                                                                   "timestamp": int(
-                                                                      float(message[1]["as"][0][2]) * 1000)}
+                                                                      float(message[1]["as"][0][2]) * 1000),
+                                                                  "symbol": self.symbol_dict[message[-1]]}
             else:
                 if "a" in keys:
-                    self.orderbooks[self.symbol_dict[message[-1]]]["ascs"] = message[1]["a"][0][0]
+                    self.orderbooks[self.symbol_dict[message[-1]]]["ascs"] = [[float(message[1]["a"][0][0]),
+                                                                              float(message[1]["a"][0][1])]]
                     self.orderbooks[self.symbol_dict[message[-1]]]["timestamp"] = int(
                         float(message[1]["a"][0][2]) * 1000)
+                    self.orderbooks[self.symbol_dict[message[-1]]]["symbol"] = self.symbol_dict[message[-1]]
                 if "b" in keys:
-                    self.orderbooks[self.symbol_dict[message[-1]]]["bids"] = message[1]["b"][0][0]
+                    self.orderbooks[self.symbol_dict[message[-1]]]["bids"] = [[float(message[1]["b"][0][0]),
+                                                                              float(message[1]["b"][0][1])]]
                     self.orderbooks[self.symbol_dict[message[-1]]]["timestamp"] = int(
                         float(message[1]["b"][0][2]) * 1000)
+                    self.orderbooks[self.symbol_dict[message[-1]]]["symbol"] = self.symbol_dict[message[-1]]
             self.dispatch_event(Book(self.orderbooks[self.symbol_dict[message[-1]]]))
         elif "trade" in message:
             for trade in message[1]:
@@ -199,8 +206,8 @@ class KrakenFeeder(Feeder, Publisher):
         private_t.start()
 
         # # wait until threads finish their job
-        # public_t.join()
-        # private_t.join()
+        public_t.join()
+        private_t.join()
 
 
 if __name__ == '__main__':  # for testing

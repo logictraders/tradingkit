@@ -98,6 +98,16 @@
       false
     ]
   },
+    "kraken_feeder": {
+    "class": "tradingkit.data.feed.kraken_feeder.KrakenFeeder",
+    "arguments": [
+      {
+        "apiKey": "%env(KRAKEN_KEY)%",
+        "secret": "%env(KRAKEN_SECRET)%"
+      }
+    ]
+  },
+
   "highstock": {
     "class": "tradingkit.display.highstock.highstock_plotter.HighstockPlotter"
   },
