@@ -183,15 +183,13 @@ class KrakenFeeder(Feeder, Publisher):
         while True:
             try:
                 ws_data = _ws.recv()
+                message = json.loads(ws_data)
+                self.on_message(message)
             except KeyboardInterrupt:
                 _ws.close()
                 sys.exit(0)
             except Exception as error:
-                _logging.info("[WebSocket error] %s" % str(error))
-                #_ws.close()
-                #sys.exit(1)
-            message = json.loads(ws_data)
-            self.on_message(message)
+                _logging.warning("[WebSocket error] %s" % str(error))
 
     def feed(self):
         # creating a lock
