@@ -8,7 +8,7 @@ import time
 import urllib.request
 from datetime import datetime
 
-from websocket import create_connection
+from websocket import create_connection, _logging
 
 from tradingkit.data.feed.feeder import Feeder
 from tradingkit.pubsub.core.publisher import Publisher
@@ -187,9 +187,9 @@ class KrakenFeeder(Feeder, Publisher):
                 _ws.close()
                 sys.exit(0)
             except Exception as error:
-                print("WebSocket message failed (%s)" % error)
-                _ws.close()
-                sys.exit(1)
+                _logging.info("[WebSocket error] %s" % str(error))
+                #_ws.close()
+                #sys.exit(1)
             message = json.loads(ws_data)
             self.on_message(message)
 
