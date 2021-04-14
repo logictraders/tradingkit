@@ -190,6 +190,7 @@ class KrakenFeeder(Feeder, Publisher):
                 sys.exit(0)
             except Exception as error:
                 _logging.warning("[WebSocket error] %s" % str(error))
+                self.run(is_private)
 
     def feed(self):
         # creating a lock
