@@ -76,7 +76,7 @@ class TestEX(Publisher, Subscriber, Exchange):
         order = {
             'id': order_id,
             'timestamp': now,
-            'status': 'open' if type == 'limit' else 'closed',
+            'status': 'closed' if type == 'market' else 'open',
             'symbol': symbol,
             'type': type,
             'side': side,
@@ -158,12 +158,22 @@ class TestEX(Publisher, Subscriber, Exchange):
         taker_or_maker = 'maker' if order['type'] == 'limit' else 'taker'
         fee = self.fees[taker_or_maker]
         if order['side'] == 'buy':
-            if price >= trade['price']:
+            if order['type'] == 'stop':
+                if price <= trade['price']:
+                    self.balance[quote] -= order['amount'] * price * (1 + fee)
+                    self.balance[base] += order['amount']
+                    order['status'] = 'filled'
+            elif price >= trade['price']:
                 self.balance[quote] -= order['amount'] * price * (1 + fee)
                 self.balance[base] += order['amount']
                 order['status'] = 'filled'
         else:
-            if price <= trade['price']:
+            if order['type'] == 'stop':
+                if price >= trade['price']:
+                    self.balance[base] -= order['amount']
+                    self.balance[quote] += order['amount'] * price * (1 - fee)
+                    order['status'] = 'filled'
+            elif price <= trade['price']:
                 self.balance[base] -= order['amount']
                 self.balance[quote] += order['amount'] * price * (1 - fee)
                 order['status'] = 'filled'
