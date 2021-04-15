@@ -8,6 +8,7 @@ from tradingkit.utils.system import System
 from tradingkit.data.feed.feeder import Feeder
 from tradingkit.pubsub.core.publisher import Publisher
 from tradingkit.pubsub.event.trade import Trade
+from ccxt import InsufficientFunds
 
 
 class BacktestFeeder(Feeder, Publisher):
@@ -36,6 +37,10 @@ class BacktestFeeder(Feeder, Publisher):
                 if start_month.timestamp() < datetime.now().timestamp():
                     logging.warning("Import file not found, use command 'tk import' before")
                     raise e
+                break
+
+            except InsufficientFunds as e:
+                print("InsufficientFunds: Executed Liquidation")
                 break
 
     def dispatch_month(self, exchange, symbol, year, month, since, to):
