@@ -35,8 +35,11 @@ class Optimizer:
         since = datetime.fromisoformat("2016-01-01 00:00:00+00:00")
         to = datetime.fromisoformat("2017-01-01 00:00:00+00:00")
         result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
-        profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        if result['base_balance'] > 0:
+        if result['start_base_balance'] == 0:
+            profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
+        else:
+            profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
+        if result['end_equity'] > 0:
             results.append(profit)
         else:
             return np.random.uniform(-200, -100, 1)[0]
@@ -46,8 +49,11 @@ class Optimizer:
         since = datetime.fromisoformat("2017-01-01 00:00:00+00:00")
         to = datetime.fromisoformat("2018-01-01 00:00:00+00:00")
         result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
-        profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        if result['base_balance'] > 0:
+        if result['start_base_balance'] == 0:
+            profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
+        else:
+            profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
+        if result['end_equity'] > 0:
             results.append(profit)
         else:
             return np.random.uniform(-200, -100, 1)[0]
@@ -57,8 +63,11 @@ class Optimizer:
         since = datetime.fromisoformat("2018-01-01 00:00:00+00:00")
         to = datetime.fromisoformat("2019-01-01 00:00:00+00:00")
         result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
-        profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        if result['base_balance'] > 0:
+        if result['start_base_balance'] == 0:
+            profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
+        else:
+            profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
+        if result['end_equity'] > 0:
             results.append(profit)
         else:
             return np.random.uniform(-200, -100, 1)[0]
@@ -68,8 +77,11 @@ class Optimizer:
         since = datetime.fromisoformat("2019-01-01 00:00:00+00:00")
         to = datetime.fromisoformat("2020-01-01 00:00:00+00:00")
         result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
-        profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        if result['base_balance'] > 0:
+        if result['start_base_balance'] == 0:
+            profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
+        else:
+            profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
+        if result['end_equity'] > 0:
             results.append(profit)
         else:
             return np.random.uniform(-200, -100, 1)[0]
@@ -79,7 +91,6 @@ class Optimizer:
         median_result = np.median(results)
         min_result = min(results)
         result = (median_result + min_result * 7) / 8
-        # print(results, median_result, result)
         if result > 0:
             c_handle = open(str(self.start_time) + "_out.csv", 'a')
             data = []
