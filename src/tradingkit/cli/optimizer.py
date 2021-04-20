@@ -162,9 +162,12 @@ class Optimizer:
 
         for genome in population:
             genome = np.array(genome)
+            _t = datetime.now()
             profit = self.objective_function(genome)
+            print("Iteration Time: ", datetime.now() - _t)
             score[profit] = genome
 
+        print("Lapsed Time: ", datetime.now() - t)
         print("Top 10 solutions:")
         best_sol = 0
         i = 0
@@ -181,6 +184,7 @@ class Optimizer:
             if iteration_without_improv > self.max_iteration_without_improv:
                 break
             score = self.mutate_and_evaluate(varbound, score, iteration)
+            print("Lapsed Time: ", datetime.now() - t)
             print(iteration, "Top 10 solutions:")
             f_handle = open(str(self.start_time) + "_best.csv", 'a')
             np.savetxt(f_handle, [[iteration]], delimiter="  ", fmt="%s")
@@ -223,7 +227,9 @@ class Optimizer:
                 new_genome[index] = (new_genome[index] * ratio +
                                      np.random.uniform(varbound[index][0], varbound[index][1], 1)[0]) / (ratio + 1)
                 new_genome = np.array(new_genome)
+                _t = datetime.now()
                 profit = self.objective_function(new_genome)
+                print("Iteration Time: ", datetime.now() - _t)
                 new_score[profit] = new_genome
                 i += 1
             else:
