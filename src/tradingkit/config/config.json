@@ -35,6 +35,7 @@
     "arguments": [
       {
         "balance": {
+          "USD": "%env(float:INITIAL_BALANCE_USD:0)%",
           "EUR": "%env(float:INITIAL_BALANCE_EUR:100000)%",
           "BTC": "%env(float:INITIAL_BALANCE_BTC:0)%"
         },
