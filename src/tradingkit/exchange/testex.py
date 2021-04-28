@@ -233,7 +233,7 @@ class TestEX(Publisher, Subscriber, Exchange):
         if symbol in self.orderbooks:
             if not self.orderbooks[symbol]:
                 raise KeyError("TestEX is not ready yet")
-            return {"bid": self.orderbooks[symbol]['bids'][0][0], "ask": self.orderbooks[symbol]['asks'][0][0]}
+            return {"bid": self.orderbooks[symbol]['bids'][0][0], "ask": self.orderbooks[symbol]['asks'][0][0], "timestamp": self.milliseconds()}
         raise NotImplementedError("Symbol %s not found in testex.orderbooks" % symbol)
 
     def fetch_balance(self):

@@ -16,6 +16,7 @@ class Strategy(Publisher, Subscriber, ABC):
         self.config = config
         self.start_equity = None
         self.is_started = False
+        self.start_base_balance = None
 
     @abstractmethod
     def get_symbol(self):
@@ -28,6 +29,7 @@ class Strategy(Publisher, Subscriber, ABC):
         base, quote = symbol.split('/')
         quote_balance = balance[quote] if quote in balance else 0
         self.start_equity = quote_balance + balance[base] * self.exchange.fetch_ticker(symbol)['bid']
+        self.start_base_balance = balance[base]
         logging.info("Initial Equity: %s" % str(self.start_equity))
 
     def on_event(self, event: Event):
@@ -35,7 +37,7 @@ class Strategy(Publisher, Subscriber, ABC):
             self.is_started = True
             self.start()
 
-    def finish(self):
+    def finish(self, show_info=True):
         logging.info("Finish strategy %s" % str(self.__class__))
         balance = self.exchange.fetch_balance()['total']
         symbol = self.config['symbol']
@@ -60,4 +62,7 @@ class Strategy(Publisher, Subscriber, ABC):
             "base_balance": balance[base] + pnl / price,
             "max_drawdown": self.exchange.get_max_draw_down(),
             "sharp_ratio": self.exchange.get_sharpe_ratio()
+            "start_base_balance": self.start_base_balance
+
+
         }
