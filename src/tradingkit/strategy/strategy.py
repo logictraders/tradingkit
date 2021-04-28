@@ -61,8 +61,6 @@ class Strategy(Publisher, Subscriber, ABC):
             "quote_balance": int(balance[quote]),
             "base_balance": balance[base],
             "max_drawdown": self.exchange.get_max_draw_down(),
-            "sharp_ratio": self.exchange.get_sharpe_ratio()
+            "sharp_ratio": self.exchange.get_sharpe_ratio(),
             "start_base_balance": self.start_base_balance
-
-
         }
