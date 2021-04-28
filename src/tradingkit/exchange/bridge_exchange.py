@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from ccxt import Exchange
 
@@ -13,6 +13,7 @@ from tradingkit.pubsub.event.order import Order
 from tradingkit.pubsub.event.plot import Plot
 from tradingkit.pubsub.event.trade import Trade
 from tradingkit.pubsub.event.liquidation import Liquidation
+import numpy
 
 
 class BridgeExchange(Publisher, Subscriber, Exchange):
@@ -22,7 +23,12 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.exchange = exchange
         self.closed_orders = {}
         self.orders_history = {}
+        self.balance_history = []
+        self.last_balance_check = None
+        self.peak_balance = 0
+        self.max_drawdown = 0
         self.last_price = None
+        self.symbol = None
         self.has_position = True if "bitmex" in str(exchange.__class__) else False
         exchange.seconds()
 
@@ -65,6 +71,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         if isinstance(event, Book):
             if self.last_price is None:
                 self.plot_balances(event.payload['timestamp'], event.payload['symbol'], event.payload['bids'][0][0])
+                self.symbol = event.payload['symbol']
             self.last_price = event.payload['bids'][0][0]
         if isinstance(event, Candle):
             self.plot_candle(event)
@@ -140,8 +147,11 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def fetchMarkets(self):
         return self.exchange.fetchMarkets()
 
+    def get_max_draw_down(self):
+        return self.max_drawdown
+
     def plot_balances(self, timestamp, symbol, price):
-        balances = self.fetch_balance()['total']
+        balances = self.fetch_balance()['free']
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
         base, quote = symbol.split('/')
 
@@ -163,6 +173,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             quote_balance, quote,
             base_balance * price, quote, base
         )
+        self.calculate_max_drawdown(base_balance, quote_balance)
         self.dispatch(Plot({
             'name': 'Equity',
             'type': 'scatter',
@@ -224,3 +235,33 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             'yaxis': 'price',
             'data': candle,
         }))
+        date = datetime.fromisoformat(candle['datetime'])
+        if self.last_balance_check is None or date - self.last_balance_check > timedelta(hours=1):
+            self.last_balance_check = date
+            self.balance_history.append(self.save_current_balance(candle['close']))
+
+    def calculate_max_drawdown(self, base_balance, quote_balance):
+        balance = quote_balance if quote_balance > 0 else base_balance
+
+        if balance > self.peak_balance:
+            self.peak_balance = balance
+
+        drawdown = (balance - self.peak_balance) / self.peak_balance
+        self.max_drawdown = min(self.max_drawdown, drawdown)
+
+    def save_current_balance(self, price):
+        balances = self.fetch_balance()['free']
+        base, quote = self.symbol.split('/')
+
+        base_balance = balances[base] if base in balances else 0
+        quote_balance = balances[quote] if quote in balances else 0
+
+        # todo use quote equity for kraken (equity = quote_balance + base_balance * price)
+        base_equity = base_balance + quote_balance / price
+        return base_equity
+
+    def get_sharpe_ratio(self):
+        standard_desviation = numpy.std(self.balance_history)
+        sharpe_ratio = (self.balance_history[-1] / self.balance_history[0]) / standard_desviation
+        return sharpe_ratio
+

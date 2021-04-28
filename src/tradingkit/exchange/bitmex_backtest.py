@@ -75,7 +75,7 @@ class BitmexBacktest(TestEX):
         else:  # increase position, update position price (mean price)
             self.position['avgEntryPrice'] = (self.position['currentQty'] * self.position['avgEntryPrice'] +
                                               quote_volume * avg_order_price) / (
-                                                         self.position['currentQty'] + quote_volume)
+                                                     self.position['currentQty'] + quote_volume)
         self.position['currentQty'] += quote_volume
         self.set_liquidation_price(avg_order_price, base)
 
@@ -159,18 +159,6 @@ class BitmexBacktest(TestEX):
             founding_basis = self.funding_rate['rate'] * (time_until_founding / 28800000)
             self.position['markPrice'] = trade['price'] * (1 + founding_basis)
 
-    def set_liquidation_price(self, mark_price, base):
-        if abs(self.position['currentQty']) > 0:
-            side = 'buy' if self.position['currentQty'] > 0 else 'sell'
-            sum_same_side_orders = sum([o['amount'] for o in self.open_orders.values() if o['side'] == side])
-            if self.position['currentQty'] < 0:
-                sum_same_side_orders = -sum_same_side_orders
-
-            self.position['liquidationPrice'] = self.position['avgEntryPrice'] * (1 - self.balance[base] * mark_price /
-                                                     (self.position['currentQty'] + sum_same_side_orders))
-        else:
-            self.position['liquidationPrice'] = None
-
     def cancel_order(self, order_id, symbol=None, params={}):
         if order_id in self.open_orders:
             symbol = self.open_orders[order_id]['symbol']
@@ -196,7 +184,8 @@ class BitmexBacktest(TestEX):
                 sum_same_side_orders = -sum_same_side_orders
 
             price = list(self.orderbooks.values())[0]['bids'][0][0]
-            available_margin = self.balance[base] - abs(sum_same_side_orders) / price
+            max_cross_leverage = 100
+            available_margin = self.balance[base] - abs(sum_same_side_orders / max_cross_leverage) / price
 
             bankruptcy_price = 1 / (1 / self.position['avgEntryPrice'] + available_margin / self.position['currentQty'])
             bankruptcy_value = self.position['currentQty'] * (1 / bankruptcy_price)
@@ -205,7 +194,9 @@ class BitmexBacktest(TestEX):
                                  (0.00075 * bankruptcy_value) + \
                                  (0.0001 * funding_rate)
 
-            self.position['liquidationPrice'] = 1 / (1 / self.position['avgEntryPrice'] + (available_margin - maintenance_margin) / self.position['currentQty'])
+            self.position['liquidationPrice'] = 1 / (
+                        1 / self.position['avgEntryPrice'] + (available_margin - maintenance_margin) / self.position[
+                    'currentQty'])
             if self.position['liquidationPrice'] < 0:
                 self.position['liquidationPrice'] = 100000000.0  # bitmex max liquidation price
         else:
@@ -222,13 +213,27 @@ class BitmexBacktest(TestEX):
         balances['total'] = self.balance.copy()
         for asset in used_balance.keys():
             if asset == base:
-                pnl = (price / self.position['avgEntryPrice'] * self.position['currentQty'] -
-                       self.position['currentQty']) / price if abs(self.position['currentQty']) > 0 else 0
-                total = self.balance[asset] + pnl
+                total = self.balance[asset]
                 balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset], 'total': total}
                 balances['total'][asset] = total
                 balances['info'] = [{'walletBalance': self.balance[asset] * 1e8}]
             else:
-                balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset], 'total': self.balance[asset]}
+                balances[asset] = {'free': free_balance[asset], 'used': used_balance[asset],
+                                   'total': self.balance[asset]}
         balances['used'] = used_balance
         return balances
+
+    def fetch_free_balance(self):
+        free_balance = self.balance.copy()
+        base, quote = list(self.orderbooks.keys())[0].split('/')
+        if len(self.open_orders) > 0:
+            side = 'buy' if self.position['currentQty'] > 0 else 'sell'
+            sum_same_side_orders = sum(
+                [(o['amount'] / o['price']) for o in self.open_orders.values() if o['side'] == side])
+            free_balance[base] -= sum_same_side_orders
+        price = list(self.orderbooks.values())[0]['bids'][0][0]
+        if abs(self.position['currentQty']) > 0:
+            pnl = (price / self.position['avgEntryPrice'] * self.position['currentQty'] -
+                   self.position['currentQty']) / price
+            free_balance[base] += pnl
+        return free_balance
