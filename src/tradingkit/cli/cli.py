@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 from setuptools import Command
 
 from tradingkit.cli.runner import Runner
+from tradingkit.cli.optimizer import Optimizer
 from tradingkit.data.feed.feeder import Feeder
 from tradingkit.display.plotter import Plotter
 from tradingkit.strategy.strategy import Strategy
@@ -72,7 +73,8 @@ class CLI(Command):
                 year = int(args['--year'])
                 months = [int(args['--month'])] if args['--month'] else range(1, 13)
                 CLI.command_import(exchange_name, symbol, fetcher, year, months)
-
+        elif args['--optimize']:
+            Optimizer().optimize(args)
         else:
 
             config = json.loads(res.read_text("tradingkit.config", "config.json"))
@@ -134,14 +136,15 @@ class CLI(Command):
     @staticmethod
     def command_import_funding_rate(exchange_name, exchange, symbol):
         pairs_conversion = {'BTC/USD': 'XBTUSD'}
-        funding_data = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500})
-        resp = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500, 'start': len(funding_data)})
-        while len(resp) > 0:
-            for rate in resp:
-                funding_data.append(rate)
+        if symbol in pairs_conversion:
+            funding_data = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500})
             resp = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500, 'start': len(funding_data)})
+            while len(resp) > 0:
+                for rate in resp:
+                    funding_data.append(rate)
+                resp = exchange.public_get_funding({'symbol': pairs_conversion[symbol], 'count': 500, 'start': len(funding_data)})
 
-        import_dir = System.get_import_dir()
-        base, quote = symbol.split('/')
-        full_filename = '%s/%s_%s-%s_%s.json' % (import_dir, 'funding', exchange_name, base, quote)
-        json.dump(funding_data, open(full_filename, 'w'))
+            import_dir = System.get_import_dir()
+            base, quote = symbol.split('/')
+            full_filename = '%s/%s_%s-%s_%s.json' % (import_dir, 'funding', exchange_name, base, quote)
+            json.dump(funding_data, open(full_filename, 'w'))
