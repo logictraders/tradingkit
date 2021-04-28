@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.2](https://github.com/logictraders/tradingkit/compare/v1.5.1...v1.5.2) (2021-04-28)
+
+
+### Bug Fixes
+
+* **balance:** update chart on open order ([#16](https://github.com/logictraders/tradingkit/issues/16)) ([e2bf8bd](https://github.com/logictraders/tradingkit/commit/e2bf8bda6f06b1c4307f60a663c93749c710e05b))
+* **strategy:** fixed syntax error ([a038170](https://github.com/logictraders/tradingkit/commit/a038170634ec8be093b89e15a33b7b5d7b7132b2))
+
 ### [1.5.1](https://github.com/logictraders/tradingkit/compare/v1.5.0...v1.5.1) (2021-04-28)
 
 
