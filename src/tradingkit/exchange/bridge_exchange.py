@@ -159,7 +159,6 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
-        print(exchange_date, base_balance, quote_balance)
 
         equity = quote_balance + base_balance * price
         base_equity = base_balance + quote_balance / price
