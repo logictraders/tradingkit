@@ -8,6 +8,7 @@ from tradingkit.pubsub.event.plot import Plot
 import logging
 
 from tradingkit.pubsub.event.trade import Trade
+from ccxt import InsufficientFunds
 
 
 class BitmexBacktest(TestEX):
@@ -114,6 +115,7 @@ class BitmexBacktest(TestEX):
                          }
         logging.warning("ALERT Liquidation executed %s" % str(self.position))
         self.dispatch(Liquidation(trade))
+        raise InsufficientFunds("Zero balance: %s" % str(self.balance))
 
     def plot_balances(self, base, quote, price):
         exchange_date = datetime.fromtimestamp(self.timestamp / 1000.0).isoformat()

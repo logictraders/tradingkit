@@ -22,4 +22,4 @@ class LogstashFormatter(Formatter):
     def format(self, record):
         t = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
-        return "UTC TIME: {datetime}\nINFO: {message}".format(message=record.msg, datetime=t)
+        return "INFO: {message}".format(message=record.msg, datetime=t)
