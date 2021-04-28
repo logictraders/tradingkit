@@ -84,6 +84,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             self.plot_balances(order['lastTradeTimestamp'], order['symbol'], self.last_price)
         if isinstance(event, OpenOrder):
             self.plot_order(event)
+            order = event.payload.copy()
+            self.plot_balances(order['timestamp'], order['symbol'], self.last_price)
         if isinstance(event, Liquidation):
             trade = event.payload
             self.plot_balances(trade['timestamp'], trade['symbol'], trade['price'])
@@ -157,6 +159,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
+        print(exchange_date, base_balance, quote_balance)
 
         equity = quote_balance + base_balance * price
         base_equity = base_balance + quote_balance / price
