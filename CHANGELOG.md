@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/logictraders/tradingkit/compare/v1.4.0...v1.5.0) (2021-04-28)
+
+
+### Features
+
+* **misc:** Optimizer improvements and stop orders ([#14](https://github.com/logictraders/tradingkit/issues/14)) ([8cb9bad](https://github.com/logictraders/tradingkit/commit/8cb9bad2e1b6856d1d5519c69ffbc3461b7d04e3))
+
 ## [1.4.0](https://github.com/logictraders/tradingkit/compare/v1.3.0...v1.4.0) (2021-04-28)
 
 
