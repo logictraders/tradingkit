@@ -186,8 +186,15 @@ class BitmexBacktest(TestEX):
                 sum_same_side_orders = -sum_same_side_orders
 
             price = list(self.orderbooks.values())[0]['bids'][0][0]
-            max_cross_leverage = 100
-            available_margin = self.balance[base] - abs(sum_same_side_orders / max_cross_leverage) / price
+
+            free_base_balance = self.balance[base] + 0
+            if abs(self.position['currentQty']) > 0:
+                pnl = (price / self.position['avgEntryPrice'] * self.position['currentQty'] -
+                       self.position['currentQty']) / price
+                free_base_balance += pnl
+
+            leverage = max(abs(self.position['currentQty']) / (free_base_balance * price), 1)
+            available_margin = self.balance[base] - abs(sum_same_side_orders / leverage) / price
 
             bankruptcy_price = 1 / (1 / self.position['avgEntryPrice'] + available_margin / self.position['currentQty'])
             bankruptcy_value = self.position['currentQty'] * (1 / bankruptcy_price)
@@ -228,14 +235,18 @@ class BitmexBacktest(TestEX):
     def fetch_free_balance(self):
         free_balance = self.balance.copy()
         base, quote = list(self.orderbooks.keys())[0].split('/')
-        if len(self.open_orders) > 0:
-            side = 'buy' if self.position['currentQty'] > 0 else 'sell'
-            sum_same_side_orders = sum(
-                [(o['amount'] / o['price']) for o in self.open_orders.values() if o['side'] == side])
-            free_balance[base] -= sum_same_side_orders
         price = list(self.orderbooks.values())[0]['bids'][0][0]
+
         if abs(self.position['currentQty']) > 0:
             pnl = (price / self.position['avgEntryPrice'] * self.position['currentQty'] -
                    self.position['currentQty']) / price
             free_balance[base] += pnl
+
+        if len(self.open_orders) > 0:
+            side = 'buy' if self.position['currentQty'] > 0 else 'sell'
+            sum_same_side_orders = sum(
+                [(o['amount'] / o['price']) for o in self.open_orders.values() if o['side'] == side])
+            leverage = max(abs(self.position['currentQty']) / (free_balance[base] * price), 1)
+            free_balance[base] -= sum_same_side_orders / leverage
+
         return free_balance
