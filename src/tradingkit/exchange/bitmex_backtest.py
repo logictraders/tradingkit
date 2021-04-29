@@ -101,6 +101,18 @@ class BitmexBacktest(TestEX):
         super().on_event(event)
 
     def execute_liquidation(self, trade):
+        time = datetime.fromtimestamp(self.seconds())
+        markPrice = self.position['markPrice']
+        base = trade['symbol'].split('/')[0]
+        price = trade['price']
+
+        free_balance = self.fetch_free_balance()[base] * price
+        max_leverage = 200
+        leverage = min(abs(self.position['currentQty']) / free_balance, max_leverage) if free_balance > 0 else max_leverage
+        liquidationPrice = round(self.position['liquidationPrice'], 2)
+        logging.info("InsufficientFunds: Executed Liquidation\n\tTime: %s\n\tMarket Price: %s\n\tLeverage: %s\n\t"
+                     "Liquidation Price: %s\n\t" % (str(time), str(markPrice), str(leverage), str(liquidationPrice)))
+
         self.open_orders = {}
         for asset in self.balance.keys():
             self.balance[asset] = 0
@@ -113,6 +125,7 @@ class BitmexBacktest(TestEX):
                          "lastPrice": None,
                          "markPrice": None
                          }
+
         logging.warning("ALERT Liquidation executed %s" % str(self.position))
         self.dispatch(Liquidation(trade))
         raise InsufficientFunds("Zero balance: %s" % str(self.balance))
