@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/logictraders/tradingkit/compare/v1.3.0...v1.4.0) (2021-04-28)
+
+
+### Features
+
+* **optimization:** implementer basic optimizer ([#12](https://github.com/logictraders/tradingkit/issues/12)) ([71b76a6](https://github.com/logictraders/tradingkit/commit/71b76a6fc0dda188e6778b291641096fda45708a))
+* **stats:** adding max drawdown and sharp ratio statistics ([#13](https://github.com/logictraders/tradingkit/issues/13)) ([c36bcc3](https://github.com/logictraders/tradingkit/commit/c36bcc3c81d21947af2f9d311c760e4239537ed0))
+
 ## [1.3.0](https://github.com/logictraders/tradingkit/compare/v1.2.8...v1.3.0) (2021-01-13)
 
 
