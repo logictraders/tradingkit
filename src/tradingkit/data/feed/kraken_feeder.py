@@ -190,6 +190,7 @@ class KrakenFeeder(Feeder, Publisher):
                 sys.exit(0)
             except Exception as error:
                 _logging.warning("[WebSocket error] %s" % str(error))
+                _logging.warning("[WebSocket data] %s" % str(ws_data))
                 self.on_open()
                 if is_private:
                     _ws = self.private_ws

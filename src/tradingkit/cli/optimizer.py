@@ -22,7 +22,7 @@ class Optimizer:
         self.population_size = 10
         self.count = 0
         self.max_iterations = 100
-        self.max_iteration_without_improv = 10
+        self.max_iteration_without_improv = 5
         self.start_time = time.time()
 
     def objective_function(self, genome):
@@ -61,7 +61,7 @@ class Optimizer:
 
         # 2018
         since = datetime.fromisoformat("2018-01-01 00:00:00+00:00")
-        to = datetime.fromisoformat("2019-01-01 00:00:00+00:00")
+        to = datetime.fromisoformat("2019-04-15 00:00:00+00:00")
         result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
         if result['start_base_balance'] == 0:
             profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
@@ -90,7 +90,7 @@ class Optimizer:
 
         median_result = np.median(results)
         min_result = min(results)
-        result = (median_result + min_result * 7) / 8
+        result = (median_result + min_result * 4) / 5
         if result > 0:
             c_handle = open(str(self.start_time) + "_out.csv", 'a')
             data = []
