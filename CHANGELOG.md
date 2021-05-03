@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.2](https://github.com/logictraders/tradingkit/compare/v1.6.1...v1.6.2) (2021-05-03)
+
+
+### Bug Fixes
+
+* **bitmex:** fixed liquidation price calculation, only working for longs at this point ([72ed539](https://github.com/logictraders/tradingkit/commit/72ed539))
+
+
+
 ### [1.6.1](https://github.com/logictraders/tradingkit/compare/v1.6.0...v1.6.1) (2021-04-29)
 
 ## [1.6.0](https://github.com/logictraders/tradingkit/compare/v1.5.4...v1.6.0) (2021-04-29)
