@@ -188,7 +188,15 @@ class BitmexBacktest(TestEX):
         self.set_liquidation_price(mark_price, base)
         return response
 
+    def get_liquidation_price(self, mark_price, base):
+        if abs(self.position['currentQty']) > 0:
+            return 1.0 / (self.balance[base] / self.position['currentQty'] + 1.0 / self.position['avgEntryPrice'])
+        return 0
+
     def set_liquidation_price(self, mark_price, base):
+        self.position['liquidationPrice'] = self.get_liquidation_price(mark_price, base)
+
+    def get_liquidation_price_old(self, mark_price, base):
         if abs(self.position['currentQty']) > 0:
             side = 'buy' if self.position['currentQty'] > 0 else 'sell'
             sum_same_side_orders = sum([o['amount'] for o in self.open_orders.values() if o['side'] == side])
@@ -213,13 +221,13 @@ class BitmexBacktest(TestEX):
                                  (0.00075 * bankruptcy_value) + \
                                  (0.0001 * funding_rate)
 
-            self.position['liquidationPrice'] = 1 / (
+            lp = 1 / (
                         1 / self.position['avgEntryPrice'] + (available_margin - maintenance_margin) / self.position[
                     'currentQty'])
-            if self.position['liquidationPrice'] < 0:
-                self.position['liquidationPrice'] = 100000000.0  # bitmex max liquidation price
-        else:
-            self.position['liquidationPrice'] = None
+            if lp < 0:
+                return 100000000.0  # bitmex max liquidation price
+            return lp
+        return None
 
     def fetch_balance(self):
         balances = {}
