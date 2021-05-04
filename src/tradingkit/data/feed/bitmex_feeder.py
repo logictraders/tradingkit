@@ -6,6 +6,9 @@ import time
 import json
 import traceback
 import logging
+
+import ccxt
+from ccxt import NetworkError
 from dateutil import parser
 from functools import partial
 
@@ -111,10 +114,10 @@ class BitmexFeeder(Feeder, Publisher):
             print("Unknown Message:", str(payload))
 
     def on_error(self, ws, error):
-        if isinstance(error, TimeoutError):
-            logging.info("WebSocket TimeoutError")
-        else:
-            logging.info("[Strategy error] %s" % str(error))
+        logging.info("[Websocket error] %s" % str(error))
+        if isinstance(error, NetworkError):
+            logging.info("Network error, waiting 10 seconds ...")
+            time.sleep(10)
         raise error
 
     def on_close(self, ws):
