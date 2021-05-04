@@ -22,7 +22,8 @@ class StateMachineStrategy(Strategy):
     def on_event(self, event: Event):
         super().on_event(event)
         if self.prev != self.state:
-            logging.debug("StateMachineStrategy.on_event(%s), state: %s" % (str(event.__class__), self.state))
+            logging.info("StateMachineStrategy.on_event(%s), state: %s" % (str(event.__class__), self.state))
+            logging.info("State change: %s -> %s" % (self.prev, self.state))
             self.prev = self.state
         logging.debug("Event: %s: %s" % (event.__class__.__name__, event.payload))
         self.state = self.state.on_event(StrategyEvent(event, self))
