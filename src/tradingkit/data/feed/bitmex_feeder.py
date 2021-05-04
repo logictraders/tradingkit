@@ -134,7 +134,7 @@ class BitmexFeeder(Feeder, Publisher):
             on_close=partial(BitmexFeeder.on_close, self),
         )
         ws._callback = partial(BitmexFeeder.monkey_callback, ws)
-        ws.run_forever()
+        ws.run_forever(ping_interval=15, ping_timeout=10)
 
     def monkey_callback(self, callback, *args):
         """
