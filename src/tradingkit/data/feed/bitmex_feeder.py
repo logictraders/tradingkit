@@ -112,14 +112,13 @@ class BitmexFeeder(Feeder, Publisher):
 
     def on_error(self, ws, error):
         if isinstance(error, TimeoutError):
-            logging.info("WebSocket TimeoutError, reconnecting..")
+            logging.info("WebSocket TimeoutError")
         else:
-            logging.info("[WebSocket error] %s" % str(error))
-        self.feed()
+            logging.info("[Strategy error] %s" % str(error))
+        raise error
 
     def on_close(self, ws):
-        logging.info("WebSocket closed, reconnecting..")
-        self.feed()
+        logging.info("WebSocket closed")
 
     def feed(self):
         if self.testnet:
@@ -154,4 +153,5 @@ class BitmexFeeder(Feeder, Publisher):
                 if _logging.isEnabledForDebug():
                     _, _, tb = sys.exc_info()
                     traceback.print_tb(tb)
+                self.keep_running = False
                 raise e
