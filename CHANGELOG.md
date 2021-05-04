@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.5](https://github.com/logictraders/tradingkit/compare/v1.6.4...v1.6.5) (2021-05-04)
+
+
+### Bug Fixes
+
+* **bitmex:** added 10 sec wait before exiting when a network error is detected ([3053dcc](https://github.com/logictraders/tradingkit/commit/3053dcc67bb1687861f174ad6013c0e1b58a77af))
+
 ### [1.6.4](https://github.com/logictraders/tradingkit/compare/v1.6.3...v1.6.4) (2021-05-04)
 
 
