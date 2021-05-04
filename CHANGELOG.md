@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.4](https://github.com/logictraders/tradingkit/compare/v1.6.3...v1.6.4) (2021-05-04)
+
+
+### Bug Fixes
+
+* **bitmex:** added ping-pong to bitmex websocket ([4ed68ad](https://github.com/logictraders/tradingkit/commit/4ed68adfb0fe90ca239763392a628dfd8ef5e849))
+
 ### [1.6.3](https://github.com/logictraders/tradingkit/compare/v1.6.2...v1.6.3) (2021-05-04)
 
 
