@@ -79,7 +79,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             order = event.payload.copy()
             if order['id'] in self.orders_history.keys():
                 self.orders_history[order['id']].update(order)
-            event.payload = self.orders_history[order['id']]
+                event.payload = self.orders_history[order['id']]
             self.plot_order(event)
             self.plot_balances(order['lastTradeTimestamp'], order['symbol'], self.last_price)
         if isinstance(event, OpenOrder):
