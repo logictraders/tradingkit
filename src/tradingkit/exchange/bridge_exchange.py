@@ -94,7 +94,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def fetch_open_orders(self, symbol=None, since=None, limit=None, params={}):
         return self.exchange.fetch_open_orders(symbol, since, limit, params)
 
-    def create_order(self, symbol, type, amount, side=None, price=None, params={}):
+    def create_order(self, symbol, type, side=None, amount=0, price=None, params={}):
         if amount == 0:
             raise ValueError("Zero order amount is not allowed!!!")
         elif amount < 0 and side is not None:
