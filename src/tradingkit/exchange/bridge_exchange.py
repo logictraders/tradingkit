@@ -153,9 +153,10 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         return self.max_drawdown
 
     def plot_balances(self, timestamp, symbol, price):
-        balances = self.fetch_balance()['free']
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
         base, quote = symbol.split('/')
+        balances = self.fetch_balance()
+        balances = balances['free'] if balances['free'][base] else balances['total']
 
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
@@ -252,9 +253,10 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.max_drawdown = min(self.max_drawdown, drawdown)
 
     def save_current_balance(self, price):
-        balances = self.fetch_balance()['free']
         base, quote = self.symbol.split('/')
 
+        balances = self.fetch_balance()
+        balances = balances['free'] if balances['free'][base] else balances['total']
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
 
