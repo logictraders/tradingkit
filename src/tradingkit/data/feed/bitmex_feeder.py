@@ -113,6 +113,10 @@ class BitmexFeeder(Feeder, Publisher):
     def on_error(self, ws, error):
         if isinstance(error, TimeoutError):
             logging.info("WebSocket TimeoutError, reconnecting..")
+        elif isinstance(error, KeyboardInterrupt):
+            logging.info("WebSocket KeyboardInterrupt, exiting..")
+            ws.close()
+            sys.exit(0)
         else:
             logging.info("[WebSocket error] %s" % str(error))
         self.feed()

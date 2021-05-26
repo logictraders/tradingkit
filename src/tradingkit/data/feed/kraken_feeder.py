@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import sys
+import os
 import threading
 import time
 import urllib.request
@@ -44,7 +45,11 @@ class KrakenFeeder(Feeder, Publisher):
                                                                      b"/0/private/GetWebSocketsToken" + hashlib.sha256(
                                                                          api_nonce + b"nonce=%s" % api_nonce).digest(),
                                                                      hashlib.sha512).digest()))
-        resp = json.loads(urllib.request.urlopen(api_request).read())['result']['token']
+        resp = json.loads(urllib.request.urlopen(api_request).read())
+        print("AT__", resp)
+        if 'result' in resp and 'token' in resp['result']:
+            resp = resp['result']['token']
+        #resp = json.loads(urllib.request.urlopen(api_request).read())['result']['token']
         return resp
 
     def on_open(self):
@@ -181,16 +186,22 @@ class KrakenFeeder(Feeder, Publisher):
         else:
             _ws = self.public_ws
         while True:
+            ws_data = "No Data."
             try:
                 ws_data = _ws.recv()
                 message = json.loads(ws_data)
+                #print(is_private, message)
                 self.on_message(message)
             except KeyboardInterrupt:
                 _ws.close()
                 sys.exit(0)
             except Exception as error:
+                #print(os.getpid(), is_private)
                 _logging.warning("[WebSocket error] %s" % str(error))
                 _logging.warning("[WebSocket data] %s" % str(ws_data))
+                print("[WebSocket private] %s" % str(is_private))
+                self.private_ws.close()
+                self.public_ws.close()
                 self.on_open()
                 if is_private:
                     _ws = self.private_ws
@@ -211,7 +222,10 @@ class KrakenFeeder(Feeder, Publisher):
 
         # # wait until threads finish their job
         public_t.join()
+        _logging.warning("[WebSocket data public STOP] %s" % str(public_t))
         private_t.join()
+        _logging.warning("[WebSocket data private STOP] %s" % str(private_t))
+
 
 
 if __name__ == '__main__':  # for testing
