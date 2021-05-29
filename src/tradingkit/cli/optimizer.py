@@ -26,6 +26,7 @@ class Optimizer:
         self.start_time = time.time()
 
     def objective_function(self, genome):
+        strategy_dir = self.args['<strategy_dir>'] or '.'
         self.count += 1
         total_profit = 0
         results = []
@@ -92,7 +93,7 @@ class Optimizer:
         min_result = min(results)
         result = (median_result + min_result * 4) / 5
         if result > 0:
-            c_handle = open(str(self.start_time) + "_out.csv", 'a')
+            c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
             data = []
             data.append(self.count)
             data.append("         T prof:")
@@ -186,7 +187,7 @@ class Optimizer:
             score = self.mutate_and_evaluate(varbound, score, iteration)
             print("Lapsed Time: ", datetime.now() - t)
             print(iteration, "Top 10 solutions:")
-            f_handle = open(str(self.start_time) + "_best.csv", 'a')
+            f_handle = open(strategy_dir + '/' + str(self.start_time) + "_best.csv", 'a')
             np.savetxt(f_handle, [[iteration]], delimiter="  ", fmt="%s")
             f_handle.close()
             i = 0
@@ -199,7 +200,7 @@ class Optimizer:
                         else:
                             iteration_without_improv += 1
                     print(i, key, value)
-                    f_handle = open(str(self.start_time) + "_best.csv", 'a')
+                    f_handle = open(strategy_dir + '/' + str(self.start_time) + "_best.csv", 'a')
                     np.savetxt(f_handle, [[key, value]], delimiter="  ", fmt="%s")
                     f_handle.close()
                     i += 1
