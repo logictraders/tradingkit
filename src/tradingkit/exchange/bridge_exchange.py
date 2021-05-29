@@ -176,7 +176,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             quote_balance, quote,
             base_balance * price, quote, base
         )
-        self.calculate_max_drawdown(base_balance, quote_balance)
+        self.calculate_max_drawdown(base_balance, quote_balance, symbol)
         self.dispatch(Plot({
             'name': 'Equity',
             'type': 'scatter',
@@ -243,8 +243,9 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             self.last_balance_check = date
             self.balance_history.append(self.save_current_balance(candle['close']))
 
-    def calculate_max_drawdown(self, base_balance, quote_balance):
-        balance = quote_balance if quote_balance > 0 else base_balance
+    def calculate_max_drawdown(self, base_balance, quote_balance, symbol):
+        price = self.exchange.orderbooks[symbol]['bids'][0][0]
+        balance = quote_balance + base_balance * price if quote_balance > 0 else base_balance
 
         if balance > self.peak_balance:
             self.peak_balance = balance
