@@ -60,12 +60,14 @@ class KrakenFeeder(Feeder, Publisher):
             self.public_ws = create_connection(api_domain)
         except Exception as error:
             print("WebSocket connection failed (%s)" % error)
-            sys.exit(1)
+            time.sleep(5)
+            self.on_open()
         try:
             self.private_ws = create_connection(auth_api_domain)
         except Exception as error:
             print("WebSocket connection failed (%s)" % error)
-            sys.exit(1)
+            time.sleep(5)
+            self.on_open()
         token = self.autentificate()
         self.subscribe(token)
 
