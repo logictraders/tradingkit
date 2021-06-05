@@ -467,7 +467,24 @@
 					dataGrouping: {
 						units: groupingUnits
 					}
+			}, {
+				name: series['assets']['quote'],
+				color: 'orange',
+				data: series["quote_balance"]["data"],
+				yAxis: 2,
+				dataGrouping: {
+					units: groupingUnits
 				}
+			}, {
+				name: series['assets']['base'],
+				color: 'black  ',
+				data: series["base_balance"]["data"],
+				yAxis: 2,
+				dataGrouping: {
+					units: groupingUnits
+				}
+			}
+
 		]
 	});
 			
