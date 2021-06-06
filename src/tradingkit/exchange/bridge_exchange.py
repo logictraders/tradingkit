@@ -190,7 +190,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 'y': equity,
                 'base_equity': base_equity,
                 'base_balance': all_balances['total'][base],
-                'quote_balance': all_balances['total'][quote],
+                'quote_balance': all_balances['total'][quote] if quote in all_balances['total'] else 0,
                 'position_vol': position_vol,
                 'position_price': position_price,
                 'invested': base_balance * price,
