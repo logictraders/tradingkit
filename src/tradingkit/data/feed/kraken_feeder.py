@@ -60,13 +60,13 @@ class KrakenFeeder(Feeder, Publisher):
             self.public_ws = create_connection(api_domain)
         except Exception as error:
             print("WebSocket connection failed (%s)" % error)
-            time.sleep(5)
+            time.sleep(600)
             self.on_open()
         try:
             self.private_ws = create_connection(auth_api_domain)
         except Exception as error:
             print("WebSocket connection failed (%s)" % error)
-            time.sleep(5)
+            time.sleep(600)
             self.on_open()
         token = self.autentificate()
         self.subscribe(token)
@@ -191,19 +191,22 @@ class KrakenFeeder(Feeder, Publisher):
             ws_data = "No Data."
             try:
                 ws_data = _ws.recv()
-                message = json.loads(ws_data)
-                #print(is_private, message)
-                self.on_message(message)
+                if ws_data:
+                    message = json.loads(ws_data)
+                    self.on_message(message)
+                else:
+                    print(is_private, 'ws_data:', ws_data)
             except KeyboardInterrupt:
                 _ws.close()
                 sys.exit(0)
             except Exception as error:
-                #print(os.getpid(), is_private)
                 _logging.warning("[WebSocket error] %s" % str(error))
                 _logging.warning("[WebSocket data] %s" % str(ws_data))
+                print(datetime.now())
+                #self.private_ws.close()
+                #self.public_ws.close()
                 print("[WebSocket private] %s" % str(is_private))
-                self.private_ws.close()
-                self.public_ws.close()
+                time.sleep(60)
                 self.on_open()
                 if is_private:
                     _ws = self.private_ws
