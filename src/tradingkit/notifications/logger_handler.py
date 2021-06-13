@@ -1,4 +1,4 @@
-from logging import Handler, Formatter
+from logging import Handler, Formatter, info
 import datetime
 from tradingkit.notifications.telegram_api import TelegramAPI
 
@@ -12,8 +12,10 @@ class RequestsHandler(Handler):
     def emit(self, record):
         if record.levelname == 'WARNING':
             log_entry = self.format(record)
-            self.bot.send_text(log_entry)
-
+            try:
+                self.bot.send_text(log_entry)
+            except Exception as e:
+                info("Notification error:\n %s" % str(e))
 
 class LogstashFormatter(Formatter):
     def __init__(self):
