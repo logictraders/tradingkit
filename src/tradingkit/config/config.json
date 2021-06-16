@@ -9,6 +9,15 @@
       }
     ]
   },
+  "binance": {
+    "class": "ccxt.binance",
+    "arguments": [
+      {
+        "apiKey": "%env(BINANCE_KEY)%",
+        "secret": "%env(BINANCE_SECRET)%"
+      }
+    ]
+  },
   "bitmex": {
     "class": "ccxt.bitmex",
     "arguments": [
@@ -105,6 +114,15 @@
       {
         "apiKey": "%env(KRAKEN_KEY)%",
         "secret": "%env(KRAKEN_SECRET)%"
+      }
+    ]
+  },
+    "binance_feeder": {
+    "class": "tradingkit.data.feed.binance_feeder.BinanceFeeder",
+    "arguments": [
+      {
+        "apiKey": "%env(BINANCE_KEY)%",
+        "secret": "%env(BINANCE_SECRET)%"
       }
     ]
   },

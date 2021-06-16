@@ -31,6 +31,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.symbol = None
         self.has_position = True if "bitmex" in str(exchange.__class__) else False
         exchange.seconds()
+        self.pairs_dictionary = {'BTC/USD': 'BTC/USD', 'BTCUSDT': 'BTC/USDT', 'BTC/EUR': 'BTC/EUR'}
 
     def sec(self):
         return self.exchange.sec()
@@ -70,7 +71,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def on_event(self, event: Event):
         if isinstance(event, Book):
             if self.last_price is None:
-                self.plot_balances(event.payload['timestamp'], event.payload['symbol'], event.payload['bids'][0][0])
+                self.plot_balances(event.payload['timestamp'], self.pairs_dictionary[event.payload['symbol']], event.payload['bids'][0][0])
                 self.symbol = event.payload['symbol']
             self.last_price = event.payload['bids'][0][0]
         if isinstance(event, Candle):
@@ -81,14 +82,14 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 self.orders_history[order['id']].update(order)
                 event.payload = self.orders_history[order['id']]
             self.plot_order(event)
-            self.plot_balances(order['lastTradeTimestamp'], order['symbol'], self.last_price)
+            self.plot_balances(order['lastTradeTimestamp'], self.pairs_dictionary[order['symbol']], self.last_price)
         if isinstance(event, OpenOrder):
             self.plot_order(event)
             order = event.payload.copy()
-            self.plot_balances(order['timestamp'], order['symbol'], self.last_price)
+            self.plot_balances(order['timestamp'], self.pairs_dictionary[order['symbol']], self.last_price)
         if isinstance(event, Liquidation):
             trade = event.payload
-            self.plot_balances(trade['timestamp'], trade['symbol'], trade['price'])
+            self.plot_balances(trade['timestamp'], self.pairs_dictionary[trade['symbol']], trade['price'])
         self.dispatch(event)
 
     def fetch_open_orders(self, symbol=None, since=None, limit=None, params={}):
@@ -151,6 +152,9 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def get_max_draw_down(self):
         return self.max_drawdown
+
+    def getPairs(self, symbol):
+        return self.pairs_dictionary[symbol]
 
     def plot_balances(self, timestamp, symbol, price):
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
