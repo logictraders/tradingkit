@@ -16,7 +16,7 @@ class BitmexBacktest(TestEX):
         pass
 
     def __init__(self, params=None):
-        super().__init__({'balance': {'USD': 0, 'BTC': 10}, 'fees': {'maker': -0.00025, 'taker': 0.00075}})
+        super().__init__(params)
         self.position = {"currentQty": 0,  # currentQty
                          "homeNotional": 0,  # homeNotional base value (disabled)
                          "avgEntryPrice": 0,
