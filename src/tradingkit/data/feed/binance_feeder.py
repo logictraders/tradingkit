@@ -92,10 +92,10 @@ class BinanceFeeder(Feeder, Publisher):
                               "symbol": message['s']
                               }
                 self.dispatch(Book(order_book))
-                print('order_book', order_book)
-                print()
+                #print('order_book', order_book)
+                #print()
             elif message['e'] == 'executionReport':
-                print("_message", message)
+                #print("_message", message)
                 if message['x'] == 'TRADE' and message['x'] == 'FILLED':
                     order_data = {'id': message['i'],
                                   'timestamp': message['T'],
@@ -130,8 +130,8 @@ if __name__ == '__main__':  # for testing
     # from twisted.internet import reactor
     #
     #
-    BINANCE_KEY = 'jAOZdHmFkAVI1Dao9Hkf1e40m2wdbsv5VHVr6l2y98DoaDD3lrtr28ffzc0up8B5'
-    BINANCE_SECRET = 'c0b0wySao9aqc81zyNrtirUv9H3vTMWRGuTjKJChbovimNcTTCMXJLqWVIEKfbcz'
+    BINANCE_KEY = ''
+    BINANCE_SECRET = ''
     #
     # # init
     # client = Client(BINANCE_KEY, BINANCE_SECRET)
