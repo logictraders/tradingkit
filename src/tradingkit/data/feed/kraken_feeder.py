@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import sys
+import os
 import threading
 import time
 import urllib.request
@@ -20,7 +21,7 @@ from tradingkit.pubsub.event.trade import Trade
 
 class KrakenFeeder(Feeder, Publisher):
 
-    def __init__(self, credentials=None, ignore_outdated=True):
+    def __init__(self, credentials=None, ignore_outdated=True, pair={'symbol':'XBT/EUR'}):
         super().__init__()
         self.public_ws = None
         self.private_ws = None
@@ -28,10 +29,17 @@ class KrakenFeeder(Feeder, Publisher):
             if ('apiKey' and 'secret') not in credentials:
                 raise KeyError("credentials must contain apiKey and secret")
         self.credentials = credentials
+        self.symbol_dict = {
+            "XBT/USD": "BTC/USD",
+            "XBT/EUR": "BTC/EUR",
+            "BTC/EUR": "XBT/EUR",
+            "XBT/USDT": "BTC/USDT",
+            "BTC/USDT": "XBT/USDT",
+        }
+        self.symbol = self.symbol_dict[pair['symbol']]
         self.on_open()
         self.ignore_outdated = ignore_outdated
         self.orderbooks = {}
-        self.symbol_dict = {"XBT/USD": "BTC/USD", "XBT/EUR": "BTC/EUR"}
         self.lock = None
         self.candle = {'id': '', 'data': {}}
 
@@ -44,7 +52,9 @@ class KrakenFeeder(Feeder, Publisher):
                                                                      b"/0/private/GetWebSocketsToken" + hashlib.sha256(
                                                                          api_nonce + b"nonce=%s" % api_nonce).digest(),
                                                                      hashlib.sha512).digest()))
-        resp = json.loads(urllib.request.urlopen(api_request).read())['result']['token']
+        resp = json.loads(urllib.request.urlopen(api_request).read())
+        if 'result' in resp and 'token' in resp['result']:
+            resp = resp['result']['token']
         return resp
 
     def on_open(self):
@@ -54,33 +64,34 @@ class KrakenFeeder(Feeder, Publisher):
         try:
             self.public_ws = create_connection(api_domain)
         except Exception as error:
-            print("WebSocket connection failed (%s)" % error)
-            sys.exit(1)
+            _logging.warning("WebSocket connection failed (%s)" % error)
+            time.sleep(600)
+            self.on_open()
         try:
             self.private_ws = create_connection(auth_api_domain)
         except Exception as error:
-            print("WebSocket connection failed (%s)" % error)
-            sys.exit(1)
+            _logging.warning("WebSocket connection failed (%s)" % error)
+            time.sleep(600)
+            self.on_open()
         token = self.autentificate()
         self.subscribe(token)
 
     def subscribe(self, token):
         api_feed = "book"
-        api_symbol = 'XBT/EUR'
         api_depth = 10
         book_feed = '{"event":"subscribe", "subscription":{"name":"%(feed)s", "depth":%(depth)s}, "pair":["%(symbol)s"]}' % {
-            "feed": api_feed, "depth": api_depth, "symbol": api_symbol}
+            "feed": api_feed, "depth": api_depth, "symbol": self.symbol}
         trade_feed = '{"event": "subscribe", "pair": ["%(symbol)s"],  "subscription": {"name": "trade", "token": "%(token)s"}}' % {
-            "symbol": api_symbol, 'token': token}
+            "symbol": self.symbol, 'token': token}
         own_trades_feed = '{"event": "subscribe", "subscription": {"name": "ownTrades","token": "%(token)s"}}' % {
             'token': token}
 
         try:
-            self.public_ws.send(book_feed)
             self.public_ws.send(trade_feed)
+            self.public_ws.send(book_feed)
             self.private_ws.send(own_trades_feed)
         except Exception as error:
-            print("Feed subscription failed (%s)" % error)
+            _logging.warning("Feed subscription failed (%s)" % error)
             self.public_ws.close()
             self.private_ws.close()
             sys.exit(1)
@@ -181,15 +192,19 @@ class KrakenFeeder(Feeder, Publisher):
         else:
             _ws = self.public_ws
         while True:
+            ws_data = "No Data."
             try:
                 ws_data = _ws.recv()
-                message = json.loads(ws_data)
-                self.on_message(message)
+                if ws_data:
+                    message = json.loads(ws_data)
+                    self.on_message(message)
             except KeyboardInterrupt:
                 _ws.close()
                 sys.exit(0)
             except Exception as error:
                 _logging.warning("[WebSocket error] %s" % str(error))
+                _logging.warning("[WebSocket data] %s" % str(ws_data))
+                time.sleep(60)
                 self.on_open()
                 if is_private:
                     _ws = self.private_ws
@@ -210,17 +225,8 @@ class KrakenFeeder(Feeder, Publisher):
 
         # # wait until threads finish their job
         public_t.join()
+        _logging.warning("[WebSocket data public STOP] %s" % str(public_t))
         private_t.join()
+        _logging.warning("[WebSocket data private STOP] %s" % str(private_t))
 
 
-if __name__ == '__main__':  # for testing
-
-    try:
-        with open("../../../../ws_test/kkey.json") as json_file:
-            data = json.load(json_file)
-    except Exception as e:
-        print("No keys file to load!!!")
-        print(e)
-    cred = {"apiKey": data['apiKey'], "secret": data['secret']}
-    kf = KrakenFeeder(credentials=cred)
-    kf.feed()
