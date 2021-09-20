@@ -120,3 +120,23 @@ tk run -e dev -y 2020 -m 1 --plot
 ```
 tk run -e live --plot
 ```
+
+### Available configurations
+Injectable modules:
+
+| Module Type|     Key    |Module                        |              Description             | Arguments     |
+|------------|------------|:-----------------------------|:-------------------------------------|---------------|
+| Exchange   |exchange    |kraken                        |Kraken exchange API                               |apikey, secret |
+| Exchange   |exchange    |bitmex                        |Bitmex exchange API                               |apikey, secret |
+| Exchange   |exchange    |bitmex_testnet                |Bitmex testnet exchange API                       |apikey, secret |
+| Exchange   |exchange    |testex                        |kraken exchange simulator                         |balances, fees |
+| Exchange   |exchange    |bitmex_backtest               |bitmex exchange simulator                         |balances, fees |
+| Feeder     |feeder      |kraken_backtest_feeder        |feeder used for kraken simulations                |exchange, symbol, since8601, to8601|
+| Feeder     |feeder      |bitmex_funding_backtest_feeder|feeder used for bitmex simulations                |exchange, symbol, since8601, to8601|
+| Feeder     |feeder      |bitmex_testnet_feeder         |feeder used for bitmex-testnet live strategies    |apikey, secret |
+| Feeder     |feeder      |bitmex_feeder                 |feeder used for bitmex live strategies            |apikey, secret |
+| Feeder     |feeder      |kraken_feeder                 |feeder used for kraken live strategies            |apikey, secret |
+| Feeder     |feeder      |outlier_trade_filter          |feeder used to reduce back_test outlier trade data|MAX_PRICE_CHANGE_SINGLE_TRADE|
+| Bridge     |bridge      |bridge                        |exchange interface for simulator and real exchange|exchange       |
+| Plotter    |plotter     |highstock                     |plotter used to show simulation result on chart   ||
+| Plotter    |plotter     |plotly                        |plotter used to show simulation result on chart   ||

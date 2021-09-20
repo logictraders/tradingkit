@@ -70,7 +70,7 @@
       "to8601": "@to"
     }
   },
-  "kraken_funding_backtest_feeder": {
+  "bitmex_funding_backtest_feeder": {
     "class": "tradingkit.data.feed.funding_backtest_feeder.FundingBacktestFeeder",
     "arguments": {
       "exchange": "kraken",
