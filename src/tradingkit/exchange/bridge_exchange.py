@@ -43,7 +43,10 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                            "6H": 21600,
                            "12H": 43200,
                            "1D": 86400,
+                           "2D": 172800,
+                           "4D": 345600,
                            "1W": 604800,
+                           "2W": 1209600,
                            "1M": 2629800}
 
     def sec(self):
