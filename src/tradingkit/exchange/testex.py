@@ -43,8 +43,8 @@ class TestEX(Publisher, Subscriber, Exchange):
         # timestamp in milliseconds
         self.timestamp = 0
 
-        self.candles = {}
-        self.last_candle = None
+        #self.candles = {}
+        #self.last_candle = None
 
     def sec(self):
         return self.seconds()
@@ -138,7 +138,6 @@ class TestEX(Publisher, Subscriber, Exchange):
             book = self.orderbooks[symbol].copy()
             book['symbol'] = symbol
             self.dispatch(Book(book))
-            self.candle_dispatcher(trade)
         self.dispatch(event)
 
     def dispatch(self, event: Event):
@@ -278,28 +277,3 @@ class TestEX(Publisher, Subscriber, Exchange):
 
     def fetch_total_balance(self):
         return self.balance.copy()
-
-    def candle_dispatcher(self, trade):
-        key = trade['timestamp'] // 60000 * 60
-        key = str(datetime.fromtimestamp(key))
-        if key in self.candles:
-            self.candles[key]['high'] = max(self.candles[key]['high'], trade['price'])
-            self.candles[key]['low'] = min(self.candles[key]['low'], trade['price'])
-            self.candles[key]['close'] = trade['price']
-            self.candles[key]['vol'] += trade['amount']
-            self.candles[key]['cost'] += trade['cost']
-            self.candles[key]['trades'] += 1
-        else:
-            self.candles[key] = {
-                'datetime': key,
-                'open': trade['price'],
-                'high': trade['price'],
-                'low': trade['price'],
-                'close': trade['price'],
-                'vol': trade['amount'],
-                'cost': trade['cost'],
-                'trades': 1
-            }
-            if self.last_candle is not None:
-                self.dispatch(Candle(self.last_candle))
-        self.last_candle = self.candles[key]

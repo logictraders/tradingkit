@@ -32,6 +32,9 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.has_position = True if "bitmex" in str(exchange.__class__) else False
         exchange.seconds()
 
+        self.candles = {}
+        self.last_candle = None
+
     def sec(self):
         return self.exchange.sec()
 
@@ -89,6 +92,9 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         if isinstance(event, Liquidation):
             trade = event.payload
             self.plot_balances(trade['timestamp'], trade['symbol'], trade['price'])
+        if isinstance(event, Trade):
+            trade = event.payload
+            self.candle_dispatcher(trade)
         self.dispatch(event)
 
     def fetch_open_orders(self, symbol=None, since=None, limit=None, params={}):
@@ -267,3 +273,28 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         sharpe_ratio = (self.balance_history[-1] / self.balance_history[0]) / standard_desviation
         return sharpe_ratio
 
+    def candle_dispatcher(self, trade):
+        key = trade['timestamp'] // 60000 * 60
+        key = str(datetime.fromtimestamp(key))
+        if key in self.candles:
+            self.candles[key]['high'] = max(self.candles[key]['high'], trade['price'])
+            self.candles[key]['low'] = min(self.candles[key]['low'], trade['price'])
+            self.candles[key]['close'] = trade['price']
+            self.candles[key]['vol'] += trade['amount']
+            self.candles[key]['cost'] += trade['cost']
+            self.candles[key]['trades'] += 1
+        else:
+            self.candles[key] = {
+                'datetime': key,
+                'open': trade['price'],
+                'high': trade['price'],
+                'low': trade['price'],
+                'close': trade['price'],
+                'vol': trade['amount'],
+                'cost': trade['cost'],
+                'trades': 1
+            }
+            if self.last_candle is not None:
+                self.dispatch(Candle(self.last_candle))
+                self.plot_candle(Candle(self.last_candle))
+        self.last_candle = self.candles[key]
