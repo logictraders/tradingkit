@@ -175,8 +175,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def plot_balances(self, timestamp, symbol, price):
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
         base, quote = symbol.split('/')
-        balances = self.fetch_balance()
-        balances = balances['free'] if balances['free'][base] else balances['total']
+        all_balances = self.fetch_balance()
+        balances = all_balances['free'] if all_balances['free'][base] else all_balances['total']
 
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
@@ -209,8 +209,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 'x': exchange_date,
                 'y': equity,
                 'base_equity': base_equity,
-                'base_balance': base_balance,
-                'quote_balance': quote_balance,
+                'base_balance': all_balances['total'][base],
+                'quote_balance': all_balances['total'][quote] if quote in all_balances['total'] else 0,
                 'position_vol': position_vol,
                 'position_price': position_price,
                 'invested': base_balance * price,

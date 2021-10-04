@@ -38,6 +38,8 @@ class HighstockPlotter(Plotter):
             'liq_price': {'name': 'Liquidation Price', 'type': 'line', 'tooltip': '', 'data': []},
             'equity': {'name': 'Equity', 'type': 'area', 'tooltip': '', 'data': []},
             'base_equity': {'name': 'Base Equity', 'type': 'area', 'tooltip': '', 'data': []},
+            'quote_balance': {'name': 'Quote Balance', 'type': 'line', 'tooltip': '', 'data': []},
+            'base_balance': {'name': 'Base Balance', 'type': 'line', 'tooltip': '', 'data': []},
             'hold': {'name': 'Hold', 'type': 'area', 'tooltip': '', 'data': []},
             'buy': {'name': 'Buy', 'type': 'scatter', 'tooltip': '', 'data': []},
             'open_buy': {'name': 'Buy', 'type': 'scatter', 'tooltip': '', 'data': []},
@@ -96,6 +98,8 @@ class HighstockPlotter(Plotter):
                         self.balance['base_balance'] + self.balance['quote_balance'] / plot['data']['close']])
                     self.series['position']['data'].append([date, self.balance['position_vol'] + 0])
                     self.series['position_price']['data'].append([date, self.balance['position_price']])
+                    self.series['quote_balance']['data'].append([date, round(self.balance['quote_balance'], 2)])
+                    self.series['base_balance']['data'].append([date, self.balance['base_balance']])
                     self.series['hold']['data'].append([date, round(self.series['base_equity']['data'][0][1] *
                         plot['data']['close']) if self.series['base_equity']['data'] else round(
                         plot['data']['base_equity'] * plot['data']['close'])])
