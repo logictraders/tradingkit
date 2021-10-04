@@ -79,7 +79,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             order = event.payload.copy()
             if order['id'] in self.orders_history.keys():
                 self.orders_history[order['id']].update(order)
-            event.payload = self.orders_history[order['id']]
+                event.payload = self.orders_history[order['id']]
             self.plot_order(event)
             self.plot_balances(order['lastTradeTimestamp'], order['symbol'], self.last_price)
         if isinstance(event, OpenOrder):
@@ -94,7 +94,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def fetch_open_orders(self, symbol=None, since=None, limit=None, params={}):
         return self.exchange.fetch_open_orders(symbol, since, limit, params)
 
-    def create_order(self, symbol, type, amount, side=None, price=None, params={}):
+    def create_order(self, symbol, type, side=None, amount=0, price=None, params={}):
         if amount == 0:
             raise ValueError("Zero order amount is not allowed!!!")
         elif amount < 0 and side is not None:
@@ -153,9 +153,10 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         return self.max_drawdown
 
     def plot_balances(self, timestamp, symbol, price):
-        balances = self.fetch_balance()['free']
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
         base, quote = symbol.split('/')
+        balances = self.fetch_balance()
+        balances = balances['free'] if balances['free'][base] else balances['total']
 
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
@@ -252,8 +253,9 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.max_drawdown = min(self.max_drawdown, drawdown)
 
     def save_current_balance(self, price):
-        balances = self.fetch_balance()['free']
         base, quote = self.symbol.split('/')
+        balances = self.fetch_balance()
+        balances = balances['free'] if balances['free'][base] else balances['total']
 
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
