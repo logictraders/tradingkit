@@ -159,27 +159,27 @@ class TestEX(Publisher, Subscriber, Exchange):
         if order['side'] == 'buy':
             if order['type'] == 'stop':
                 if price <= trade['price']:
-                    self.balance[quote] -= order['amount'] * price * (1 + fee)
+                    self.balance[quote] -= order['amount'] * trade['price'] * (1 + fee)
                     self.balance[base] += order['amount']
                     order['status'] = 'filled'
             elif price >= trade['price']:
-                self.balance[quote] -= order['amount'] * price * (1 + fee)
+                self.balance[quote] -= order['amount'] * trade['price'] * (1 + fee)
                 self.balance[base] += order['amount']
                 order['status'] = 'filled'
         else:
             if order['type'] == 'stop':
                 if price >= trade['price']:
                     self.balance[base] -= order['amount']
-                    self.balance[quote] += order['amount'] * price * (1 - fee)
+                    self.balance[quote] += order['amount'] * trade['price'] * (1 - fee)
                     order['status'] = 'filled'
             elif price <= trade['price']:
                 self.balance[base] -= order['amount']
-                self.balance[quote] += order['amount'] * price * (1 - fee)
+                self.balance[quote] += order['amount'] * trade['price'] * (1 - fee)
                 order['status'] = 'filled'
         if order['status'] == 'filled':
             order['lastTradeTimestamp'] = trade['timestamp']
             if order['price'] is None:
-                order['price'] = price
+                order['price'] = trade['price']
             self.orders_scheduled_to_close.append(order)
 
     def fetch_l2_order_book(self, symbol, limit=None, params={}):
