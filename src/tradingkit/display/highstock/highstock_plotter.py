@@ -75,33 +75,34 @@ class HighstockPlotter(Plotter):
         if isinstance(event, Plot):
             plot = event.payload
             if plot['name'].lower() == 'price':
-                date = int(datetime.timestamp(datetime.fromisoformat(plot['data']['datetime']))) * 1000
-                self.series['OHLC']['data'].append([date,
-                                                    plot['data']['open'],
-                                                    plot['data']['high'],
-                                                    plot['data']['low'],
-                                                    plot['data']['close']])
-                if plot['data']['liquidationPrice'] is not None and 0.8 < plot['data']['liquidationPrice'] / \
-                        plot['data']['close'] < 1.2:
-                    liq_price = plot['data']['liquidationPrice']
-                else:
-                    liq_price = None
-                self.series['liq_price']['data'].append([date, liq_price])
-                self.series['volume']['data'].append([date, plot['data']['vol']])
-                y = round(self.balance['quote_balance'] + self.balance['base_balance'] * plot['data']['close'])
-                self.series['equity']['data'].append([date, y])
+                if plot['data']['timeframe'] == '1m':
+                    date = int(datetime.timestamp(datetime.fromisoformat(plot['data']['datetime']))) * 1000
+                    self.series['OHLC']['data'].append([date,
+                                                        plot['data']['open'],
+                                                        plot['data']['high'],
+                                                        plot['data']['low'],
+                                                        plot['data']['close']])
+                    if plot['data']['liquidationPrice'] is not None and 0.8 < plot['data']['liquidationPrice'] / \
+                            plot['data']['close'] < 1.2:
+                        liq_price = plot['data']['liquidationPrice']
+                    else:
+                        liq_price = None
+                    self.series['liq_price']['data'].append([date, liq_price])
+                    self.series['volume']['data'].append([date, plot['data']['vol']])
+                    y = round(self.balance['quote_balance'] + self.balance['base_balance'] * plot['data']['close'])
+                    self.series['equity']['data'].append([date, y])
 
-                self.series['base_equity']['data'].append([date,
-                    self.balance['base_balance'] + self.balance['quote_balance'] / plot['data']['close']])
-                self.series['position']['data'].append([date, self.balance['position_vol'] + 0])
-                self.series['position_price']['data'].append([date, self.balance['position_price']])
-                self.series['hold']['data'].append([date, round(self.series['base_equity']['data'][0][1] *
-                    plot['data']['close']) if self.series['base_equity']['data'] else round(
-                    plot['data']['base_equity'] * plot['data']['close'])])
+                    self.series['base_equity']['data'].append([date,
+                        self.balance['base_balance'] + self.balance['quote_balance'] / plot['data']['close']])
+                    self.series['position']['data'].append([date, self.balance['position_vol'] + 0])
+                    self.series['position_price']['data'].append([date, self.balance['position_price']])
+                    self.series['hold']['data'].append([date, round(self.series['base_equity']['data'][0][1] *
+                        plot['data']['close']) if self.series['base_equity']['data'] else round(
+                        plot['data']['base_equity'] * plot['data']['close'])])
 
-                if self.live_plot:
-                    time.sleep(1)
-                    self.new_price()
+                    if self.live_plot:
+                        time.sleep(1)
+                        self.new_price()
             elif plot['name'].lower() == 'equity':
                 if self.series['assets'] is None:
                     self.series['assets'] = {'quote': plot['quote'], 'base': plot['base']}
