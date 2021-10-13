@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/logictraders/tradingkit/compare/v1.6.7...v1.7.0) (2021-10-13)
+
+
+### Bug Fixes
+
+* **kraken:** fixed kraken compatibility ([#31](https://github.com/logictraders/tradingkit/issues/31)) ([f5eb8c9](https://github.com/logictraders/tradingkit/commit/f5eb8c9))
+* **readme:** added injectable module info ([#29](https://github.com/logictraders/tradingkit/issues/29)) ([28cea1c](https://github.com/logictraders/tradingkit/commit/28cea1c))
+
+
+### Features
+
+* **candle:** adding timeframe info to candles ([#30](https://github.com/logictraders/tradingkit/issues/30)) ([bd18b98](https://github.com/logictraders/tradingkit/commit/bd18b98))
+* **kraken_feeder:** last version ([#28](https://github.com/logictraders/tradingkit/issues/28)) ([4a422a8](https://github.com/logictraders/tradingkit/commit/4a422a8))
+
+
+
 ### [1.6.7](https://github.com/logictraders/tradingkit/compare/v1.6.6...v1.6.7) (2021-05-07)
 
 ### [1.6.6](https://github.com/logictraders/tradingkit/compare/v1.6.5...v1.6.6) (2021-05-04)
