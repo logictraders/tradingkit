@@ -31,6 +31,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.symbol = None
         self.has_position = True if "bitmex" in str(exchange.__class__) else False
         exchange.seconds()
+        self.pairs_dictionary = {'BTC/USD': 'BTC/USD', 'BTCUSDT': 'BTC/USDT', 'BTC/EUR': 'BTC/EUR'}
 
         self.candles = None
         self.last_candle = None
@@ -87,7 +88,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def on_event(self, event: Event):
         if isinstance(event, Book):
             if self.last_price is None:
-                self.plot_balances(event.payload['timestamp'], event.payload['symbol'], event.payload['bids'][0][0])
+                self.plot_balances(event.payload['timestamp'], self.pairs_dictionary[event.payload['symbol']], event.payload['bids'][0][0])
                 self.symbol = event.payload['symbol']
             self.last_price = event.payload['bids'][0][0]
         if isinstance(event, Candle):
@@ -98,14 +99,14 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 self.orders_history[order['id']].update(order)
                 event.payload = self.orders_history[order['id']]
             self.plot_order(event)
-            self.plot_balances(order['lastTradeTimestamp'], order['symbol'], self.last_price)
+            self.plot_balances(order['lastTradeTimestamp'], self.pairs_dictionary[order['symbol']], self.last_price)
         if isinstance(event, OpenOrder):
             self.plot_order(event)
             order = event.payload.copy()
-            self.plot_balances(order['timestamp'], order['symbol'], self.last_price)
+            self.plot_balances(order['timestamp'], self.pairs_dictionary[order['symbol']], self.last_price)
         if isinstance(event, Liquidation):
             trade = event.payload
-            self.plot_balances(trade['timestamp'], trade['symbol'], trade['price'])
+            self.plot_balances(trade['timestamp'], self.pairs_dictionary[trade['symbol']], trade['price'])
         if isinstance(event, Trade):
             trade = event.payload
             self.candle_dispatcher(trade)
@@ -172,11 +173,14 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def get_max_draw_down(self):
         return self.max_drawdown
 
+    def getPairs(self, symbol):
+        return self.pairs_dictionary[symbol]
+
     def plot_balances(self, timestamp, symbol, price):
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
         base, quote = symbol.split('/')
-        balances = self.fetch_balance()
-        balances = balances['free'] if balances['free'][base] else balances['total']
+        all_balances = self.fetch_balance()
+        balances = all_balances['free'] if all_balances['free'][base] else all_balances['total']
 
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
@@ -209,8 +213,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 'x': exchange_date,
                 'y': equity,
                 'base_equity': base_equity,
-                'base_balance': base_balance,
-                'quote_balance': quote_balance,
+                'base_balance': all_balances['total'][base],
+                'quote_balance': all_balances['total'][quote] if quote in all_balances['total'] else 0,
                 'position_vol': position_vol,
                 'position_price': position_price,
                 'invested': base_balance * price,
@@ -264,13 +268,14 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             self.balance_history.append(self.save_current_balance(candle['close']))
 
     def calculate_max_drawdown(self, base_balance, quote_balance):
-        balance = quote_balance if quote_balance > 0 else base_balance
+        if self.last_price:
+            balance = quote_balance + base_balance * self.last_price if quote_balance > 0 else base_balance
 
-        if balance > self.peak_balance:
-            self.peak_balance = balance
+            if balance > self.peak_balance:
+                self.peak_balance = balance
 
-        drawdown = (balance - self.peak_balance) / self.peak_balance
-        self.max_drawdown = min(self.max_drawdown, drawdown)
+            drawdown = (balance - self.peak_balance) / self.peak_balance
+            self.max_drawdown = min(self.max_drawdown, drawdown)
 
     def save_current_balance(self, price):
         base, quote = self.symbol.split('/')
