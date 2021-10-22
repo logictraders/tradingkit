@@ -38,20 +38,16 @@ class CCXTFetcher(Fetcher):
     def fetch_all(self, symbol, since8601, to8601=None):
         trades = []
         last_trade = None
-        # last = {'price': 7509.8, 'amount': 0.0035042, 'cost': 26.315841159999998}
         for step in self.fetch(symbol, since8601, to8601):
             for trade in step:
-                # trades.append(trade)
-
                 if last_trade is None:
                     last_trade = trade.copy()
-                elif last_trade['price'] == trade['price']:
+                elif last_trade['price'] == trade['price'] and last_trade['side'] == trade['side']:
                     last_trade['amount'] += trade['amount']
                     # last_trade['cost'] += trade['cost']  # on some exchanges is None
                 else:
                     trades.append(last_trade)
                     last_trade = trade.copy()
-                    # print(last_trade)
             trades.append(last_trade)
             print("ACC trades", len(trades))
         return trades
