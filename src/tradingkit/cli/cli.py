@@ -123,7 +123,7 @@ class CLI(Command):
         for month in months:
             next_period_year = year if month < 12 else (year + 1)
             next_period_month = (month + 1) if month < 12 else 1
-            trades = fetcher.fetch_all(
+            trades, candles = fetcher.fetch_all(
                 symbol=symbol,
                 since8601="%d-%02d-01T00:00:00+00:00" % (year, month),
                 to8601="%d-%02d-01T00:00:00+00:00" % (next_period_year, next_period_month)
@@ -132,6 +132,10 @@ class CLI(Command):
             base, quote = symbol.split('/')
             full_filename = '%s/%s-%s_%s-%d-%02d.json' % (import_dir, exchange_name, base, quote, year, month)
             json.dump(trades, open(full_filename, 'w'))
+
+            for timeframe in candles.keys():
+                full_filename = '%s/%s-%s_%s-%d-%02d_%s_candle.json' % (import_dir, exchange_name, base, quote, year, month, timeframe)
+                json.dump(candles[timeframe], open(full_filename, 'w'))
 
     @staticmethod
     def command_import_funding_rate(exchange_name, exchange, symbol):
