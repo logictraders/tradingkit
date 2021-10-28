@@ -51,7 +51,8 @@ class BitmexBacktest(TestEX):
                 order['status'] = 'filled'
         if order['status'] == 'filled':
             order['lastTradeTimestamp'] = trade['timestamp']
-            order['price'] = trade['price']
+            if order['price'] is None:
+                order['price'] = price
             fee = self.fees['maker'] if order['type'] == 'limit' else self.fees['taker']
             fee_pnl = abs(order['amount']) * fee
             logging.debug("fees apply: %s $" % str(-fee_pnl))
