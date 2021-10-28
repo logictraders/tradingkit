@@ -125,6 +125,9 @@ class TestBitmexBacktest(TestCase):
         class TestStrategy(Strategy):
             maker_order = None
             initial_balance = None
+            after_order_fee_balance = None
+            order_amount = 10
+            order_price = 500
 
             def get_symbol(self):
                 return symbol
@@ -134,17 +137,23 @@ class TestBitmexBacktest(TestCase):
 
             def start(self):
                 self.initial_balance = self.exchange.fetch_balance()['total']
-                self.maker_order = self.exchange.create_order(self.get_symbol(), 'limit', 'buy', 1, 500)
+                self.maker_order = self.exchange.create_order(self.get_symbol(), 'limit', 'buy', self.order_amount, self.order_price)
 
             def on_event(self, event: Event):
                 super().on_event(event)
                 if isinstance(event, Order):
                     order = event.payload
                     if order['id'] == self.maker_order['id']:
-                        balance = self.exchange.fetch_balance()['total']
-                        assert balance['BTC'] == self.initial_balance['BTC'] - order['amount'] / 500 * -0.00025
+                        self.after_order_fee_balance = self.exchange.fetch_balance()['total']
+                        assert self.after_order_fee_balance['BTC'] == \
+                               self.initial_balance['BTC'] - order['amount'] / self.order_price * -0.00025
 
             def finish(self):
+                balance = self.exchange.fetch_balance()
+                price = self.exchange.fetch_ticker(self.get_symbol())['bid']
+                pnl = (self.order_amount * (price / self.order_price) - self.order_amount) / price
+                # test profit and loss
+                assert balance['free']['BTC'] == self.after_order_fee_balance['BTC'] + pnl
                 return {}
 
         exchange = BitmexBacktest({
