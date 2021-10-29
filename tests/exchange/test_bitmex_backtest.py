@@ -1,6 +1,8 @@
 import random
 from unittest import TestCase
 
+from ccxt import InsufficientFunds
+
 from tradingkit.cli.runner import Runner
 from tradingkit.data.feed.list_feeder import ListFeeder
 from tradingkit.display.none_plotter import NonePlotter
@@ -10,6 +12,7 @@ from tradingkit.exchange.bridge_exchange import BridgeExchange
 from tradingkit.exchange.testex import TestEX
 from tradingkit.pubsub.core.event import Event
 from tradingkit.pubsub.event.book import Book
+from tradingkit.pubsub.event.liquidation import Liquidation
 from tradingkit.pubsub.event.order import Order
 from tradingkit.pubsub.event.trade import Trade
 from tradingkit.strategy.strategy import Strategy
@@ -119,7 +122,7 @@ class TestBitmexBacktest(TestCase):
 
         Runner.run(feeder, exchange, plotter, strategy, bridge)
 
-    def test_maker_fees(self):
+    def test_maker_fees_and_pln(self):
         symbol = 'BTC/USD'
 
         class TestStrategy(Strategy):
@@ -151,7 +154,7 @@ class TestBitmexBacktest(TestCase):
             def finish(self):
                 balance = self.exchange.fetch_balance()
                 price = self.exchange.fetch_ticker(self.get_symbol())['bid']
-                pnl = (self.order_amount * (price / self.order_price) - self.order_amount) / price
+                pnl = (1 / self.order_price - 1 / price) * self.order_amount
                 # test profit and loss
                 assert balance['free']['BTC'] == self.after_order_fee_balance['BTC'] + pnl
                 return {}
@@ -179,3 +182,67 @@ class TestBitmexBacktest(TestCase):
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
         Runner.run(feeder, exchange, plotter, strategy, bridge)
+
+    def test_liqudation_price(self):
+        symbol = 'BTC/USD'
+
+        class TestStrategy(Strategy):
+            maker_order = None
+            initial_balance = None
+            after_order_fee_balance = None
+            order_amount = 1000
+            order_price = 500
+
+            def get_symbol(self):
+                return symbol
+
+            def subscribed_events(self) -> list:
+                return [Trade, Order, Liquidation]
+
+            def start(self):
+                self.initial_balance = self.exchange.fetch_balance()['total']
+                self.maker_order = \
+                    self.exchange.create_order(self.get_symbol(), 'limit', 'buy', self.order_amount, self.order_price)
+
+            def on_event(self, event: Event):
+                super().on_event(event)
+                if isinstance(event, Order):
+                    order = event.payload
+                    if order['id'] == self.maker_order['id']:
+                        self.after_order_fee_balance = self.exchange.fetch_balance()['total']
+                        assert self.after_order_fee_balance['BTC'] == \
+                               self.initial_balance['BTC'] - order['amount'] / self.order_price * -0.00025
+
+                if isinstance(event, Liquidation):
+                    previous_trade_price_pnl = (1 / self.order_price - 1 / (event.payload['price'] + 1)) * self.order_amount
+                    pnl = (1 / self.order_price - 1 / event.payload['price']) * self.order_amount
+
+                    # test if liquidation event is dispatched just when balance is equal or below 0 not before
+                    assert self.after_order_fee_balance['BTC'] + pnl <= 0 and \
+                           self.after_order_fee_balance['BTC'] + previous_trade_price_pnl > 0
+
+            def finish(self):
+                return {}
+
+        exchange = BitmexBacktest({
+            'balance': {'USD': 100000, 'BTC': 0},
+            'fees': {
+                'maker': -0.00025,
+                'taker': 0.00075
+            }
+        })
+        bridge = BridgeExchange(exchange)
+        feeder = ListFeeder(
+            [{
+                'symbol': symbol,
+                'timestamp': x,
+                'type': 'limit',
+                'side': random.choice(['buy', 'sell']),
+                'price': x,
+                'cost': x,
+                'amount': 1
+            } for x in range(1000, 1, -1)]
+        )
+        plotter = NonePlotter()
+        strategy = TestStrategy(bridge, {'symbol': symbol})
+        self.assertRaises(InsufficientFunds, Runner.run, feeder, exchange, plotter, strategy, bridge)
