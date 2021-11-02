@@ -62,56 +62,77 @@ class BitmexFeeder(Feeder, Publisher):
         payload = json.loads(message)
         if 'table' in payload:
             if payload['table'] == 'orderBook10' and payload['data']:
-                order_book = payload['data'][0]
-                order_book['timestamp'] = int(parser.isoparse(payload['data'][0]['timestamp']).timestamp() * 1000)
-                if order_book['symbol'] == 'XBTUSD':
-                    order_book['symbol'] = 'BTC/USD'
-                if self.ignore_outdated:
-                    now_timestamp = time.time() * 1000
-                    diff = abs(order_book['timestamp'] - now_timestamp)
-                    if diff < 1000:
-                        self.dispatch(Book(order_book))
-                else:
+                order_book = self.transform_book_data(payload, self.ignore_outdated)
+                if order_book is not None:
                     self.dispatch(Book(order_book))
+
             elif payload['table'] == 'trade' and payload['data']:
-                trade = payload['data'][0].copy()
-                trade['timestamp'] = parser.isoparse(trade['timestamp']).timestamp() * 1000
-
-                if trade['symbol'] == 'XBTUSD':
-                    trade['symbol'] = 'BTC/USD'
-                trade['amount'] = trade['size']
-                trade['info'] = payload['data'][0].copy()
+                trade = self.transform_trade_data(payload)
                 self.dispatch(Trade(trade))
+
             elif payload['table'] == 'order' and payload['data']:
-
                 if 'ordStatus' in payload['data'][0].keys() and payload['data'][0]['ordStatus'] == 'Filled':
-                    symbol = "BTC/USD" if payload['data'][0]['symbol'] == "XBTUSD" else "unknown"  # todo create pairs list conversion
-                    timestamp = int(parser.isoparse(payload['data'][0]['timestamp']).timestamp() * 1000)
-                    logging.debug("PAYLOAD: %s" % str(payload))
+                    order_data = self.transform_order_data(payload)
+                    self.dispatch(Order(order_data))
 
-                    order_payload = {
-                        "info": payload['data'][0].copy(),
-                        "id": payload['data'][0]['orderID'],
-                        "status": payload['data'][0]['ordStatus'].lower(),
-                        "amount": payload['data'][0]['cumQty'],
-                        "timestamp": timestamp,
-                        "lastTradeTimestamp": int(time.time() * 1000),
-                        "symbol": symbol,
-                        "leavesQty": payload['data'][0]['leavesQty']
-                    }
-
-                    # sometimes bitmex order updates doesn't have avgPx
-                    if 'avgPx' in payload['data'][0]:
-                        order_payload["price"] = payload['data'][0]['avgPx']
-                    self.dispatch(Order(order_payload))
             elif payload['table'] == 'position' and payload['data']:
                 self.dispatch(Position(payload['data'][0]))
+
             elif payload['table'] == 'funding' and payload['data']:
                 self.dispatch(Funding(payload['data'][0]))
+
             else:
                 print("Unknown table Message:", str(payload))
         else:
             print("Unknown Message:", str(payload))
+
+    def transform_book_data(self, payload, ignore_outdated):
+        order_book = payload['data'][0]
+        order_book['timestamp'] = int(parser.isoparse(payload['data'][0]['timestamp']).timestamp() * 1000)
+        if order_book['symbol'] == 'XBTUSD':
+            order_book['symbol'] = 'BTC/USD'
+        if ignore_outdated:
+            now_timestamp = time.time() * 1000
+            diff = abs(order_book['timestamp'] - now_timestamp)
+            if diff < 1000:
+                return order_book
+        else:
+            return order_book
+        return None
+
+    def transform_trade_data(self, payload):
+        trade = payload['data'][0].copy()
+        trade['timestamp'] = parser.isoparse(trade['timestamp']).timestamp() * 1000
+
+        if trade['symbol'] == 'XBTUSD':
+            trade['symbol'] = 'BTC/USD'
+        trade['amount'] = trade['size']
+        trade['info'] = payload['data'][0].copy()
+        if 'cost' not in trade.keys():
+            trade['cost'] = float(trade['size']) * float(trade['price'])
+        return trade
+
+    def transform_order_data(self, payload):
+        symbol = "BTC/USD" if payload['data'][0][
+                                  'symbol'] == "XBTUSD" else "unknown"  # todo create pairs list conversion
+        timestamp = int(parser.isoparse(payload['data'][0]['timestamp']).timestamp() * 1000)
+        logging.debug("PAYLOAD: %s" % str(payload))
+
+        order_payload = {
+            "info": payload['data'][0].copy(),
+            "id": payload['data'][0]['orderID'],
+            "status": payload['data'][0]['ordStatus'].lower(),
+            "amount": payload['data'][0]['cumQty'],
+            "timestamp": timestamp,
+            "lastTradeTimestamp": int(time.time() * 1000),
+            "symbol": symbol,
+            "leavesQty": payload['data'][0]['leavesQty']
+        }
+
+        # sometimes bitmex order updates doesn't have avgPx
+        if 'avgPx' in payload['data'][0]:
+            order_payload["price"] = payload['data'][0]['avgPx']
+        return order_payload
 
     def on_error(self, ws, error):
         logging.info("[Websocket error] %s" % str(error))
