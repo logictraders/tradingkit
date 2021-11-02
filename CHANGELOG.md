@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.2](https://github.com/logictraders/tradingkit/compare/v1.7.1...v1.7.2) (2021-11-02)
+
+
+### Bug Fixes
+
+* **bitmex:** fixed feeder and implemented bitmex feeder test ([#37](https://github.com/logictraders/tradingkit/issues/37)) ([72937ca](https://github.com/logictraders/tradingkit/commit/72937ca))
+
+
+
 ### [1.7.1](https://github.com/logictraders/tradingkit/compare/v1.7.0...v1.7.1) (2021-11-02)
 
 
