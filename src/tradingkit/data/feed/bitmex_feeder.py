@@ -125,9 +125,9 @@ class BitmexFeeder(Feeder, Publisher):
 
     def feed(self):
         if self.testnet:
-            url = 'wss://testnet.bitmex.com/realtime'
+            url = 'wss://ws.testnet.bitmex.com/realtime'
         else:
-            url = 'wss://www.bitmex.com/realtime'
+            url = 'wss://ws.bitmex.com/realtime'
 
         ws = websocket.WebSocketApp(
             url=url,
