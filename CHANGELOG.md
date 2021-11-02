@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.1](https://github.com/logictraders/tradingkit/compare/v1.7.0...v1.7.1) (2021-11-02)
+
+
+### Bug Fixes
+
+* **bitmex:** updated bitmex websocket endpoint (https://blog.bitmex.com/api_announcement/change-of-websocket-endpoint/) ([d8ad642](https://github.com/logictraders/tradingkit/commit/d8ad642))
+* **plotter:** removed highstock lib ([#33](https://github.com/logictraders/tradingkit/issues/33)) ([a1eb453](https://github.com/logictraders/tradingkit/commit/a1eb453))
+
+
+
 ## [1.7.0](https://github.com/logictraders/tradingkit/compare/v1.6.7...v1.7.0) (2021-10-13)
 
 
