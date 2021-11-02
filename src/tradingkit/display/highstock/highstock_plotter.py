@@ -84,9 +84,8 @@ class HighstockPlotter(Plotter):
                                                         plot['data']['high'],
                                                         plot['data']['low'],
                                                         plot['data']['close']])
-                    if plot['data']['liquidationPrice'] is not None and 0.8 < plot['data']['liquidationPrice'] / \
-                            plot['data']['close'] < 1.2:
-                        liq_price = plot['data']['liquidationPrice']
+                    if plot['data']['liquidationPrice'] is not None and 0.8 < float(plot['data']['liquidationPrice']) / plot['data']['close'] < 1.2:
+                        liq_price = float(plot['data']['liquidationPrice'])
                     else:
                         liq_price = None
                     self.series['liq_price']['data'].append([date, liq_price])
