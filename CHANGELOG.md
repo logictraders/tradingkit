@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.8](https://github.com/logictraders/tradingkit/compare/v1.6.7...v1.6.8) (2021-11-03)
+
+
+### Bug Fixes
+
+* **bitmex:** updated bitmex websocket endpoint (https://blog.bitmex.com/api_announcement/change-of-websocket-endpoint/) ([d87d3fc](https://github.com/logictraders/tradingkit/commit/d87d3fc))
+
+
+
 ### [1.6.7](https://github.com/logictraders/tradingkit/compare/v1.6.6...v1.6.7) (2021-05-07)
 
 ### [1.6.6](https://github.com/logictraders/tradingkit/compare/v1.6.5...v1.6.6) (2021-05-04)
