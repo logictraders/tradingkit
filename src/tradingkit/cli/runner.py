@@ -14,8 +14,9 @@ class Runner:
             chain = adapter
 
         bridge.register(strategy)
-        bridge.register(plotter)
-        strategy.register(plotter)
+        if plot:
+            bridge.register(plotter)
+            strategy.register(plotter)
 
         if isinstance(exchange, TestEX):
             chain.register(exchange)
