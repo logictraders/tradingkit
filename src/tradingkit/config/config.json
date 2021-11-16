@@ -82,6 +82,7 @@
   "bitmex_testnet_feeder": {
     "class": "tradingkit.data.feed.bitmex_feeder.BitmexFeeder",
     "arguments": [
+      "BTC/USD",
       {
         "apiKey": "%env(BITMEX_KEY)%",
         "secret": "%env(BITMEX_SECRET)%"
@@ -92,6 +93,7 @@
   "bitmex_feeder": {
     "class": "tradingkit.data.feed.bitmex_feeder.BitmexFeeder",
     "arguments": [
+      "BTC/USD",
       {
         "apiKey": "%env(BITMEX_KEY)%",
         "secret": "%env(BITMEX_SECRET)%"
