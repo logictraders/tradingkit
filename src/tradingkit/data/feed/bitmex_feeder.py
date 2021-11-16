@@ -26,7 +26,17 @@ from tradingkit.pubsub.event.trade import Trade
 
 class BitmexFeeder(Feeder, Publisher):
 
-    def __init__(self, credentials=None, testnet=False, ignore_outdated=True):
+    BITMEX_SYMBOL_MAP = {
+        'BTC/USD': 'XBTUSD',
+        'BTC/USDT': 'XBTUSDT'
+    }
+
+    BITMEX_SYMBOL_MAP_REV = {
+        'XBTUSD': 'BTC/USD',
+        'XBTUSDT': 'BTC/USDT'
+    }
+
+    def __init__(self, symbol='BTC/USD', credentials=None, testnet=False, ignore_outdated=True):
         super().__init__()
         if credentials is not None:
             if ('apiKey' and 'secret') not in credentials:
@@ -34,11 +44,12 @@ class BitmexFeeder(Feeder, Publisher):
         self.credentials = credentials
         self.testnet = testnet
         self.ignore_outdated = ignore_outdated
+        self.symbol = symbol
 
     def on_open(self, ws):
-        self.subscribe(ws, 'trade:XBTUSD')
-        self.subscribe(ws, 'orderBook10:XBTUSD')
-        self.subscribe(ws, 'funding:XBTUSD')
+        self.subscribe(ws, 'trade:%s' % self.BITMEX_SYMBOL_MAP[self.symbol])
+        self.subscribe(ws, 'orderBook10:%s' % self.BITMEX_SYMBOL_MAP[self.symbol])
+        self.subscribe(ws, 'funding:%s' % self.BITMEX_SYMBOL_MAP[self.symbol])
 
         if self.credentials is not None:
             self.authenticate(ws)
@@ -89,8 +100,8 @@ class BitmexFeeder(Feeder, Publisher):
     def transform_book_data(self, payload, ignore_outdated):
         order_book = payload['data'][0]
         order_book['timestamp'] = int(parser.isoparse(payload['data'][0]['timestamp']).timestamp() * 1000)
-        if order_book['symbol'] == 'XBTUSD':
-            order_book['symbol'] = 'BTC/USD'
+        order_book['symbol'] = self.BITMEX_SYMBOL_MAP_REV[order_book['symbol']]
+
         if ignore_outdated:
             now_timestamp = time.time() * 1000
             diff = abs(order_book['timestamp'] - now_timestamp)
@@ -103,9 +114,8 @@ class BitmexFeeder(Feeder, Publisher):
     def transform_trade_data(self, payload):
         trade = payload['data'][0].copy()
         trade['timestamp'] = parser.isoparse(trade['timestamp']).timestamp() * 1000
+        trade['symbol'] = self.BITMEX_SYMBOL_MAP_REV[trade['symbol']]
 
-        if trade['symbol'] == 'XBTUSD':
-            trade['symbol'] = 'BTC/USD'
         trade['amount'] = trade['size']
         trade['info'] = payload['data'][0].copy()
         if 'cost' not in trade.keys():
@@ -113,8 +123,7 @@ class BitmexFeeder(Feeder, Publisher):
         return trade
 
     def transform_order_data(self, payload):
-        symbol = "BTC/USD" if payload['data'][0][
-                                  'symbol'] == "XBTUSD" else "unknown"  # todo create pairs list conversion
+        symbol = self.BITMEX_SYMBOL_MAP_REV[payload['data'][0]['symbol']]
         timestamp = int(parser.isoparse(payload['data'][0]['timestamp']).timestamp() * 1000)
         logging.debug("PAYLOAD: %s" % str(payload))
 
