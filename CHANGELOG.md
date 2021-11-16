@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.4](https://github.com/logictraders/tradingkit/compare/v1.7.3...v1.7.4) (2021-11-16)
+
+
+### Bug Fixes
+
+* **bitmex:** adding usdt to bitmex feeder ([8ad697d](https://github.com/logictraders/tradingkit/commit/8ad697d))
+
+
+
 ### [1.7.3](https://github.com/logictraders/tradingkit/compare/v1.7.2...v1.7.3) (2021-11-02)
 
 
