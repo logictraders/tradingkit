@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.8](https://github.com/logictraders/tradingkit/compare/v1.7.7...v1.7.8) (2021-11-17)
+
+
+### Bug Fixes
+
+* **bridge:** removed code calling the exchange on events, needs to fix plotting ([303ee0c](https://github.com/logictraders/tradingkit/commit/303ee0c))
+
+
+
 ### [1.7.7](https://github.com/logictraders/tradingkit/compare/v1.7.6...v1.7.7) (2021-11-16)
 
 
