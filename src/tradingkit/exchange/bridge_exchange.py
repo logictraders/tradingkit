@@ -28,26 +28,27 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.peak_balance = 0
         self.max_drawdown = 0
         self.last_price = None
-        self.symbol = None
         self.has_position = True if "bitmex" in str(exchange.__class__) else False
         exchange.seconds()
 
         self.candles = None
         self.last_candle = None
-        self.timeframes = {"1m": 60,
-                           "5m": 300,
-                           "15m": 900,
-                           "30m": 1800,
-                           "1H": 3600,
-                           "4H": 14400,
-                           "6H": 21600,
-                           "12H": 43200,
-                           "1D": 86400,
-                           "2D": 172800,
-                           "4D": 345600,
-                           "1W": 604800,
-                           "2W": 1209600,
-                           "1M": 2629800}
+        self.timeframes = {
+            "1m": 60,
+            "5m": 300,
+            "15m": 900,
+            "30m": 1800,
+            "1H": 3600,
+            "4H": 14400,
+            "6H": 21600,
+            "12H": 43200,
+            "1D": 86400,
+            "2D": 172800,
+            "4D": 345600,
+            "1W": 604800,
+            "2W": 1209600,
+            "1M": 2629800
+        }
 
     def sec(self):
         return self.exchange.sec()
@@ -86,26 +87,15 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def on_event(self, event: Event):
         if isinstance(event, Book):
-            if self.last_price is None:
-                self.plot_balances(event.payload['timestamp'], event.payload['symbol'], event.payload['bids'][0][0])
-                self.symbol = event.payload['symbol']
             self.last_price = event.payload['bids'][0][0]
-        if isinstance(event, Candle):
-            self.plot_candle(event)
         if isinstance(event, Order):
             order = event.payload.copy()
             if order['id'] in self.orders_history.keys():
                 self.orders_history[order['id']].update(order)
                 event.payload = self.orders_history[order['id']]
             self.plot_order(event)
-            self.plot_balances(order['lastTradeTimestamp'], order['symbol'], self.last_price)
         if isinstance(event, OpenOrder):
             self.plot_order(event)
-            order = event.payload.copy()
-            self.plot_balances(order['timestamp'], order['symbol'], self.last_price)
-        if isinstance(event, Liquidation):
-            trade = event.payload
-            self.plot_balances(trade['timestamp'], trade['symbol'], trade['price'])
         if isinstance(event, Trade):
             trade = event.payload
             self.candle_dispatcher(trade)
@@ -261,10 +251,6 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             'yaxis': 'price',
             'data': candle,
         }))
-        date = datetime.fromisoformat(candle['datetime'])
-        if self.last_balance_check is None or date - self.last_balance_check > timedelta(hours=1):
-            self.last_balance_check = date
-            self.balance_history.append(self.save_current_balance(candle['close']))
 
     def calculate_max_drawdown(self, base_balance, quote_balance):
         if self.last_price:
@@ -276,21 +262,9 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             drawdown = (balance - self.peak_balance) / self.peak_balance
             self.max_drawdown = min(self.max_drawdown, drawdown)
 
-    def save_current_balance(self, price):
-        base, quote = self.symbol.split('/')
-        balances = self.fetch_balance()
-        balances = balances['free'] if balances['free'][base] else balances['total']
-
-        base_balance = balances[base] if base in balances else 0
-        quote_balance = balances[quote] if quote in balances else 0
-
-        # todo use quote equity for kraken (equity = quote_balance + base_balance * price)
-        base_equity = base_balance + quote_balance / price
-        return base_equity
-
     def get_sharpe_ratio(self):
-        standard_desviation = numpy.std(self.balance_history)
-        sharpe_ratio = (self.balance_history[-1] / self.balance_history[0]) / standard_desviation
+        standard_deviation = numpy.std(self.balance_history)
+        sharpe_ratio = (self.balance_history[-1] / self.balance_history[0]) / standard_deviation
         return sharpe_ratio
 
     def candle_dispatcher(self, trade):
@@ -326,5 +300,4 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 }
                 if self.last_candle[tf] is not None:
                     self.dispatch(Candle(self.last_candle[tf]))
-                    self.plot_candle(Candle(self.last_candle[tf]))
             self.last_candle[tf] = self.candles[tf][key]
