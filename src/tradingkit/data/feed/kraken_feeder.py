@@ -147,14 +147,14 @@ class KrakenFeeder(Feeder, Publisher):
             if "as" in keys:
                 self.orderbooks[self.symbol_dict[message[-1]]] = {"bids": [[float(message[1]["bs"][0][0]),
                                                                            float(message[1]["bs"][0][1])]],
-                                                                  "ascs": [[float(message[1]["as"][0][0]),
+                                                                  "asks": [[float(message[1]["as"][0][0]),
                                                                            float(message[1]["as"][0][1])]],
                                                                   "timestamp": int(
                                                                       float(message[1]["as"][0][2]) * 1000),
                                                                   "symbol": self.symbol_dict[message[-1]]}
             else:
                 if "a" in keys:
-                    self.orderbooks[self.symbol_dict[message[-1]]]["ascs"] = [[float(message[1]["a"][0][0]),
+                    self.orderbooks[self.symbol_dict[message[-1]]]["asks"] = [[float(message[1]["a"][0][0]),
                                                                               float(message[1]["a"][0][1])]]
                     self.orderbooks[self.symbol_dict[message[-1]]]["timestamp"] = int(
                         float(message[1]["a"][0][2]) * 1000)
