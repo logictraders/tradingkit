@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.9](https://github.com/logictraders/tradingkit/compare/v1.7.8...v1.7.9) (2021-11-23)
+
+
+### Bug Fixes
+
+* **typo:** fixed typo ([7119f0d](https://github.com/logictraders/tradingkit/commit/7119f0d))
+
+
+
 ### [1.7.8](https://github.com/logictraders/tradingkit/compare/v1.7.7...v1.7.8) (2021-11-17)
 
 
