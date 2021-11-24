@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.15](https://github.com/logictraders/tradingkit/compare/v1.7.14...v1.7.15) (2021-11-24)
+
+
+### Bug Fixes
+
+* **bridge:** changed timeframes ([4ba6501](https://github.com/logictraders/tradingkit/commit/4ba6501))
+
+
+
 ### [1.7.14](https://github.com/logictraders/tradingkit/compare/v1.7.10...v1.7.14) (2021-11-24)
 
 
