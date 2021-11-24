@@ -83,7 +83,7 @@ class ConfigInjector(Injector):
 
     @staticmethod
     def replace_env(env_ref: str):
-        matches = re.match("%env\(((int|str|float):)?([A-Za-z_][A-Za-z0-9_]*)(:(.+))?\)%", env_ref)
+        matches = re.match("%env\(((int|str|float):)?([A-Za-z_][A-Za-z0-9_]*)(:(.*))?\)%", env_ref)
         if matches:
             if matches.group(2):
                 processor = ConfigInjector.var_processors[matches.group(2)]
