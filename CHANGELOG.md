@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.11](https://github.com/logictraders/tradingkit/compare/v1.7.10...v1.7.11) (2021-11-24)
+
+
+### Bug Fixes
+
+* **config:** fixed default variable loading error when empty string ([a4192aa](https://github.com/logictraders/tradingkit/commit/a4192aa))
+
+
+
 ### [1.7.10](https://github.com/logictraders/tradingkit/compare/v1.7.9...v1.7.10) (2021-11-24)
 
 
