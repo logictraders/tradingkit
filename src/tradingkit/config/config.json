@@ -4,8 +4,8 @@
     "class": "ccxt.kraken",
     "arguments": [
       {
-        "apiKey": "%env(KRAKEN_KEY)%",
-        "secret": "%env(KRAKEN_SECRET)%"
+        "apiKey": "%env(API_KEY)%",
+        "secret": "%env(API_SECRET)%"
       }
     ]
   },
@@ -13,8 +13,8 @@
     "class": "ccxt.bitmex",
     "arguments": [
       {
-        "apiKey": "%env(BITMEX_KEY)%",
-        "secret": "%env(BITMEX_SECRET)%"
+        "apiKey": "%env(API_KEY)%",
+        "secret": "%env(API_SECRET)%"
       }
     ]
   },
@@ -22,8 +22,8 @@
     "class": "ccxt.bitmex",
     "arguments": [
       {
-        "apiKey": "%env(BITMEX_KEY)%",
-        "secret": "%env(BITMEX_SECRET)%"
+        "apiKey": "%env(API_KEY)%",
+        "secret": "%env(API_SECRET)%"
       }
     ],
     "calls": {
@@ -84,8 +84,8 @@
     "arguments": [
       "BTC/USD",
       {
-        "apiKey": "%env(BITMEX_KEY)%",
-        "secret": "%env(BITMEX_SECRET)%"
+        "apiKey": "%env(API_KEY)%",
+        "secret": "%env(API_SECRET)%"
       },
       true
     ]
@@ -95,8 +95,8 @@
     "arguments": [
       "BTC/USD",
       {
-        "apiKey": "%env(BITMEX_KEY)%",
-        "secret": "%env(BITMEX_SECRET)%"
+        "apiKey": "%env(API_KEY)%",
+        "secret": "%env(API_SECRET)%"
       },
       false
     ]
@@ -105,8 +105,8 @@
     "class": "tradingkit.data.feed.kraken_feeder.KrakenFeeder",
     "arguments": [
       {
-        "apiKey": "%env(KRAKEN_KEY)%",
-        "secret": "%env(KRAKEN_SECRET)%"
+        "apiKey": "%env(API_KEY)%",
+        "secret": "%env(API_SECRET)%"
       }
     ]
   },

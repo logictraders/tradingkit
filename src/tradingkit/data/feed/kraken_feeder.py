@@ -21,8 +21,10 @@ from tradingkit.pubsub.event.trade import Trade
 
 class KrakenFeeder(Feeder, Publisher):
 
-    def __init__(self, credentials=None, ignore_outdated=True, pair={'symbol':'XBT/EUR'}):
+    def __init__(self, credentials=None, ignore_outdated=False, pair=None):
         super().__init__()
+        if pair is None:
+            pair = {'symbol': 'BTC/EUR'}
         self.public_ws = None
         self.private_ws = None
         if credentials is not None:
@@ -30,10 +32,7 @@ class KrakenFeeder(Feeder, Publisher):
                 raise KeyError("credentials must contain apiKey and secret")
         self.credentials = credentials
         self.symbol_dict = {
-            "XBT/USD": "BTC/USD",
-            "XBT/EUR": "BTC/EUR",
             "BTC/EUR": "XBT/EUR",
-            "XBT/USDT": "BTC/USDT",
             "BTC/USDT": "XBT/USDT",
         }
         self.symbol = self.symbol_dict[pair['symbol']]
