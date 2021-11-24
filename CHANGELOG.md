@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.10](https://github.com/logictraders/tradingkit/compare/v1.7.9...v1.7.10) (2021-11-24)
+
+
+### Bug Fixes
+
+* **kraken:** set ignore_outdated to false by default and fixed some useless data ([a60824f](https://github.com/logictraders/tradingkit/commit/a60824f))
+
+
+
 ### [1.7.9](https://github.com/logictraders/tradingkit/compare/v1.7.8...v1.7.9) (2021-11-23)
 
 
