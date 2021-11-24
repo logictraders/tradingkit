@@ -93,7 +93,7 @@ class ConfigInjector(Injector):
             var = matches.group(3)
             if var in os.environ:
                 return processor(os.environ[var])
-            elif matches.group(5):
+            elif matches.group(5) or matches.group(5) == '':
                 return processor(matches.group(5))
             else:
                 raise KeyError("Undefined ENV var '%s'" % var)
