@@ -103,31 +103,6 @@ class KrakenFeeder(Feeder, Publisher):
             self.private_ws.close()
             sys.exit(1)
 
-    def candle_dispatcher(self, trade):
-        id = trade['timestamp'] // 60000 * 60
-        id = str(datetime.fromtimestamp(id))
-        if id == self.candle['id']:
-            self.candle['data']['high'] = max(self.candle['data']['high'], trade['price'])
-            self.candle['data']['low'] = min(self.candle['data']['low'], trade['price'])
-            self.candle['data']['close'] = trade['price']
-            self.candle['data']['vol'] += trade['amount']
-            self.candle['data']['cost'] += trade['cost']
-            self.candle['data']['trades'] += 1
-        else:
-            if self.candle['id'] != '':
-                self.dispatch_event(Candle(self.candle['data']))
-            self.candle['id'] = id
-            self.candle['data'] = {
-                'datetime': id,
-                'open': trade['price'],
-                'high': trade['price'],
-                'low': trade['price'],
-                'close': trade['price'],
-                'vol': trade['amount'],
-                'cost': trade['cost'],
-                'trades': 1
-            }
-
     def dispatch_event(self, event):
         self.lock.acquire()
         self.dispatch(event)
@@ -209,7 +184,6 @@ class KrakenFeeder(Feeder, Publisher):
                     'type': type,
                     'symbol': symbol
                 }
-                self.candle_dispatcher(trade_data)
                 self.dispatch_event(Trade(trade_data))
 
     def run(self, is_private):

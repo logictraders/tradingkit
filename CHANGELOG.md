@@ -2,24 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [1.7.13](https://github.com/logictraders/tradingkit/compare/v1.7.12...v1.7.13) (2021-11-24)
-
-
-
-### [1.7.12](https://github.com/logictraders/tradingkit/compare/v1.7.11...v1.7.12) (2021-11-24)
+### [1.7.14](https://github.com/logictraders/tradingkit/compare/v1.7.10...v1.7.14) (2021-11-24)
 
 
 ### Bug Fixes
 
 * **refactor:** refactored kraken feeder ([1385575](https://github.com/logictraders/tradingkit/commit/1385575))
-
-
-
-### [1.7.11](https://github.com/logictraders/tradingkit/compare/v1.7.10...v1.7.11) (2021-11-24)
-
-
-### Bug Fixes
-
 * **config:** fixed default variable loading error when empty string ([a4192aa](https://github.com/logictraders/tradingkit/commit/a4192aa))
 
 
