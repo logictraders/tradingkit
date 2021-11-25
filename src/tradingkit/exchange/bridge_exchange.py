@@ -234,7 +234,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         else:
             position_vol = base_balance * price
             position_price = 0
-        self.calculate_max_drawdown(base_balance, quote_balance)
+
         self.plot_balances({
             'all_balances': all_balances,
             'base_balance': base_balance,
@@ -248,6 +248,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             'price': price,
             'quote_balance': quote_balance
         })
+        if self.is_backtest:
+            self.calculate_max_drawdown(base_balance, quote_balance)
 
     def plot_order(self, event):
         order = event.payload
