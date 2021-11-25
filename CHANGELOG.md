@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://github.com/logictraders/tradingkit/compare/v1.7.15...v1.8.0) (2021-11-25)
+
+
+### Bug Fixes
+
+* **simulation:** fixed bitmex liquidation_price calculation and added short liquidation_price ([#34](https://github.com/logictraders/tradingkit/issues/34)) ([c7a26f5](https://github.com/logictraders/tradingkit/commit/c7a26f5))
+* **testing:** added bitmex tests ([#36](https://github.com/logictraders/tradingkit/issues/36)) ([a9c3593](https://github.com/logictraders/tradingkit/commit/a9c3593))
+
+
+### Features
+
+* **bridge:** refactored removing exess of API calls ([#38](https://github.com/logictraders/tradingkit/issues/38)) ([561eb7c](https://github.com/logictraders/tradingkit/commit/561eb7c))
+* **data:** creating candles cache when import data ([#35](https://github.com/logictraders/tradingkit/issues/35)) ([ebf8bb3](https://github.com/logictraders/tradingkit/commit/ebf8bb3))
+
+
+
 ### [1.7.15](https://github.com/logictraders/tradingkit/compare/v1.7.14...v1.7.15) (2021-11-24)
 
 
