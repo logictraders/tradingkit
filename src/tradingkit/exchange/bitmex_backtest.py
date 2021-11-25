@@ -190,7 +190,12 @@ class BitmexBacktest(TestEX):
 
     def get_liquidation_price(self, mark_price, base):
         if abs(self.position['currentQty']) > 0:
-            return 1.0 / (self.balance[base] / self.position['currentQty'] + 1.0 / self.position['avgEntryPrice'])
+            side = 'buy' if self.position['currentQty'] > 0 else 'sell'
+            sum_same_side_orders = sum(
+                [(o['amount'] / o['price']) for o in self.open_orders.values() if o['side'] == side and o['type'] == 'limit'])
+            free_base_balance = self.balance[base] - sum_same_side_orders
+            leverage_ratio = (free_base_balance / self.position['currentQty'] + 1.0 / self.position['avgEntryPrice'])
+            return 1.0 / leverage_ratio if leverage_ratio > 0 else 100000000.0  # bitmex max liquidation price
         return 0
 
     def set_liquidation_price(self, mark_price, base):
