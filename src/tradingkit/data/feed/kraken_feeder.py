@@ -35,12 +35,14 @@ class KrakenFeeder(Feeder, Publisher):
         # Converts symbols from normal to kraken vocab
         self.denormalized_symbol = {
             "BTC/EUR": "XBT/EUR",
+            "BTC/USD": "XBT/USD",
             "BTC/USDT": "XBT/USDT",
         }
 
         # Converts symbols from kraken to normal vocab
         self.normalized_symbol = {
             "XBT/EUR": "BTC/EUR",
+            "XBT/USD": "BTC/USD",
             "XBT/USDT": "BTC/USDT",
         }
         self.symbol = self.denormalized_symbol[pair['symbol']]  # used to send requests to kraken
@@ -50,7 +52,7 @@ class KrakenFeeder(Feeder, Publisher):
         self.lock = None
         self.candle = {'id': '', 'data': {}}
 
-    def autentificate(self):
+    def authenticate(self):
         api_nonce = bytes(str(int(time.time() * 1000)), "utf-8")
         api_request = urllib.request.Request("https://api.kraken.com/0/private/GetWebSocketsToken",
                                              b"nonce=%s" % api_nonce)
@@ -80,7 +82,7 @@ class KrakenFeeder(Feeder, Publisher):
             _logging.warning("WebSocket connection failed (%s)" % error)
             time.sleep(600)
             self.on_open()
-        token = self.autentificate()
+        token = self.authenticate()
         self.subscribe(token)
 
     def subscribe(self, token):
@@ -119,7 +121,7 @@ class KrakenFeeder(Feeder, Publisher):
                             'timestamp': int(float(dict[order]['time']) * 1000),
                             'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
                             'status': 'filled',
-                            'symbol': self.denormalized_symbol[dict[order]['pair']],
+                            'symbol': self.normalized_symbol[dict[order]['pair']],
                             'type': dict[order]['ordertype'],
                             'side': dict[order]['type'],
                             'price': float(dict[order]['price']),
@@ -202,6 +204,9 @@ class KrakenFeeder(Feeder, Publisher):
                 _ws.close()
                 sys.exit(0)
             except Exception as error:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                _logging.warning(exc_type, fname, exc_tb.tb_lineno)
                 _logging.warning("[WebSocket error] %s" % str(error))
                 _logging.warning("[WebSocket data] %s" % str(ws_data))
                 time.sleep(60)
