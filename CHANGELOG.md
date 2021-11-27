@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.1](https://github.com/logictraders/tradingkit/compare/v1.8.0...v1.8.1) (2021-11-27)
+
+
+### Bug Fixes
+
+* **kraken:** changed normalize to denormalize before dispatch order ([58acf51](https://github.com/logictraders/tradingkit/commit/58acf51))
+* **kraken:** removing extra debug info ([2f070a8](https://github.com/logictraders/tradingkit/commit/2f070a8))
+
+
+
 ## [1.8.0](https://github.com/logictraders/tradingkit/compare/v1.7.15...v1.8.0) (2021-11-25)
 
 
