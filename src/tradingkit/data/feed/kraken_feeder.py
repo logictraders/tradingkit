@@ -204,9 +204,6 @@ class KrakenFeeder(Feeder, Publisher):
                 _ws.close()
                 sys.exit(0)
             except Exception as error:
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                _logging.warning(exc_type, fname, exc_tb.tb_lineno)
                 _logging.warning("[WebSocket error] %s" % str(error))
                 _logging.warning("[WebSocket data] %s" % str(ws_data))
                 time.sleep(60)
