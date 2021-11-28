@@ -37,7 +37,7 @@ class BitmexFeeder(WebsocketFeeder):
         'XBTUSDT': 'BTC/USDT'
     }
 
-    def __init__(self, symbol='BTC/USD', credentials=None, url="wss://ws.bitmex.com"):
+    def __init__(self, symbol='BTC/USD', credentials=None, url="wss://ws.bitmex.com/realtime"):
         super().__init__(symbol, credentials, url)
 
     def on_open(self, ws):

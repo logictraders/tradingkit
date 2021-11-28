@@ -81,25 +81,24 @@
   },
   "bitmex_testnet_feeder": {
     "class": "tradingkit.data.feed.bitmex_feeder.BitmexFeeder",
-    "arguments": [
-      "BTC/USD",
-      {
-        "apiKey": "%env(API_KEY)%",
-        "secret": "%env(API_SECRET)%"
+    "arguments": {
+      "symbol": "%env(str:SYMBOL:BTC/USD)%",
+      "credentials":{
+        "apiKey": "%env(str:API_KEY)%",
+        "secret": "%env(str:API_SECRET)%"
       },
-      true
-    ]
+      "url": "wss://ws.testnet.bitmex.com/realtime"
+    }
   },
   "bitmex_feeder": {
     "class": "tradingkit.data.feed.bitmex_feeder.BitmexFeeder",
-    "arguments": [
-      "BTC/USD",
-      {
-        "apiKey": "%env(API_KEY)%",
-        "secret": "%env(API_SECRET)%"
-      },
-      false
-    ]
+    "arguments": {
+      "symbol": "%env(str:SYMBOL:BTC/USD)%",
+      "credentials":{
+        "apiKey": "%env(str:API_KEY)%",
+        "secret": "%env(str:API_SECRET)%"
+      }
+    }
   },
     "kraken_feeder_deprecated": {
     "class": "tradingkit.data.feed.kraken_feeder.KrakenFeeder",
