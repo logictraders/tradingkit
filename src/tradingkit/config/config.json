@@ -101,7 +101,7 @@
       false
     ]
   },
-    "kraken_feeder": {
+    "kraken_feeder_deprecated": {
     "class": "tradingkit.data.feed.kraken_feeder.KrakenFeeder",
     "arguments": [
       {
@@ -110,7 +110,31 @@
       }
     ]
   },
-
+  "public_kraken_feeder": {
+    "class": "tradingkit.data.feed.public_kraken_feeder.PublicKrakenFeeder",
+    "arguments": {
+      "symbol": "%env(str:SYMBOL:BTC/EUR)%"
+    }
+  },
+  "private_kraken_feeder": {
+    "class": "tradingkit.data.feed.private_kraken_feeder.PrivateKrakenFeeder",
+    "arguments": {
+      "symbol": "%env(str:SYMBOL:BTC/EUR)%",
+      "credentials": {
+        "apiKey": "%env(str:API_KEY)%",
+        "secret": "%env(str:API_SECRET)%"
+      }
+    }
+  },
+  "kraken_feeder": {
+    "class": "tradingkit.data.feed.aggregator_feeder.AggregatorFeeder",
+    "arguments": {
+      "feeders": [
+        "@public_kraken_feeder",
+        "@private_kraken_feeder"
+      ]
+    }
+  },
   "highstock": {
     "class": "tradingkit.display.highstock.highstock_plotter.HighstockPlotter"
   },

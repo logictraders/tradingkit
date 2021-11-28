@@ -1,11 +1,5 @@
-import inspect
-import sys
-import traceback
 import logging
 from abc import ABC, abstractmethod
-
-from functools import partial
-
 import websocket
 
 from tradingkit.data.feed.feeder import Feeder
@@ -41,29 +35,10 @@ class WebsocketFeeder(Feeder, Publisher, ABC):
     def feed(self):
         ws = websocket.WebSocketApp(
             url=self.url,
-            on_message=partial(self.on_message, self),
-            on_open=partial(self.on_open, self),
-            on_error=partial(self.on_error, self),
-            on_close=partial(self.on_close, self),
+            on_message=self.on_message,
+            on_open=self.on_open,
+            on_error=self.on_error,
+            on_close=self.on_close,
         )
-        ws._callback = partial(self.monkey_callback, ws)
         ws.run_forever(ping_interval=15, ping_timeout=10)
 
-    def monkey_callback(self, callback, *args):
-        """
-        Monkey patch for WebSocketApp._callback() because it swallows exceptions.
-        Inspired from https://github.com/websocket-client/websocket-client/issues/377#issuecomment-397429682
-        """
-        if callback:
-            try:
-                if inspect.ismethod(callback):
-                    callback(*args)
-                else:
-                    callback(self, *args)
-
-            except Exception as e:
-                logging.error("error from callback {}: {}".format(callback, e))
-                _, _, tb = sys.exc_info()
-                traceback.print_tb(tb)
-                self.keep_running = False
-                raise e
