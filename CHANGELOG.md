@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.1](https://github.com/logictraders/tradingkit/compare/v1.9.0...v1.9.1) (2021-11-28)
+
+
+### Bug Fixes
+
+* **deps:** updated websocket-client to v1.2.1 ([ee215e9](https://github.com/logictraders/tradingkit/commit/ee215e9))
+* **refactor:** refactored websocket feeders ([e35f5f2](https://github.com/logictraders/tradingkit/commit/e35f5f2))
+
+
+
 ## [1.9.0](https://github.com/logictraders/tradingkit/compare/v1.8.1...v1.9.0) (2021-11-28)
 
 
