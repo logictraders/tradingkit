@@ -1,5 +1,6 @@
 import logging
 import threading
+import time
 
 from tradingkit.data.feed.feeder import Feeder
 from tradingkit.pubsub.core.event import Event
@@ -25,14 +26,19 @@ class AggregatorFeeder(Feeder, Subscriber, Publisher):
         self.dispatch(event)
 
     def feed(self):
-        threads = []
+        children = []
         for feeder in self.feeders:
             feeder.register(self)
-            thread = threading.Thread(target=feeder.feed)
-            thread.start()
-            threads.append(thread)
+            child = threading.Thread(target=feeder.feed)
+            child.start()
+            children.append(child)
 
-        for thread in threads:
-            thread.join()
+        # Active loop to check feeder children
+        while True:
+            time.sleep(10)
+            for child in children:
+                if not child.is_alive():
+                    raise ValueError("Feeder thread %s ended" % child.getName())
+
 
 
