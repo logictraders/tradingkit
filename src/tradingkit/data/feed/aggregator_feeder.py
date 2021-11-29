@@ -1,6 +1,5 @@
-import logging
-import threading
 import time
+import multiprocessing
 
 from tradingkit.data.feed.feeder import Feeder
 from tradingkit.pubsub.core.event import Event
@@ -29,16 +28,22 @@ class AggregatorFeeder(Feeder, Subscriber, Publisher):
         children = []
         for feeder in self.feeders:
             feeder.register(self)
-            child = threading.Thread(target=feeder.feed)
+            child = multiprocessing.Process(target=feeder.feed)
             child.start()
             children.append(child)
 
         # Active loop to check feeder children
-        while True:
-            time.sleep(10)
+        child_ended = 0
+        while child_ended == 0:
+            time.sleep(1)
             for child in children:
                 if not child.is_alive():
-                    raise ValueError("Feeder thread %s ended" % child.getName())
+                    child_ended = child.pid
+
+        for child in children:
+            child.terminate()
+
+        raise ValueError("Feeder process %d ended" % child_ended)
 
 
 
