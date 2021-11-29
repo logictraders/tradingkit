@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.4](https://github.com/logictraders/tradingkit/compare/v1.9.3...v1.9.4) (2021-11-29)
+
+
+### Bug Fixes
+
+* **feed:** changed aggregator feeder from threads to processes ([f1e7224](https://github.com/logictraders/tradingkit/commit/f1e7224))
+
+
+
 ### [1.9.3](https://github.com/logictraders/tradingkit/compare/v1.9.2...v1.9.3) (2021-11-29)
 
 
