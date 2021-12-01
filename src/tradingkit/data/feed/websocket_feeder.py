@@ -40,5 +40,5 @@ class WebsocketFeeder(Feeder, Publisher, ABC):
             on_error=self.on_error,
             on_close=self.on_close,
         )
-        ws.run_forever(ping_interval=15, ping_timeout=10)
+        ws.run_forever(ping_interval=30, ping_timeout=25)
 
