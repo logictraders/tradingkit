@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.6](https://github.com/logictraders/tradingkit/compare/v1.9.5...v1.9.6) (2021-12-01)
+
+
+### Bug Fixes
+
+* **feeder:** increased websocket ping interval and timeout ([8240c86](https://github.com/logictraders/tradingkit/commit/8240c86))
+
+
+
 ### [1.9.5](https://github.com/logictraders/tradingkit/compare/v1.9.4...v1.9.5) (2021-11-30)
 
 
