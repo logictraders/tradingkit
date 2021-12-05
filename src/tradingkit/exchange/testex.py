@@ -33,6 +33,7 @@ class TestEX(Publisher, Subscriber, Exchange):
         self.initial = params['balance'].copy()
 
         self.open_orders = {}
+        self.closed_orders = {}
         self.history = []
         self.orderbooks = {}
         self.orders_scheduled_to_close = []
@@ -131,6 +132,8 @@ class TestEX(Publisher, Subscriber, Exchange):
                     price = trade['price'] if order['type'] == 'market' else order['price']
                     self.match_order(trade, order, price, base, quote)
             for order in self.undispatched_orders:
+                #order['info']['ordStatus'] = order['status']
+                self.closed_orders[order['id']] = order
                 self.dispatch(Order(order))
             self.undispatched_orders = []
             self.clean_orders()
@@ -198,6 +201,8 @@ class TestEX(Publisher, Subscriber, Exchange):
         self.orders_scheduled_to_close = []
 
         for order in orders_to_dispatch:
+            #order['info']['ordStatus'] = order['status']
+            self.closed_orders[order['id']] = order
             self.dispatch(Order(order))
 
     def plot_balances(self, base, quote, price):

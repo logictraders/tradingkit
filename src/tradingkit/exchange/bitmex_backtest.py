@@ -1,5 +1,6 @@
 from tradingkit.exchange.testex import TestEX
 from datetime import datetime
+import json
 
 from tradingkit.pubsub.core.event import Event
 from tradingkit.pubsub.event.funding import Funding
@@ -274,3 +275,12 @@ class BitmexBacktest(TestEX):
             free_balance[base] -= sum_same_side_orders / leverage
 
         return free_balance
+
+    def private_get_order(self, order_info):
+        order_id = json.loads(order_info['filter'])['orderID']
+        if order_id in self.closed_orders:
+            return [self.closed_orders[order_id]]
+        elif order_id in self.open_orders:
+            return [self.open_orders[order_id]]
+        else:
+            return []

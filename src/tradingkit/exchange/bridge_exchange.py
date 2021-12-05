@@ -21,8 +21,6 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def __init__(self, exchange: Exchange):
         super().__init__()
         self.exchange = exchange
-        self.closed_orders = {}
-        self.orders_history = {}
         self.balance_history = []
         self.last_balance_check = None
         self.peak_balance = 0
@@ -99,9 +97,6 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 self.update_balance_hist(event)
         if isinstance(event, Order):
             order = event.payload.copy()
-            if order['id'] in self.orders_history.keys():
-                self.orders_history[order['id']].update(order)
-                event.payload = self.orders_history[order['id']]
             self.plot_order(event)
             self.calculate_exchange_state(order['lastTradeTimestamp'], order['symbol'], self.last_price)
         if isinstance(event, OpenOrder):
@@ -131,7 +126,6 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             if amount < 0:
                 amount = -amount
         order = self.exchange.create_order(symbol, type, side, amount, price, params)
-        self.orders_history[order['id']] = order
         return order
 
     def cancel_order(self, order_id, symbol=None, params={}):
@@ -363,3 +357,13 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                     if self.is_backtest:
                         self.update_balance_hist(candle)
             self.last_candle[tf] = self.candles[tf][key]
+
+
+    def pr(self, s, r):
+        p = 100
+        b = 1000
+        vol = b * r
+        while b > 0:
+            p = p - p * s
+            b = b - vol
+        return p
