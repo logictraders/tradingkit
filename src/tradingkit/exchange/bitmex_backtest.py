@@ -279,8 +279,12 @@ class BitmexBacktest(TestEX):
     def private_get_order(self, order_info):
         order_id = json.loads(order_info['filter'])['orderID']
         if order_id in self.closed_orders:
-            return [self.closed_orders[order_id]]
+            order = [self.closed_orders[order_id]]
+            order[0]['info'] = {'ordStatus': order[0]['status']}
+            return order
         elif order_id in self.open_orders:
-            return [self.open_orders[order_id]]
+            order = [self.open_orders[order_id]]
+            order[0]['info'] = {'ordStatus': order[0]['status']}
+            return order
         else:
             return []

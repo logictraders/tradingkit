@@ -40,8 +40,8 @@
           "BTC": "%env(float:INITIAL_BALANCE_BTC:0)%"
         },
         "fees": {
-          "maker": "%env(float:MAKER_FEE:0.0006)%",
-          "taker": "%env(float:TAKER_FEE:0.0006)%"
+          "maker": "%env(float:MAKER_FEE:0.0016)%",
+          "taker": "%env(float:TAKER_FEE:0.0026)%"
         }
       }
     ]
