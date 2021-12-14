@@ -111,81 +111,18 @@ class KrakenFeeder(Feeder, Publisher):
         self.lock.release()
 
     def on_message(self, message):
-        ts = time.time()
         if "ownTrades" in message:
-            for dict in message[0]:
-                for order in dict:
-                    if ts - float(dict[order]['time']) < 10:  # filter orders since 10 seg
-                        order_data = {
-                            'id': dict[order]['ordertxid'],
-                            'timestamp': int(float(dict[order]['time']) * 1000),
-                            'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
-                            'status': 'filled',
-                            'symbol': self.normalized_symbol[dict[order]['pair']],
-                            'type': dict[order]['ordertype'],
-                            'side': dict[order]['type'],
-                            'price': float(dict[order]['price']),
-                            'amount': float(dict[order]['vol'])
-                        }
-                        self.dispatch_event(Order(order_data))
+            order_data_list = self.transform_order_data(message)
+            for order_data in order_data_list:
+                self.dispatch_event(Order(order_data))
+
         elif "book-10" in message:
-            keys = message[1].keys()
-            symbol = self.normalized_symbol[message[-1]]
-            if "as" in keys:
-                self.orderbooks[symbol] = {
-                    "bids": [
-                        [
-                            float(message[1]["bs"][0][0]),
-                            float(message[1]["bs"][0][1])
-                        ]
-                    ],
-                    "asks": [
-                        [
-                            float(message[1]["as"][0][0]),
-                            float(message[1]["as"][0][1])
-                        ]
-                    ],
-                    "timestamp": int(float(message[1]["as"][0][2]) * 1000),
-                    "symbol": symbol
-                }
-            else:
-                if "a" in keys:
-                    self.orderbooks[symbol]["asks"] = [
-                        [
-                            float(message[1]["a"][0][0]),
-                            float(message[1]["a"][0][1])
-                        ]
-                    ]
-                    self.orderbooks[symbol]["timestamp"] = int(float(message[1]["a"][0][2]) * 1000)
-                    self.orderbooks[symbol]["symbol"] = symbol
-                if "b" in keys:
-                    self.orderbooks[symbol]["bids"] = [
-                        [
-                            float(message[1]["b"][0][0]),
-                            float(message[1]["b"][0][1])
-                        ]
-                    ]
-                    self.orderbooks[symbol]["timestamp"] = int(float(message[1]["b"][0][2]) * 1000)
-                    self.orderbooks[symbol]["symbol"] = symbol
-            self.dispatch_event(Book(self.orderbooks[symbol]))
+            order_book = self.transform_book_data(message)
+            self.dispatch_event(Book(order_book))
+
         elif "trade" in message:
-            symbol = self.normalized_symbol[message[-1]]
-            for trade in message[1]:
-                price = float(trade[0])
-                amount = float(trade[1])
-                cost = float(trade[0]) * float(trade[1])
-                timestamp = int(float(trade[2]) * 1000)
-                side = 'buy' if trade[3] == 'b' else 'sell'
-                type = 'market' if trade[4] == 'm' else 'limit'
-                trade_data = {
-                    'price': price,
-                    'amount': amount,
-                    'cost': cost,
-                    'timestamp': timestamp,
-                    'side': side,
-                    'type': type,
-                    'symbol': symbol
-                }
+            trade_data_list = self.transform_trade_data(message)
+            for trade_data in trade_data_list:
                 self.dispatch_event(Trade(trade_data))
 
     def run(self, is_private):
@@ -232,3 +169,85 @@ class KrakenFeeder(Feeder, Publisher):
         _logging.warning("[WebSocket data private STOP] %s" % str(private_t))
 
 
+    def transform_book_data(self, message):
+        keys = message[1].keys()
+        symbol = self.normalized_symbol[message[-1]]
+        if "as" in keys:
+            self.orderbooks[symbol] = {
+                "bids": [
+                    [
+                        float(message[1]["bs"][0][0]),
+                        float(message[1]["bs"][0][1])
+                    ]
+                ],
+                "asks": [
+                    [
+                        float(message[1]["as"][0][0]),
+                        float(message[1]["as"][0][1])
+                    ]
+                ],
+                "timestamp": int(float(message[1]["as"][0][2]) * 1000),
+                "symbol": symbol
+            }
+        else:
+            if "a" in keys:
+                self.orderbooks[symbol]["asks"] = [
+                    [
+                        float(message[1]["a"][0][0]),
+                        float(message[1]["a"][0][1])
+                    ]
+                ]
+                self.orderbooks[symbol]["timestamp"] = int(float(message[1]["a"][0][2]) * 1000)
+                self.orderbooks[symbol]["symbol"] = symbol
+            if "b" in keys:
+                self.orderbooks[symbol]["bids"] = [
+                    [
+                        float(message[1]["b"][0][0]),
+                        float(message[1]["b"][0][1])
+                    ]
+                ]
+                self.orderbooks[symbol]["timestamp"] = int(float(message[1]["b"][0][2]) * 1000)
+                self.orderbooks[symbol]["symbol"] = symbol
+        return self.orderbooks[symbol]
+
+    def transform_trade_data(self, message):
+        trade_data_list = []
+        symbol = self.normalized_symbol[message[-1]]
+        for trade in message[1]:
+            price = float(trade[0])
+            amount = float(trade[1])
+            cost = float(trade[0]) * float(trade[1])
+            timestamp = int(float(trade[2]) * 1000)
+            side = 'buy' if trade[3] == 'b' else 'sell'
+            type = 'market' if trade[4] == 'm' else 'limit'
+            trade_data = {
+                'price': price,
+                'amount': amount,
+                'cost': cost,
+                'timestamp': timestamp,
+                'side': side,
+                'type': type,
+                'symbol': symbol
+            }
+            trade_data_list.append(trade_data)
+        return trade_data_list
+
+    def transform_order_data(self, message):
+        order_data_list = []
+        ts = time.time()
+        for dict in message[0]:
+            for order in dict:
+                if ts - float(dict[order]['time']) < 10:  # filter orders since 10 seg
+                    order_data = {
+                        'id': dict[order]['ordertxid'],
+                        'timestamp': int(float(dict[order]['time']) * 1000),
+                        'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
+                        'status': 'filled',
+                        'symbol': self.normalized_symbol[dict[order]['pair']],
+                        'type': dict[order]['ordertype'],
+                        'side': dict[order]['type'],
+                        'price': float(dict[order]['price']),
+                        'amount': float(dict[order]['vol'])
+                    }
+                    order_data_list.append(order_data)
+        return order_data_list
