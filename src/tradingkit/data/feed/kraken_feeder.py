@@ -21,6 +21,20 @@ from tradingkit.pubsub.event.trade import Trade
 
 class KrakenFeeder(Feeder, Publisher):
 
+    # Converts symbols from normal to kraken vocab
+    DENORMALIZED_SYMBOL = {
+            "BTC/EUR": "XBT/EUR",
+            "BTC/USD": "XBT/USD",
+            "BTC/USDT": "XBT/USDT",
+        }
+
+    # Converts symbols from kraken to normal vocab
+    NORMALIZED_SYMBOL = {
+        "XBT/EUR": "BTC/EUR",
+        "XBT/USD": "BTC/USD",
+        "XBT/USDT": "BTC/USDT",
+    }
+
     def __init__(self, credentials=None, ignore_outdated=False, pair=None):
         super().__init__()
         if pair is None:
@@ -32,23 +46,9 @@ class KrakenFeeder(Feeder, Publisher):
                 raise KeyError("credentials must contain apiKey and secret")
         self.credentials = credentials
 
-        # Converts symbols from normal to kraken vocab
-        self.denormalized_symbol = {
-            "BTC/EUR": "XBT/EUR",
-            "BTC/USD": "XBT/USD",
-            "BTC/USDT": "XBT/USDT",
-        }
-
-        # Converts symbols from kraken to normal vocab
-        self.normalized_symbol = {
-            "XBT/EUR": "BTC/EUR",
-            "XBT/USD": "BTC/USD",
-            "XBT/USDT": "BTC/USDT",
-        }
-        self.symbol = self.denormalized_symbol[pair['symbol']]  # used to send requests to kraken
+        self.symbol = self.DENORMALIZED_SYMBOL[pair['symbol']]  # used to send requests to kraken
         self.on_open()
         self.ignore_outdated = ignore_outdated
-        self.orderbooks = {}
         self.lock = None
         self.candle = {'id': '', 'data': {}}
 
@@ -168,12 +168,12 @@ class KrakenFeeder(Feeder, Publisher):
         private_t.join()
         _logging.warning("[WebSocket data private STOP] %s" % str(private_t))
 
-
     def transform_book_data(self, message):
         keys = message[1].keys()
-        symbol = self.normalized_symbol[message[-1]]
+        symbol = self.NORMALIZED_SYMBOL[message[-1]]
+        orderbooks = {}
         if "as" in keys:
-            self.orderbooks[symbol] = {
+            orderbooks[symbol] = {
                 "bids": [
                     [
                         float(message[1]["bs"][0][0]),
@@ -191,28 +191,28 @@ class KrakenFeeder(Feeder, Publisher):
             }
         else:
             if "a" in keys:
-                self.orderbooks[symbol]["asks"] = [
+                orderbooks[symbol]["asks"] = [
                     [
                         float(message[1]["a"][0][0]),
                         float(message[1]["a"][0][1])
                     ]
                 ]
-                self.orderbooks[symbol]["timestamp"] = int(float(message[1]["a"][0][2]) * 1000)
-                self.orderbooks[symbol]["symbol"] = symbol
+                orderbooks[symbol]["timestamp"] = int(float(message[1]["a"][0][2]) * 1000)
+                orderbooks[symbol]["symbol"] = symbol
             if "b" in keys:
-                self.orderbooks[symbol]["bids"] = [
+                orderbooks[symbol]["bids"] = [
                     [
                         float(message[1]["b"][0][0]),
                         float(message[1]["b"][0][1])
                     ]
                 ]
-                self.orderbooks[symbol]["timestamp"] = int(float(message[1]["b"][0][2]) * 1000)
-                self.orderbooks[symbol]["symbol"] = symbol
-        return self.orderbooks[symbol]
+                orderbooks[symbol]["timestamp"] = int(float(message[1]["b"][0][2]) * 1000)
+                orderbooks[symbol]["symbol"] = symbol
+        return orderbooks[symbol]
 
     def transform_trade_data(self, message):
         trade_data_list = []
-        symbol = self.normalized_symbol[message[-1]]
+        symbol = self.NORMALIZED_SYMBOL[message[-1]]
         for trade in message[1]:
             price = float(trade[0])
             amount = float(trade[1])
@@ -243,7 +243,7 @@ class KrakenFeeder(Feeder, Publisher):
                         'timestamp': int(float(dict[order]['time']) * 1000),
                         'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
                         'status': 'filled',
-                        'symbol': self.normalized_symbol[dict[order]['pair']],
+                        'symbol': self.NORMALIZED_SYMBOL[dict[order]['pair']],
                         'type': dict[order]['ordertype'],
                         'side': dict[order]['type'],
                         'price': float(dict[order]['price']),
