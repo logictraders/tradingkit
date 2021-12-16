@@ -35,6 +35,8 @@ class KrakenFeeder(Feeder, Publisher):
         "XBT/USDT": "BTC/USDT",
     }
 
+    orderbooks = {}
+
     def __init__(self, credentials=None, ignore_outdated=False, pair=None):
         super().__init__()
         if pair is None:
@@ -171,9 +173,8 @@ class KrakenFeeder(Feeder, Publisher):
     def transform_book_data(self, message):
         keys = message[1].keys()
         symbol = self.NORMALIZED_SYMBOL[message[-1]]
-        orderbooks = {}
         if "as" in keys:
-            orderbooks[symbol] = {
+            self.orderbooks[symbol] = {
                 "bids": [
                     [
                         float(message[1]["bs"][0][0]),
@@ -191,24 +192,24 @@ class KrakenFeeder(Feeder, Publisher):
             }
         else:
             if "a" in keys:
-                orderbooks[symbol]["asks"] = [
+                self.orderbooks[symbol]["asks"] = [
                     [
                         float(message[1]["a"][0][0]),
                         float(message[1]["a"][0][1])
                     ]
                 ]
-                orderbooks[symbol]["timestamp"] = int(float(message[1]["a"][0][2]) * 1000)
-                orderbooks[symbol]["symbol"] = symbol
+                self.orderbooks[symbol]["timestamp"] = int(float(message[1]["a"][0][2]) * 1000)
+                self.orderbooks[symbol]["symbol"] = symbol
             if "b" in keys:
-                orderbooks[symbol]["bids"] = [
+                self.orderbooks[symbol]["bids"] = [
                     [
                         float(message[1]["b"][0][0]),
                         float(message[1]["b"][0][1])
                     ]
                 ]
-                orderbooks[symbol]["timestamp"] = int(float(message[1]["b"][0][2]) * 1000)
-                orderbooks[symbol]["symbol"] = symbol
-        return orderbooks[symbol]
+                self.orderbooks[symbol]["timestamp"] = int(float(message[1]["b"][0][2]) * 1000)
+                self.orderbooks[symbol]["symbol"] = symbol
+        return self.orderbooks[symbol]
 
     def transform_trade_data(self, message):
         trade_data_list = []
