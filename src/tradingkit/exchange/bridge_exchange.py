@@ -179,11 +179,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def get_max_draw_down(self):
         base, quote = self.symbol.split('/')
-        all_balances = self.fetch_balance()
-        balances = all_balances['free'] if all_balances['free'][base] else all_balances['total']
-        base_balance = balances[base] if base in balances else 0
-        quote_balance = balances[quote] if quote in balances else 0
-        self.calculate_max_drawdown(base_balance, quote_balance)
+        balances = self.fetch_balance()
+        self.calculate_max_drawdown(balances['total'][base], balances['total'][quote])
         return self.max_drawdown
 
     def getPairs(self, symbol):
@@ -256,7 +253,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             'quote_balance': quote_balance
         })
         if self.is_backtest:
-            self.calculate_max_drawdown(base_balance, quote_balance)
+            self.calculate_max_drawdown(all_balances['total'][base], all_balances['total'][quote])
 
     def plot_order(self, event):
         order = event.payload
@@ -303,6 +300,13 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         if self.last_price:
             balance = quote_balance + base_balance * self.last_price if not self.has_position else base_balance
 
+            if self.has_position:
+                position = self.private_get_position()[0]
+                if abs(position['currentQty']) > 0:
+                    pnl = (self.last_price / position['avgEntryPrice'] * position['currentQty'] -
+                           position['currentQty']) / self.last_price
+                    balance += pnl / self.last_price
+
             if balance > self.peak_balance:
                 self.peak_balance = balance
 
@@ -326,7 +330,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             base_equity = base_balance + quote_balance / price
 
             self.balance_history.append(base_equity)
-            self.calculate_max_drawdown(base_balance, quote_balance)
+
 
     def get_sharpe_ratio(self):
         standard_deviation = numpy.std(self.balance_history)
