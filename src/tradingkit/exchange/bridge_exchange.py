@@ -89,10 +89,10 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def on_event(self, event: Event):
         if isinstance(event, Book):
+            self.last_price = event.payload['bids'][0][0]
             if self.last_price is None:
                 self.calculate_exchange_state(event.payload['timestamp'], event.payload['symbol'], event.payload['bids'][0][0])
                 self.symbol = event.payload['symbol']
-            self.last_price = event.payload['bids'][0][0]
         if isinstance(event, Candle):
             self.plot_candle(event)
             if self.is_backtest:
@@ -113,6 +113,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             self.calculate_exchange_state(trade['timestamp'], trade['symbol'], trade['price'])
         if isinstance(event, Trade):
             trade = event.payload
+            self.last_price = event.payload['price']
             if self.symbol is None:
                 self.symbol = event.payload['symbol']
             self.candle_dispatcher(trade)
@@ -177,6 +178,12 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         return self.exchange.fetchMarkets()
 
     def get_max_draw_down(self):
+        base, quote = self.symbol.split('/')
+        all_balances = self.fetch_balance()
+        balances = all_balances['free'] if all_balances['free'][base] else all_balances['total']
+        base_balance = balances[base] if base in balances else 0
+        quote_balance = balances[quote] if quote in balances else 0
+        self.calculate_max_drawdown(base_balance, quote_balance)
         return self.max_drawdown
 
     def getPairs(self, symbol):
@@ -294,7 +301,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def calculate_max_drawdown(self, base_balance, quote_balance):
         if self.last_price:
-            balance = quote_balance + base_balance * self.last_price if quote_balance > 0 else base_balance
+            balance = quote_balance + base_balance * self.last_price if not self.has_position else base_balance
 
             if balance > self.peak_balance:
                 self.peak_balance = balance
@@ -319,6 +326,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             base_equity = base_balance + quote_balance / price
 
             self.balance_history.append(base_equity)
+            self.calculate_max_drawdown(base_balance, quote_balance)
 
     def get_sharpe_ratio(self):
         standard_deviation = numpy.std(self.balance_history)

@@ -1,4 +1,5 @@
 import random
+import time
 from unittest import TestCase
 
 from tradingkit.cli.runner import Runner
@@ -230,11 +231,65 @@ class TestTestex(TestCase):
                 'price': x,
                 'cost': x,
                 'amount': 1
-            } for x in (list(range(1000, 100)) + list(range(100, 1000)))]
+            } for x in (list(range(1000, 100, -1)) + list(range(100, 1000)))]
         )
         plotter = PlotlyPlotter()
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
         Runner.run(feeder, exchange, plotter, strategy, bridge)
 
+    def test_max_draw_dawn(self):
+        symbol = 'BTC/EUR'
 
+        class TestStrategy(Strategy):
+            maker_order = None
+            initial_balance = None
+
+            def get_symbol(self):
+                return symbol
+
+            def subscribed_events(self) -> list:
+                return [Trade, Order, Book]
+
+            def start(self):
+                self.initial_balance = self.exchange.fetch_balance()['total']
+                self.maker_order = self.exchange.create_order(self.get_symbol(), 'limit', 'buy', 100000/500, 500)
+
+            def on_event(self, event: Event):
+                super().on_event(event)
+                if isinstance(event, Order):
+                    order = event.payload
+                    if order['id'] == self.maker_order['id']:
+                        balance = self.exchange.fetch_balance()['total']
+                        #assert balance['BTC'] == 1
+
+            def finish(self):
+                return {}
+
+        exchange = TestEX({
+            'balance': {'EUR': 100000, 'BTC': 0},
+            'fees': {
+                'maker': 0.0,
+                'taker': 0.0
+            }
+        })
+        bridge = BridgeExchange(exchange)
+        timestamp = time.time()
+        feeder = ListFeeder(
+            [ {
+                'symbol': symbol,
+                'timestamp': timestamp + abs(600 - x) * 1000 * 60,
+                'type': 'limit',
+                'side': random.choice(['buy', 'sell']),
+                'price': x,
+                'cost': x,
+                'amount': 1
+            } for x in range(500, 249, -1)]
+        )
+        plotter = NonePlotter()
+        strategy = TestStrategy(bridge, {'symbol': symbol})
+
+        Runner.run(feeder, exchange, plotter, strategy, bridge)
+
+        mdd = bridge.get_max_draw_down()
+        assert mdd == -0.5

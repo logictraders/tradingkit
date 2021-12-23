@@ -114,6 +114,7 @@ class TestEX(Publisher, Subscriber, Exchange):
         return [Order, Trade, Book, Candle, Funding]
 
     def on_event(self, event: Event):
+        self.dispatch(event)
         if isinstance(event, Trade):
             trade = event.payload
             self.timestamp = trade['timestamp']
@@ -138,7 +139,7 @@ class TestEX(Publisher, Subscriber, Exchange):
             book = self.orderbooks[symbol].copy()
             book['symbol'] = symbol
             self.dispatch(Book(book))
-        self.dispatch(event)
+
 
     def dispatch(self, event: Event):
         # prevent from dispatching events if the exchange is not ready
