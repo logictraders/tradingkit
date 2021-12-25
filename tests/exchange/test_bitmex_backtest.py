@@ -47,7 +47,7 @@ class TestBitmexBacktest(TestCase):
                 return {}
 
         exchange = BitmexBacktest({
-            'balance': {'USD': 100000, 'BTC': 0},
+            'balance': {'USD': 0, 'BTC': 100},
             'fees': {
                 'maker': 0,
                 'taker': 0
@@ -99,7 +99,7 @@ class TestBitmexBacktest(TestCase):
                 return {}
 
         exchange = BitmexBacktest({
-            'balance': {'USD': 100000, 'BTC': 0},
+            'balance': {'USD': 0, 'BTC': 100},
             'fees': {
                 'maker': -0.00025,
                 'taker': 0.00075
@@ -160,7 +160,7 @@ class TestBitmexBacktest(TestCase):
                 return {}
 
         exchange = BitmexBacktest({
-            'balance': {'USD': 100000, 'BTC': 0},
+            'balance': {'USD': 0, 'BTC': 100},
             'fees': {
                 'maker': -0.00025,
                 'taker': 0.00075
@@ -190,7 +190,7 @@ class TestBitmexBacktest(TestCase):
             maker_order = None
             initial_balance = None
             after_order_fee_balance = None
-            order_amount = 1000
+            order_amount = 10000
             order_price = 500
 
             def get_symbol(self):
@@ -225,7 +225,7 @@ class TestBitmexBacktest(TestCase):
                 return {}
 
         exchange = BitmexBacktest({
-            'balance': {'USD': 100000, 'BTC': 0},
+            'balance': {'USD': 0, 'BTC': 100},
             'fees': {
                 'maker': -0.00025,
                 'taker': 0.00075

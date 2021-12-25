@@ -15,8 +15,8 @@ class BitmexBacktest(TestEX):
     def sleep(self, milliseconds):
         pass
 
-    def __init__(self, params=None):
-        super().__init__({'balance': {'USD': 0, 'BTC': 10}, 'fees': {'maker': -0.00025, 'taker': 0.00075}})
+    def __init__(self, params={'balance': {'USD': 0, 'BTC': 10}, 'fees': {'maker': -0.00025, 'taker': 0.00075}}):
+        super().__init__(params)
         self.position = {"currentQty": 0,  # currentQty
                          "homeNotional": 0,  # homeNotional base value (disabled)
                          "avgEntryPrice": 0,
@@ -79,12 +79,13 @@ class BitmexBacktest(TestEX):
                                               quote_volume * avg_order_price) / (
                                                      self.position['currentQty'] + quote_volume)
         self.position['currentQty'] += quote_volume
-        self.set_liquidation_price(avg_order_price, base)
+        self.set_liquidation_price(base, abs(quote_volume) / avg_order_price)
 
         logging.debug("balance: %s" % str(self.balance))
         logging.debug("position_updated: %s" % str(self.position))
 
     def on_event(self, event: Event):
+        super().on_event(event)
         if isinstance(event, Trade):
             self.set_mark_price(event.payload)
             if self.position['currentQty'] > 0:
@@ -178,7 +179,7 @@ class BitmexBacktest(TestEX):
             base = symbol.split('/')[0]
             mark_price = self.fetch_ticker(symbol)['bid']
             super().cancel_order(order_id, symbol, params)
-            self.set_liquidation_price(mark_price, base)
+            self.set_liquidation_price(base)
         else:
             super().cancel_order(order_id, symbol, params)
 
@@ -186,21 +187,22 @@ class BitmexBacktest(TestEX):
         response = super().create_order(symbol, type, side, amount, price, params)
         base = symbol.split('/')[0]
         mark_price = self.fetch_ticker(symbol)['bid']
-        self.set_liquidation_price(mark_price, base)
+        self.set_liquidation_price(base)
         return response
 
-    def get_liquidation_price(self, mark_price, base):
+    def get_liquidation_price(self, base, order_scheduled_to_close_amount):
         if abs(self.position['currentQty']) > 0:
             side = 'buy' if self.position['currentQty'] > 0 else 'sell'
             sum_same_side_orders = sum(
                 [(o['amount'] / o['price']) for o in self.open_orders.values() if o['side'] == side and o['type'] == 'limit'])
+            sum_same_side_orders -= order_scheduled_to_close_amount
             free_base_balance = self.balance[base] - sum_same_side_orders
             leverage_ratio = (free_base_balance / self.position['currentQty'] + 1.0 / self.position['avgEntryPrice'])
             return 1.0 / leverage_ratio if leverage_ratio > 0 else 100000000.0  # bitmex max liquidation price
         return 0
 
-    def set_liquidation_price(self, mark_price, base):
-        self.position['liquidationPrice'] = self.get_liquidation_price(mark_price, base)
+    def set_liquidation_price(self, base, order_scheduled_to_close_amount=0):
+        self.position['liquidationPrice'] = self.get_liquidation_price(base, order_scheduled_to_close_amount)
 
     def get_liquidation_price_old(self, mark_price, base):
         if abs(self.position['currentQty']) > 0:
