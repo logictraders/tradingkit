@@ -53,7 +53,7 @@ class CCXTFetcher(Fetcher):
             except RequestTimeout:
                 sys.stderr.write("Request timeout, retrying...\n")
 
-    def fetch_all(self, symbol, since8601, to8601=None):
+    def fetch_all(self, symbol, since8601, to8601=None, candles=False):
         trades = []
         last_trade = None
         for step in self.fetch(symbol, since8601, to8601):
@@ -65,7 +65,8 @@ class CCXTFetcher(Fetcher):
                     # last_trade['cost'] += trade['cost']  # on some exchanges is None
                 else:
                     trades.append(last_trade)
-                    self.trade_to_candle(last_trade)
+                    if candles:
+                        self.trade_to_candle(last_trade)
                     last_trade = trade.copy()
             trades.append(last_trade)
             print("ACC trades", len(trades))
