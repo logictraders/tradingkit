@@ -224,7 +224,10 @@ class Optimizer:
         for i in range(self.population_size):
             genome = []
             for bound in varbound:
-                genome.append(np.random.uniform(bound[0], bound[1], 1)[0])
+                if (type(bound[0]) == int and type(bound[1]) == int):
+                    genome.append(np.random.randint(bound[0], bound[1]))
+                else:
+                    genome.append(np.random.uniform(bound[0], bound[1], 1)[0])
             population.append(genome)
         return population
 
@@ -237,8 +240,11 @@ class Optimizer:
                 new_genome = value.tolist()
                 index = np.random.randint(len(new_genome), size=1)[0]
                 ratio = max(iteration - 10, 0)  # first 10 iterations use max mutation speed and decrease after
-                new_genome[index] = (new_genome[index] * ratio +
+                value = (new_genome[index] * ratio +
                                      np.random.uniform(varbound[index][0], varbound[index][1], 1)[0]) / (ratio + 1)
+                if (type(new_genome[index]) == int):
+                    value = int(value)
+                new_genome[index] = value
                 new_genome = np.array(new_genome)
 
                 _t = datetime.now()
