@@ -27,7 +27,7 @@ class CLI(Command):
 
     Usage:
       tk run [<strategy_dir>] [-e <env>] [-y <year>] [-m <month>] [--optimize | --plot | --live_plot] [ --show-open-orders | --show-orders] [--loglevel <level>]
-      tk import [-x <exchange>] [-s <symbol>] [-y <year>] [-m <month>] [--no-funding | --only-funding]
+      tk import [-x <exchange>] [-s <symbol>] [-y <year>] [-m <month>] [--no-funding | --only-funding] [--candles]
       tk --help
       tk --version
 
@@ -72,7 +72,8 @@ class CLI(Command):
                 fetcher = CCXTFetcher(exchange)
                 year = int(args['--year'])
                 months = [int(args['--month'])] if args['--month'] else range(1, 13)
-                CLI.command_import(exchange_name, symbol, fetcher, year, months)
+                candles = True if args['--candles'] else False
+                CLI.command_import(exchange_name, symbol, fetcher, year, months, candles)
         elif args['--optimize']:
             Optimizer().optimize(args)
         else:
@@ -119,23 +120,24 @@ class CLI(Command):
             Runner.run(feeder, exchange, plotter, strategy, bridge, feeder_adapters, args['--optimize'], args['--plot'])
 
     @staticmethod
-    def command_import(exchange_name, symbol, fetcher, year, months):
+    def command_import(exchange_name, symbol, fetcher, year, months, candles=False):
         for month in months:
             next_period_year = year if month < 12 else (year + 1)
             next_period_month = (month + 1) if month < 12 else 1
             trades, candles = fetcher.fetch_all(
                 symbol=symbol,
                 since8601="%d-%02d-01T00:00:00+00:00" % (year, month),
-                to8601="%d-%02d-01T00:00:00+00:00" % (next_period_year, next_period_month)
+                to8601="%d-%02d-01T00:00:00+00:00" % (next_period_year, next_period_month),
+                candles=candles
             )
             import_dir = System.get_import_dir()
             base, quote = symbol.split('/')
             full_filename = '%s/%s-%s_%s-%d-%02d.json' % (import_dir, exchange_name, base, quote, year, month)
             json.dump(trades, open(full_filename, 'w'))
-
-            for timeframe in candles.keys():
-                full_filename = '%s/%s-%s_%s-%d-%02d_%s_candle.json' % (import_dir, exchange_name, base, quote, year, month, timeframe)
-                json.dump(candles[timeframe], open(full_filename, 'w'))
+            if candles:
+                for timeframe in candles.keys():
+                    full_filename = '%s/%s-%s_%s-%d-%02d_%s_candle.json' % (import_dir, exchange_name, base, quote, year, month, timeframe)
+                    json.dump(candles[timeframe], open(full_filename, 'w'))
 
     @staticmethod
     def command_import_funding_rate(exchange_name, exchange, symbol):

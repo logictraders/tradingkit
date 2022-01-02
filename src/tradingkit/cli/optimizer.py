@@ -98,7 +98,7 @@ class Optimizer:
 
         median_result = np.median(results)
         min_result = min(results)
-        result = (median_result + min_result * 7) / 8
+        result = (median_result + min_result * 3) / 4
 
         if result > 0:
             c_handle = open(str(self.start_time) + "_out.csv", 'a')
