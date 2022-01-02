@@ -33,7 +33,7 @@ class Optimizer:
 
         #2016
         since = datetime.fromisoformat("2016-01-01 00:00:00+00:00")
-        to = datetime.fromisoformat("2017-01-01 00:00:00+00:00")
+        to = datetime.fromisoformat("2016-01-05 00:00:00+00:00")
         result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
 
         if result['start_base_balance'] == 0:
@@ -47,53 +47,7 @@ class Optimizer:
             return np.random.uniform(-200, -100, 1)[0]
         total_profit += profit
 
-        # 2017
-        since = datetime.fromisoformat("2017-01-01 00:00:00+00:00")
-        to = datetime.fromisoformat("2018-01-01 00:00:00+00:00")
-        result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
 
-        if result['start_base_balance'] == 0:
-            profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
-        else:
-            profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        if result['end_equity'] > 0:
-
-            results.append(profit)
-        else:
-            return np.random.uniform(-200, -100, 1)[0]
-        total_profit += profit
-
-        # 2018
-        since = datetime.fromisoformat("2018-01-01 00:00:00+00:00")
-        to = datetime.fromisoformat("2019-01-01 00:00:00+00:00")
-        result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
-
-        if result['start_base_balance'] == 0:
-            profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
-        else:
-            profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        if result['end_equity'] > 0:
-
-            results.append(profit)
-        else:
-            return np.random.uniform(-200, -100, 1)[0]
-        total_profit += profit
-
-        # 2019
-        since = datetime.fromisoformat("2019-01-01 00:00:00+00:00")
-        to = datetime.fromisoformat("2020-01-01 00:00:00+00:00")
-        result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
-
-        if result['start_base_balance'] == 0:
-            profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
-        else:
-            profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        if result['end_equity'] > 0:
-
-            results.append(profit)
-        else:
-            return np.random.uniform(-200, -100, 1)[0]
-        total_profit += profit
 
 
         median_result = np.median(results)
@@ -107,7 +61,7 @@ class Optimizer:
             data.append("         T prof:")
             data.append(total_profit)
             data.append("%          ")
-            data.append(genome.tolist())
+            data.append(genome)
             data.append("          ")
             data.append(datetime.now())
             data.append("   ")
@@ -170,8 +124,6 @@ class Optimizer:
         score = {}
 
         for genome in population:
-            genome = np.array(genome)
-
             _t = datetime.now()
             profit = self.objective_function(genome)
             print("Iteration Time: ", datetime.now() - _t)
@@ -237,7 +189,7 @@ class Optimizer:
         for key, value in sorted(score.items(), reverse=True):
             if i < self.population_size:
                 new_score[key] = value
-                new_genome = value.tolist()
+                new_genome = value
                 index = np.random.randint(len(new_genome), size=1)[0]
                 ratio = max(iteration - 10, 0)  # first 10 iterations use max mutation speed and decrease after
                 value = (new_genome[index] * ratio +
@@ -245,7 +197,7 @@ class Optimizer:
                 if (type(new_genome[index]) == int):
                     value = int(value)
                 new_genome[index] = value
-                new_genome = np.array(new_genome)
+                print(new_genome)
 
                 _t = datetime.now()
                 profit = self.objective_function(new_genome)
