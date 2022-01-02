@@ -243,8 +243,6 @@ class Optimizer:
                 if (type(new_genome[index]) == int):
                     value = int(value)
                 new_genome[index] = value
-                print(new_genome)
-
                 _t = datetime.now()
                 profit = self.objective_function(new_genome)
                 print("Iteration Time: ", datetime.now() - _t)
