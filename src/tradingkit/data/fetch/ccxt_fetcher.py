@@ -1,7 +1,7 @@
 import sys
 import time
 
-from ccxt import DDoSProtection, RequestTimeout, Exchange
+from ccxt import DDoSProtection, RequestTimeout, Exchange, ExchangeError
 
 from tradingkit.data.fetch.fetcher import Fetcher
 from datetime import datetime
@@ -52,8 +52,18 @@ class CCXTFetcher(Fetcher):
                 time.sleep(self.wait_seconds)
             except RequestTimeout:
                 sys.stderr.write("Request timeout, retrying...\n")
+            except ExchangeError as ex:
+                if 'Too many requests' in str(ex):
+                    sys.stderr.write("Api call rate limit reached, waiting %d seconds...\n" % self.wait_seconds)
+                    time.sleep(self.wait_seconds)
+                else:
+                    template = "An  exception of type {0} occurred. Arguments:\n{1!r}"
+                    message = template.format(type(ex).__name__, ex.args)
+                    print(message)
+                    sys.exit(-1)
 
-    def fetch_all(self, symbol, since8601, to8601=None):
+
+    def fetch_all(self, symbol, since8601, to8601=None, candles=False):
         trades = []
         last_trade = None
         for step in self.fetch(symbol, since8601, to8601):
@@ -65,7 +75,8 @@ class CCXTFetcher(Fetcher):
                     # last_trade['cost'] += trade['cost']  # on some exchanges is None
                 else:
                     trades.append(last_trade)
-                    self.trade_to_candle(last_trade)
+                    if candles:
+                        self.trade_to_candle(last_trade)
                     last_trade = trade.copy()
             trades.append(last_trade)
             print("ACC trades", len(trades))
