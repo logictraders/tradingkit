@@ -13,6 +13,9 @@ from tradingkit.strategy.strategy import Strategy
 from tradingkit.utils.config_injector import ConfigInjector
 from tradingkit.utils.system import System
 
+import threading
+import concurrent.futures
+
 
 class Optimizer:
 
@@ -22,10 +25,11 @@ class Optimizer:
         self.population_size = 10
         self.count = 0
         self.max_iterations = 100
-        self.max_iteration_without_improv = 10
+        self.max_iteration_without_improv = 5
         self.start_time = time.time()
 
-    def objective_function(self, genome):
+    def objective_function(self, genome, _results, i):
+        strategy_dir = self.args['<strategy_dir>'] or '.'
         self.count += 1
         total_profit = 0
         results = []
@@ -98,10 +102,10 @@ class Optimizer:
 
         median_result = np.median(results)
         min_result = min(results)
-        result = (median_result + min_result * 3) / 4
+        score = (median_result + min_result * 7) / 8
 
-        if result > 0:
-            c_handle = open(str(self.start_time) + "_out.csv", 'a')
+        if score > 0:
+            c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
             data = []
             data.append(self.count)
             data.append("         T prof:")
@@ -111,11 +115,15 @@ class Optimizer:
             data.append("          ")
             data.append(datetime.now())
             data.append("   ")
-            data.append(result)
+            data.append(score)
             data.append(results)
             np.savetxt(c_handle, [data], delimiter="  ", fmt="%s")
             c_handle.close()
-        return result
+
+
+        if _results is not None:
+            _results[i] = score
+        return score
 
     def run_simulation(self, since, to, genome):
         config = json.loads(System.read_file("config/config.json"))
@@ -169,15 +177,28 @@ class Optimizer:
         population = self.generate_population(varbound)
         score = {}
 
+        threads = [None] * self.population_size
+        results = [None] * self.population_size
+        results_values = [None] * self.population_size
+        i = 0
         for genome in population:
-            _t = datetime.now()
-            profit = self.objective_function(genome)
-            print("Iteration Time: ", datetime.now() - _t)
-            score[profit] = genome
+            print("Main    : create and start thread %d.", i)
+            threads[i] = threading.Thread(target=self.objective_function, args=(genome, results, i))
+            threads[i].start()
+            results_values[i] = genome
+            i += 1
 
-        print("Lapsed Time: ", datetime.now() - t)
+        _t = datetime.now()
+        for i in range(len(threads)):
+            threads[i].join()
+            score[results[i]] = results_values[i]
+
+        print("Iteration Time.: ", datetime.now() - _t)
+
+        print("Lapsed Time.: ", datetime.now() - t)
 
         print("Top 10 solutions:")
+
         best_sol = 0
         i = 0
         for key, value in sorted(score.items(), reverse=True):
@@ -197,7 +218,7 @@ class Optimizer:
             print("Lapsed Time: ", datetime.now() - t)
 
             print(iteration, "Top 10 solutions:")
-            f_handle = open(str(self.start_time) + "_best.csv", 'a')
+            f_handle = open(strategy_dir + '/' + str(self.start_time) + "_best.csv", 'a')
             np.savetxt(f_handle, [[iteration]], delimiter="  ", fmt="%s")
             f_handle.close()
             i = 0
@@ -210,7 +231,7 @@ class Optimizer:
                         else:
                             iteration_without_improv += 1
                     print(i, key, value)
-                    f_handle = open(str(self.start_time) + "_best.csv", 'a')
+                    f_handle = open(strategy_dir + '/' + str(self.start_time) + "_best.csv", 'a')
                     np.savetxt(f_handle, [[key, value]], delimiter="  ", fmt="%s")
                     f_handle.close()
                     i += 1
@@ -232,10 +253,14 @@ class Optimizer:
     def mutate_and_evaluate(self, varbound, score, iteration):
         new_score = {}
         i = 0
-        for key, value in sorted(score.items(), reverse=True):
+
+        threads = [None] * self.population_size
+        results = [None] * self.population_size
+        results_values = [None] * self.population_size
+        for key, genome in sorted(score.items(), reverse=True):
             if i < self.population_size:
-                new_score[key] = value
-                new_genome = value
+                new_score[key] = genome
+                new_genome = genome.copy()
                 index = np.random.randint(len(new_genome), size=1)[0]
                 ratio = max(iteration - 10, 0)  # first 10 iterations use max mutation speed and decrease after
                 value = (new_genome[index] * ratio +
@@ -243,14 +268,23 @@ class Optimizer:
                 if (type(new_genome[index]) == int):
                     value = int(value)
                 new_genome[index] = value
-                _t = datetime.now()
-                profit = self.objective_function(new_genome)
-                print("Iteration Time: ", datetime.now() - _t)
 
-                new_score[profit] = new_genome
+                print("Main    : create and start thread %d.", i)
+                threads[i] = threading.Thread(target=self.objective_function, args=(new_genome, results, i))
+                threads[i].start()
+                results_values[i] = new_genome
+
                 i += 1
             else:
                 return new_score
+
+        _t = datetime.now()
+        for i in range(len(threads)):
+
+            threads[i].join()
+            new_score[results[i]] = results_values[i]
+
+        print("Iteration Time: ", datetime.now() - _t)
 
         return new_score
 
