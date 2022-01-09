@@ -287,8 +287,8 @@ class Optimizer:
 
                 i += 1
             else:
-                return new_score
-
+                #return new_score
+                break
         _t = datetime.now()
         for i in range(len(threads)):
             threads[i].join()
