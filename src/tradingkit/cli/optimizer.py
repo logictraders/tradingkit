@@ -14,8 +14,8 @@ from tradingkit.utils.config_injector import ConfigInjector
 from tradingkit.utils.system import System
 
 import threading
-import concurrent.futures
-
+import multiprocessing as mp
+import os.path
 
 class Optimizer:
 
@@ -25,11 +25,11 @@ class Optimizer:
         self.population_size = 10
         self.count = 0
         self.max_iterations = 100
-        self.max_iteration_without_improv = 5
+        self.max_iteration_without_improv = 10
         self.start_time = time.time()
 
-    def objective_function(self, genome, _results, i):
-        strategy_dir = self.args['<strategy_dir>'] or '.'
+    def objective_function(self, genome, _results, i, results_data):
+        #print("Process %d INIT .", i)
         self.count += 1
         total_profit = 0
         results = []
@@ -98,14 +98,48 @@ class Optimizer:
         else:
             return np.random.uniform(-200, -100, 1)[0]
         total_profit += profit
+        #
+        # # 2020
+        # since = datetime.fromisoformat("2020-01-01 00:00:00+00:00")
+        # to = datetime.fromisoformat("2021-01-01 00:00:00+00:00")
+        # result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
+        #
+        # if result['start_base_balance'] == 0:
+        #     profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
+        # else:
+        #     profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
+        # if result['end_equity'] > 0:
+        #
+        #     results.append(profit)
+        # else:
+        #     return np.random.uniform(-200, -100, 1)[0]
+        # total_profit += profit
+        #
+        # # 2021
+        # since = datetime.fromisoformat("2021-01-01 00:00:00+00:00")
+        # to = datetime.fromisoformat("2022-01-01 00:00:00+00:00")
+        # result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
+        #
+        # if result['start_base_balance'] == 0:
+        #     profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
+        # else:
+        #     profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
+        # if result['end_equity'] > 0:
+        #
+        #     results.append(profit)
+        # else:
+        #     return np.random.uniform(-200, -100, 1)[0]
+        # total_profit += profit
 
-
+        mean_result = np.mean(results)
         median_result = np.median(results)
         min_result = min(results)
-        score = (median_result + min_result * 7) / 8
+        weight = [0, 1, 4]
+        metrics = [mean_result * weight[0], median_result * weight[1], min_result * weight[2]]
+        print(metrics, sum(metrics), sum(weight))
+        score = sum(metrics) / sum(weight)
 
-        if score > 0:
-            c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
+        if score > -100:
             data = []
             data.append(self.count)
             data.append("         T prof:")
@@ -117,12 +151,13 @@ class Optimizer:
             data.append("   ")
             data.append(score)
             data.append(results)
-            np.savetxt(c_handle, [data], delimiter="  ", fmt="%s")
-            c_handle.close()
-
+            results_data[i] = data
+        else:
+            results_data[i] = None
 
         if _results is not None:
             _results[i] = score
+        #print("Process %d END .", i)
         return score
 
     def run_simulation(self, since, to, genome):
@@ -163,6 +198,8 @@ class Optimizer:
             config = json.load(open(route, 'r'))
         else:
             raise ValueError("The path: %s due not exist." % str(route))
+        c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
+        c_handle.close()
         varbound = []
         vartype = []
         for param in config['optimizer_config']:
@@ -177,13 +214,16 @@ class Optimizer:
         population = self.generate_population(varbound)
         score = {}
 
+        manager = mp.Manager()
         threads = [None] * self.population_size
-        results = [None] * self.population_size
         results_values = [None] * self.population_size
+        results = manager.dict()
+        results_data = manager.dict()
+
         i = 0
         for genome in population:
-            print("Main    : create and start thread %d.", i)
-            threads[i] = threading.Thread(target=self.objective_function, args=(genome, results, i))
+            # print("Main    : create and start thread %d.", i)
+            threads[i] = mp.Process(target=self.objective_function, args=(genome, results, i, results_data))
             threads[i].start()
             results_values[i] = genome
             i += 1
@@ -192,6 +232,10 @@ class Optimizer:
         for i in range(len(threads)):
             threads[i].join()
             score[results[i]] = results_values[i]
+            if results_data[i] is not None:
+                c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
+                np.savetxt(c_handle, [results_data[i]], delimiter="  ", fmt="%s")
+                c_handle.close()
 
         print("Iteration Time.: ", datetime.now() - _t)
 
@@ -251,12 +295,14 @@ class Optimizer:
         return population
 
     def mutate_and_evaluate(self, varbound, score, iteration):
+        strategy_dir = self.args['<strategy_dir>'] or '.'
         new_score = {}
         i = 0
-
+        manager = mp.Manager()
         threads = [None] * self.population_size
-        results = [None] * self.population_size
         results_values = [None] * self.population_size
+        results = manager.dict()
+        results_data = manager.dict()
         for key, genome in sorted(score.items(), reverse=True):
             if i < self.population_size:
                 new_score[key] = genome
@@ -269,20 +315,23 @@ class Optimizer:
                     value = int(value)
                 new_genome[index] = value
 
-                print("Main    : create and start thread %d.", i)
-                threads[i] = threading.Thread(target=self.objective_function, args=(new_genome, results, i))
+                # print("Main    : create and start thread %d.", i)
+                threads[i] = mp.Process(target=self.objective_function, args=(new_genome, results, i, results_data))
                 threads[i].start()
                 results_values[i] = new_genome
 
                 i += 1
             else:
-                return new_score
-
+                #return new_score
+                break
         _t = datetime.now()
         for i in range(len(threads)):
-
             threads[i].join()
             new_score[results[i]] = results_values[i]
+            if results_data[i] is not None:
+                c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
+                np.savetxt(c_handle, [results_data[i]], delimiter="  ", fmt="%s")
+                c_handle.close()
 
         print("Iteration Time: ", datetime.now() - _t)
 
