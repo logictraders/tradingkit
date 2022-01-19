@@ -134,12 +134,13 @@ class Optimizer:
         mean_result = np.mean(results)
         median_result = np.median(results)
         min_result = min(results)
-        weight = [0, 1, 4]
+        weight = [1, 10, 20]
         metrics = [mean_result * weight[0], median_result * weight[1], min_result * weight[2]]
+        print(results)
         print(metrics, sum(metrics), sum(weight))
         score = sum(metrics) / sum(weight)
 
-        if score > -100:
+        if score > 0:
             data = []
             data.append(self.count)
             data.append("         T prof:")
