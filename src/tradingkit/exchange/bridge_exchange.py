@@ -221,7 +221,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             },
         }))
 
-    def calculate_exchange_state(self, price, symbol, timestamp):
+    def calculate_exchange_state(self, timestamp, symbol, price):
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
         base, quote = symbol.split('/')
         all_balances = self.fetch_balance()
