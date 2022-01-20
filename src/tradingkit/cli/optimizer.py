@@ -134,7 +134,7 @@ class Optimizer:
         mean_result = np.mean(results)
         median_result = np.median(results)
         min_result = min(results)
-        weight = [1, 10, 20]
+        weight = [1, 10, 10]
         metrics = [mean_result * weight[0], median_result * weight[1], min_result * weight[2]]
         print(results)
         print(metrics, sum(metrics), sum(weight))
