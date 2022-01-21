@@ -19,28 +19,20 @@ from tradingkit.pubsub.event.trade import Trade
 
 from binance.client import Client
 from binance.websockets import BinanceSocketManager
-#from binance.streams import BinanceSocketManager
-#from twisted.internet import reactor
-
 
 class BinanceFeeder(Feeder, Publisher):
 
-    def __init__(self, credentials=None, ignore_outdated=True, pair={'symbol':'BTCUSDT'}):
+    def __init__(self, credentials=None, ignore_outdated=True, symbol='BTCUSDT'):
         super().__init__()
-        self.client = None
         self.ws = None
         if credentials is not None:
             if ('apiKey' and 'secret') not in credentials:
                 raise KeyError("credentials must contain apiKey and secret")
         self.credentials = credentials
-        self.on_open(pair['symbol'])
-        self.ignore_outdated = ignore_outdated
-        self.orderbooks = {}
-        self.symbol_dict = {"BTCUSD": "BTC/USD", "XBT/EUR": "BTC/EUR", "ETHBTC": "ETH/BTC"}
-        self.lock = None
-        self.candle = {'id': '', 'data': {}}
+        self.symbol= symbol
+        self.on_open()
 
-    def on_open(self, symbol):
+    def on_open(self):
         client = Client(self.credentials['apiKey'], self.credentials['secret'])
 
         self.ws = BinanceSocketManager(client)
@@ -49,40 +41,7 @@ class BinanceFeeder(Feeder, Publisher):
 
 
         conn_key2 = self.ws.start_user_socket(self.on_message)
-        conn_key1 = self.ws.start_symbol_ticker_socket(symbol, self.on_message)
-        print()
-        # self.ws.start()
-
-        # stop websocket
-        # bsm.stop_socket(conn_key)
-
-        # properly terminate WebSocket
-        # reactor.stop()
-
-
-    def candle_dispatcher(self, trade):
-        id = trade['timestamp'] // 60000 * 60
-        id = str(datetime.fromtimestamp(id))
-        if id == self.candle['id']:
-            self.candle['data']['high'] = max(self.candle['data']['high'], trade['price'])
-            self.candle['data']['low'] = min(self.candle['data']['low'], trade['price'])
-            self.candle['data']['close'] = trade['price']
-            self.candle['data']['vol'] += trade['amount']
-            self.candle['data']['cost'] += trade['cost']
-            self.candle['data']['trades'] += 1
-        else:
-            if self.candle['id'] != '':
-                self.dispatch_event(Candle(self.candle['data']))
-            self.candle['id'] = id
-            self.candle['data'] = {'datetime': id,
-                                   'open': trade['price'],
-                                   'high': trade['price'],
-                                   'low': trade['price'],
-                                   'close': trade['price'],
-                                   'vol': trade['amount'],
-                                   'cost': trade['cost'],
-                                   'trades': 1
-                                   }
+        conn_key1 = self.ws.start_symbol_ticker_socket(self.symbol, self.on_message)
 
     def on_message(self, message):
         if "e" in message:
@@ -106,18 +65,11 @@ class BinanceFeeder(Feeder, Publisher):
                                   'amount': float(message['l'])
                                   }
                     self.dispatch(Order(order_data))
-            else:
-                print("unknown_", message)
-                print()
-        else:
-            print("unknown", message)
-            print()
+
 
     def feed(self):
         self.ws.start()
         self.ws.join()
-        #time.sleep(10)
-        #reactor.stop()
 
 
 if __name__ == '__main__':  # for testing
