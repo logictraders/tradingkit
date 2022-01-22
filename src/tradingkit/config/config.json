@@ -9,6 +9,15 @@
       }
     ]
   },
+    "binance": {
+    "class": "ccxt.binance",
+    "arguments": [
+      {
+        "apiKey": "%env(BINANCE_KEY)%",
+        "secret": "%env(BINANCE_SECRET)%"
+      }
+    ]
+  },
   "bitmex": {
     "class": "ccxt.bitmex",
     "arguments": [

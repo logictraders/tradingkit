@@ -1,47 +1,42 @@
-import base64
-import hashlib
-import hmac
-import json
-import sys
-import threading
-import time
-import urllib.request
-from datetime import datetime
+import logging
 
-from websocket import create_connection, _logging
-
-from tradingkit.data.feed.feeder import Feeder
-from tradingkit.pubsub.core.publisher import Publisher
+from tradingkit.data.feed.websocket_feeder import WebsocketFeeder
 from tradingkit.pubsub.event.book import Book
-from tradingkit.pubsub.event.candle import Candle
 from tradingkit.pubsub.event.order import Order
 from tradingkit.pubsub.event.trade import Trade
 
 from binance.client import Client
 from binance.websockets import BinanceSocketManager
 
-class BinanceFeeder(Feeder, Publisher):
 
-    def __init__(self, credentials=None, ignore_outdated=True, symbol='BTCUSDT'):
-        super().__init__()
+class BinanceFeeder(WebsocketFeeder):
+
+    denormalized_symbol = {
+        'BTC/USDT': 'BTCUSDT',
+        'ETH/USDT': 'ETHUSDT',
+        'ETH/BTC': 'ETHBTC',
+    }
+
+    def __init__(self, symbol, credentials, url):
+        super().__init__(symbol, credentials, url)
         self.ws = None
         if credentials is not None:
             if ('apiKey' and 'secret') not in credentials:
                 raise KeyError("credentials must contain apiKey and secret")
         self.credentials = credentials
-        self.symbol= symbol
-        self.on_open()
+
+        self.symbol = self.denormalized_symbol[symbol]
+
 
     def on_open(self):
         client = Client(self.credentials['apiKey'], self.credentials['secret'])
 
         self.ws = BinanceSocketManager(client)
-        #conn_key = self.ws.start_trade_socket('BTCUSDT', self.on_message)
+        # conn_key = self.ws.start_trade_socket('BTCUSDT', self.on_message)
         # conn_key0 = self.ws.start_symbol_book_ticker_socket('BTCUSDT', self.on_message)  # for fast price movments
 
-
-        conn_key2 = self.ws.start_user_socket(self.on_message)
-        conn_key1 = self.ws.start_symbol_ticker_socket(self.symbol, self.on_message)
+        self.ws.start_user_socket(self.on_message)
+        self.ws.start_symbol_ticker_socket(self.symbol, self.on_message)
 
     def on_message(self, message):
         if "e" in message:
@@ -66,8 +61,8 @@ class BinanceFeeder(Feeder, Publisher):
                                   }
                     self.dispatch(Order(order_data))
 
-
     def feed(self):
+        self.on_open()
         self.ws.start()
         self.ws.join()
 
@@ -106,5 +101,5 @@ if __name__ == '__main__':  # for testing
     # bsm.start()
 
     cred = {"apiKey": BINANCE_KEY, "secret": BINANCE_SECRET}
-    bf = BinanceFeeder(credentials=cred)
+    bf = BinanceFeeder("", credentials=cred, url="")
     bf.feed()
