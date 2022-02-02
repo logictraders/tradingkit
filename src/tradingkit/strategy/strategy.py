@@ -66,5 +66,6 @@ class Strategy(Publisher, Subscriber, ABC):
             "max_drawdown": self.exchange.get_max_draw_down(),
             "sharpe_ratio": self.exchange.get_sharpe_ratio(),
             "start_base_balance": self.start_base_balance,
-            "end_base_equity": end_base_equity
+            "end_base_equity": end_base_equity,
+            "no_trade_max_days": self.exchange.get_statistics()['no_trade_max_time'] / 1000 / 60 / 60 / 24
         }

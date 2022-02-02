@@ -13,6 +13,7 @@ from tradingkit.pubsub.event.order import Order
 from tradingkit.pubsub.event.plot import Plot
 from tradingkit.pubsub.event.trade import Trade
 from tradingkit.pubsub.event.liquidation import Liquidation
+from tradingkit.exchange.statistics import Statistics
 import numpy
 
 
@@ -51,6 +52,11 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             "1w": 604800,
             "2w": 1209600
         }
+
+        self.statistics = Statistics()
+
+    def get_statistics(self):
+        return self.statistics.get_statistics()
 
     def sec(self):
         return self.exchange.sec()
@@ -104,6 +110,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 event.payload = self.orders_history[order['id']]
             self.plot_order(event)
             self.calculate_exchange_state(order['lastTradeTimestamp'], order['symbol'], self.last_price)
+            #self.statistics.update_trades_statistics(order['lastTradeTimestamp'])
         if isinstance(event, OpenOrder):
             self.plot_order(event)
             order = event.payload.copy()
