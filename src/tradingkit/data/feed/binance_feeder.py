@@ -17,6 +17,12 @@ class BinanceFeeder(WebsocketFeeder):
         'ETH/BTC': 'ETHBTC',
     }
 
+    normalized_symbol = {
+        'BTCUSDT': 'BTC/USDT',
+        'ETHUSDT': 'ETH/USDT',
+        'ETHBTC': 'ETH/BTC',
+    }
+
     def __init__(self, symbol, credentials, url):
         super().__init__(symbol, credentials, url)
         self.ws = None
@@ -24,82 +30,68 @@ class BinanceFeeder(WebsocketFeeder):
             if ('apiKey' and 'secret') not in credentials:
                 raise KeyError("credentials must contain apiKey and secret")
         self.credentials = credentials
-
         self.symbol = self.denormalized_symbol[symbol]
 
 
     def on_open(self):
         client = Client(self.credentials['apiKey'], self.credentials['secret'])
-
         self.ws = BinanceSocketManager(client)
-        # conn_key = self.ws.start_trade_socket('BTCUSDT', self.on_message)
-        # conn_key0 = self.ws.start_symbol_book_ticker_socket('BTCUSDT', self.on_message)  # for fast price movments
 
         self.ws.start_user_socket(self.on_message)
         self.ws.start_symbol_ticker_socket(self.symbol, self.on_message)
+        self.ws.start_trade_socket(self.symbol, self.on_message)
 
     def on_message(self, message):
         if "e" in message:
             if message['e'] == '24hrTicker':
-                order_book = {"bids": [[float(message['b']), float(message['B'])]],
-                              "ascs": [[float(message['a']), float(message['A'])]],
-                              "timestamp": int(message['E']),
-                              "symbol": message['s']
-                              }
+                order_book = self.transform_book_data(message)
                 self.dispatch(Book(order_book))
+
             elif message['e'] == 'executionReport':
                 if message['x'] == 'TRADE' and message['X'] == 'FILLED':
-                    order_data = {'id': str(message['i']),
-                                  'timestamp': message['O'],
-                                  'lastTradeTimestamp': message['E'],
-                                  'status': 'filled',
-                                  'symbol': message['s'],
-                                  'type': message['o'],
-                                  'side': message['S'],
-                                  'price': float(message['L']),
-                                  'amount': float(message['l'])
-                                  }
+                    order_data = self.transform_order_data(message)
                     self.dispatch(Order(order_data))
+
+            elif message['e'] == 'trade':
+                trade_data = self.transform_trade_data(message)
+                self.dispatch(Trade(trade_data))
+
+    def transform_book_data(self, message):
+        order_book = {"bids": [[float(message['b']), float(message['B'])]],
+                      "ascs": [[float(message['a']), float(message['A'])]],
+                      "timestamp": int(message['E']),
+                      "symbol": message['s']
+                      }
+        return order_book
+
+    def transform_order_data(self, message):
+        order_data = {'id': str(message['i']),
+                      'timestamp': message['O'],
+                      'lastTradeTimestamp': message['E'],
+                      'status': 'filled',
+                      'symbol': message['s'],
+                      'type': message['o'],
+                      'side': message['S'],
+                      'price': float(message['L']),
+                      'amount': float(message['l'])
+                      }
+        return order_data
+
+    def transform_trade_data(self, message):
+        side = 'sell' if message['m'] else 'buy'
+        trade_data = {
+            'price': float(message['p']),
+            'amount': float(message['q']),
+            'cost': float(message['q']) * float(message['p']),
+            'timestamp': int(message['E'] / 1000),
+            'side': side,
+            'type': 'limit',
+            'symbol': self.normalized_symbol[message['s']]
+        }
+        return trade_data
 
     def feed(self):
         self.on_open()
         self.ws.start()
         self.ws.join()
 
-
-if __name__ == '__main__':  # for testing
-
-    # import os
-    #
-    # from binance.client import Client
-    # from binance.websockets import BinanceSocketManager
-    # from twisted.internet import reactor
-    #
-    #
-    BINANCE_KEY = ''
-    BINANCE_SECRET = ''
-    #
-    # # init
-    # client = Client(BINANCE_KEY, BINANCE_SECRET)
-    # btc_price = {'error': False}
-    #
-    #
-    # def btc_trade_history(msg):
-    #     ''' define how to process incoming WebSocket messages '''
-    #     if msg['e'] != 'error':
-    #         print(msg['c'])
-    #         btc_price['last'] = msg['c']
-    #         btc_price['bid'] = msg['b']
-    #         btc_price['last'] = msg['a']
-    #     else:
-    #         btc_price['error'] = True
-    #
-    #
-    # # init and start the WebSocket
-    # bsm = BinanceSocketManager(client)
-    # conn_key = bsm.start_symbol_ticker_socket('BTCUSDT', btc_trade_history)
-    # bsm.start()
-
-    cred = {"apiKey": BINANCE_KEY, "secret": BINANCE_SECRET}
-    bf = BinanceFeeder("", credentials=cred, url="")
-    bf.feed()
