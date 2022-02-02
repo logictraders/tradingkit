@@ -142,16 +142,16 @@ class Optimizer:
 
         if score > 0:
             data = []
-            data.append(self.count)
-            data.append("         T prof:")
-            data.append(total_profit)
-            data.append("%          ")
-            data.append(genome)
-            data.append("          ")
-            data.append(datetime.now())
-            data.append("   ")
+            data.append("  T prof:")
+            data.append(round(total_profit, 2))
+            data.append("%  ")
             data.append(score)
+            data.append(" ")
             data.append(results)
+            data.append("   ")
+            data.append(genome)
+            data.append("      ")
+            data.append(datetime.now())
             results_data[i] = data
         else:
             results_data[i] = None
