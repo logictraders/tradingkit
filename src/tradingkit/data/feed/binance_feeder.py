@@ -10,14 +10,15 @@ from binance.websockets import BinanceSocketManager
 
 
 class BinanceFeeder(WebsocketFeeder):
-
     denormalized_symbol = {
+        'BTC/USD': 'BTCUSD',
         'BTC/USDT': 'BTCUSDT',
         'ETH/USDT': 'ETHUSDT',
         'ETH/BTC': 'ETHBTC',
     }
 
     normalized_symbol = {
+        'BTCUSD': 'BTC/USD',
         'BTCUSDT': 'BTC/USDT',
         'ETHUSDT': 'ETH/USDT',
         'ETHBTC': 'ETH/BTC',
@@ -31,7 +32,6 @@ class BinanceFeeder(WebsocketFeeder):
                 raise KeyError("credentials must contain apiKey and secret")
         self.credentials = credentials
         self.symbol = self.denormalized_symbol[symbol]
-
 
     def on_open(self):
         client = Client(self.credentials['apiKey'], self.credentials['secret'])
@@ -60,7 +60,7 @@ class BinanceFeeder(WebsocketFeeder):
         order_book = {"bids": [[float(message['b']), float(message['B'])]],
                       "ascs": [[float(message['a']), float(message['A'])]],
                       "timestamp": int(message['E']),
-                      "symbol": message['s']
+                      "symbol": self.normalized_symbol[message['s']]  # message['s']
                       }
         return order_book
 
@@ -69,7 +69,7 @@ class BinanceFeeder(WebsocketFeeder):
                       'timestamp': message['O'],
                       'lastTradeTimestamp': message['E'],
                       'status': 'filled',
-                      'symbol': message['s'],
+                      'symbol': self.normalized_symbol[message['s']],  # message['s']
                       'type': message['o'],
                       'side': message['S'],
                       'price': float(message['L']),
@@ -94,4 +94,3 @@ class BinanceFeeder(WebsocketFeeder):
         self.on_open()
         self.ws.start()
         self.ws.join()
-
