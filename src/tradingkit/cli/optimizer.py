@@ -25,20 +25,16 @@ class Optimizer:
         self.population_size = 10
         self.count = 0
         self.max_iterations = 100
-        self.max_iteration_without_improv = 5
+        self.max_iteration_without_improv = 10
         self.start_time = time.time()
 
     def objective_function(self, genome, _results, i, results_data):
-        print("Process %d INIT .", i)
         self.count += 1
         total_profit = 0
         results = []
-        # select the dataset/s to optimize
+        results_ = []
 
-        #2016
-        since = datetime.fromisoformat("2016-01-01 00:00:00+00:00")
-        to = datetime.fromisoformat("2016-01-10 00:00:00+00:00")
-        result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
+        result = self.run_simulation(genome)
 
         if result['start_base_balance'] == 0:
             profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
@@ -47,85 +43,44 @@ class Optimizer:
         if result['end_equity'] > 0:
 
             results.append(profit)
+            mdd_penalty = 1
+            results_.append(profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty)
+            print('mdd ', profit, profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty, result['max_drawdown'], (1 - abs(result['max_drawdown'])) ** mdd_penalty)
         else:
             return np.random.uniform(-200, -100, 1)[0]
         total_profit += profit
 
-        # # 2017
-        # since = datetime.fromisoformat("2017-01-01 00:00:00+00:00")
-        # to = datetime.fromisoformat("2018-01-01 00:00:00+00:00")
-        # result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
-        #
-        # if result['start_base_balance'] == 0:
-        #     profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
-        # else:
-        #     profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        # if result['end_equity'] > 0:
-        #
-        #     results.append(profit)
-        # else:
-        #     return np.random.uniform(-200, -100, 1)[0]
-        # total_profit += profit
-        #
-        # # 2018
-        # since = datetime.fromisoformat("2018-01-01 00:00:00+00:00")
-        # to = datetime.fromisoformat("2019-01-01 00:00:00+00:00")
-        # result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
-        #
-        # if result['start_base_balance'] == 0:
-        #     profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
-        # else:
-        #     profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        # if result['end_equity'] > 0:
-        #
-        #     results.append(profit)
-        # else:
-        #     return np.random.uniform(-200, -100, 1)[0]
-        # total_profit += profit
-        #
-        # # 2019
-        # since = datetime.fromisoformat("2019-01-01 00:00:00+00:00")
-        # to = datetime.fromisoformat("2020-01-01 00:00:00+00:00")
-        # result = self.run_simulation(since.isoformat(), to.isoformat(), genome)
-        #
-        # if result['start_base_balance'] == 0:
-        #     profit = (result['end_equity'] - result['start_equity']) / result['start_equity'] * 100
-        # else:
-        #     profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
-        # if result['end_equity'] > 0:
-        #
-        #     results.append(profit)
-        # else:
-        #     return np.random.uniform(-200, -100, 1)[0]
-        # total_profit += profit
-
-
+        mean_result = np.mean(results)
         median_result = np.median(results)
         min_result = min(results)
-        score = (median_result + min_result * 7) / 8
+        weight = [1, 10, 10]
+        metrics = [mean_result * weight[0], median_result * weight[1], min_result * weight[2]]
+        #print(results)
+        #print(metrics, sum(metrics), sum(weight))
+        #score = sum(metrics) / sum(weight)
+        score = sum(results_)
 
         if score > 0:
             data = []
-            data.append(self.count)
-            data.append("         T prof:")
-            data.append(total_profit)
-            data.append("%          ")
-            data.append(genome)
-            data.append("          ")
-            data.append(datetime.now())
-            data.append("   ")
+            data.append("  T prof:")
+            data.append(round(total_profit, 2))
+            data.append("%  ")
             data.append(score)
+            data.append(" ")
             data.append(results)
+            data.append("   ")
+            data.append(genome)
+            data.append("      ")
+            data.append(datetime.now())
             results_data[i] = data
         else:
             results_data[i] = None
 
         if _results is not None:
             _results[i] = score
-        print("Process %d END .", i)
         return score
 
-    def run_simulation(self, since, to, genome):
+    def run_simulation(self, genome):
         config = json.loads(System.read_file("config/config.json"))
         strategy_dir = self.args['<strategy_dir>'] or '.'
         System.load_env(strategy_dir, self.args['--env'])
@@ -138,8 +93,6 @@ class Optimizer:
         if os.path.exists(env_conf):
             config.update(json.load(open(env_conf, 'r')))
 
-        config['since'] = since
-        config['to'] = to
         for i in range(len(self.param_names)):
             config['config'][self.param_names[i]] = genome[i]
 
