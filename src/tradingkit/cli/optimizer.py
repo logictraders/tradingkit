@@ -27,6 +27,7 @@ class Optimizer:
         self.max_iterations = 100
         self.max_iteration_without_improv = 10
         self.start_time = time.time()
+        self.config = None
 
     def objective_function(self, genome, _results, i, results_data):
         self.count += 1
@@ -81,22 +82,11 @@ class Optimizer:
         return score
 
     def run_simulation(self, genome):
-        config = json.loads(System.read_file("config/config.json"))
-        strategy_dir = self.args['<strategy_dir>'] or '.'
-        System.load_env(strategy_dir, self.args['--env'])
-
-        main_conf = "%s/config/config.json" % os.path.abspath(strategy_dir)
-        if os.path.exists(main_conf):
-            config.update(json.load(open(main_conf, 'r')))
-
-        env_conf = "%s/config/config.%s.json" % (os.path.abspath(strategy_dir), self.args['--env'])
-        if os.path.exists(env_conf):
-            config.update(json.load(open(env_conf, 'r')))
 
         for i in range(len(self.param_names)):
-            config['config'][self.param_names[i]] = genome[i]
+            self.config['config'][self.param_names[i]] = genome[i]
 
-        injector = ConfigInjector(config)
+        injector = ConfigInjector(self.config)
         feeder = injector.inject('feeder', Feeder)
         exchange = injector.inject('exchange', Exchange)
         plotter = injector.inject('plotter', Plotter)
@@ -109,7 +99,20 @@ class Optimizer:
                             self.args['--plot'])
         return result
 
+    def get_config(self):
+        config = json.loads(System.read_file("config/config.json"))
+        strategy_dir = self.args['<strategy_dir>'] or '.'
+        System.load_env(strategy_dir, self.args['--env'])
+        main_conf = "%s/config/config.json" % os.path.abspath(strategy_dir)
+        if os.path.exists(main_conf):
+            config.update(json.load(open(main_conf, 'r')))
+        env_conf = "%s/config/config.%s.json" % (os.path.abspath(strategy_dir), self.args['--env'])
+        if os.path.exists(env_conf):
+            config.update(json.load(open(env_conf, 'r')))
+        return config
+
     def optimize(self, args):
+
         strategy_dir = args['<strategy_dir>'] or '.'
         route = "%s/config/config.json" % os.path.abspath(strategy_dir)
         if os.path.exists(route):
@@ -125,6 +128,8 @@ class Optimizer:
             varbound.append([config['optimizer_config'][param]['from'], config['optimizer_config'][param]['to']])
             vartype.append([config['optimizer_config'][param]['type']])
         self.args = args
+        self.config = self.get_config()
+
 
         t = datetime.now()
 
