@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.10.0](https://github.com/logictraders/tradingkit/compare/v1.9.6...v1.10.0) (2022-02-10)
+
+
+### Bug Fixes
+
+* **bitmex:** liquidation price ([#40](https://github.com/logictraders/tradingkit/issues/40)) ([2042a6e](https://github.com/logictraders/tradingkit/commit/2042a6e))
+* **bridge:** bugfix in calculate exchange balance ([b81baff](https://github.com/logictraders/tradingkit/commit/b81baff))
+* **kraken:** added tests to kraken feeder ([#41](https://github.com/logictraders/tradingkit/issues/41)) ([ea7d96a](https://github.com/logictraders/tradingkit/commit/ea7d96a))
+* **kraken:** added tests to kraken feeder ([#41](https://github.com/logictraders/tradingkit/issues/41)) ([dfa55b1](https://github.com/logictraders/tradingkit/commit/dfa55b1))
+* **kraken:** added tests to kraken feeder ([#41](https://github.com/logictraders/tradingkit/issues/41)) ([5de5fa2](https://github.com/logictraders/tradingkit/commit/5de5fa2))
+* **statistics:** reimplemented max drawdown (MDD) calculation ([#42](https://github.com/logictraders/tradingkit/issues/42)) ([c369b69](https://github.com/logictraders/tradingkit/commit/c369b69))
+* **test_bitmex_feeder:** pass feeder object on calls ([#39](https://github.com/logictraders/tradingkit/issues/39)) ([726c04e](https://github.com/logictraders/tradingkit/commit/726c04e))
+
+
+### Features
+
+* **cli:** added fetch candle option ([#43](https://github.com/logictraders/tradingkit/issues/43)) ([df00ef4](https://github.com/logictraders/tradingkit/commit/df00ef4))
+* **PRs:** inclued al PR pending ([b935536](https://github.com/logictraders/tradingkit/commit/b935536))
+
+
+
 ### [1.9.6](https://github.com/logictraders/tradingkit/compare/v1.9.5...v1.9.6) (2021-12-01)
 
 
