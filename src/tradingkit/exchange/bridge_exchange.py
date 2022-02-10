@@ -225,7 +225,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
         base, quote = symbol.split('/')
         all_balances = self.fetch_balance()
-        balances = all_balances['free'] if all_balances['free'][base] else all_balances['total']
+        balances = all_balances['free'] if base in all_balances['free'] else all_balances['total']
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
         equity = quote_balance + base_balance * price
