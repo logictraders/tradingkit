@@ -45,20 +45,10 @@ class Optimizer:
             results.append(profit)
             mdd_penalty = 1
             results_.append(profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty)
-            print('mdd ', profit, profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty, result['max_drawdown'],
-                  (1 - abs(result['max_drawdown'])) ** mdd_penalty)
         else:
             return np.random.uniform(-200, -100, 1)[0]
         total_profit += profit
 
-        # mean_result = np.mean(results)
-        # median_result = np.median(results)
-        # min_result = min(results)
-        # weight = [1, 10, 10]
-        # metrics = [mean_result * weight[0], median_result * weight[1], min_result * weight[2]]
-        # print(results)
-        # print(metrics, sum(metrics), sum(weight))
-        # score = sum(metrics) / sum(weight)
         score = sum(results_)
 
         if score > 0:
@@ -69,6 +59,8 @@ class Optimizer:
             data.append(score)
             data.append(" ")
             data.append(results)
+            data.append(" MDD  ")
+            data.append(result['max_drawdown'])
             data.append("   ")
             data.append(genome)
             data.append("      ")
