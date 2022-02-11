@@ -117,7 +117,9 @@ class CLI(Command):
             bridge = injector.inject('bridge', Exchange)
             feeder_adapters = injector.inject('feeder_adapters', list)
 
-            Runner.run(feeder, exchange, plotter, strategy, bridge, feeder_adapters, args['--optimize'], args['--plot'])
+            plot = args['--plot'] or args['--live_plot']
+
+            Runner.run(feeder, exchange, plotter, strategy, bridge, feeder_adapters, args['--optimize'], plot)
 
     @staticmethod
     def command_import(exchange_name, symbol, fetcher, year, months, candles=False):
