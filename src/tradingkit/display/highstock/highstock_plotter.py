@@ -70,8 +70,12 @@ class HighstockPlotter(Plotter):
         balance_process = multiprocessing.Process(target=balance_ps.run)
         chart_process.start()
         logging.info("Chart PlotServer running at port %s ... \n" % str(self.chart_port))
+        logging.info("Also can open this file on the browser to show the chart: %s \n" %
+                     str(os.path.dirname(__file__) + '/lib/live.html'))
         balance_process.start()
         logging.info("Balance PlotServer running at port %s ... \n" % str(self.balance_port))
+        logging.info("Also can open this file on the browser to show the chart: %s \n" %
+                     str(os.path.dirname(__file__) + '/lib/live_balance.html'))
 
     def on_event(self, event: Event):
         if isinstance(event, Plot):
@@ -104,7 +108,6 @@ class HighstockPlotter(Plotter):
                         plot['data']['base_equity'] * plot['data']['close'])])
 
                     if self.live_plot:
-                        time.sleep(1)
                         self.new_price()
             elif plot['name'].lower() == 'equity':
                 if self.series['assets'] is None:
