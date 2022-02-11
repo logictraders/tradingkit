@@ -1,4 +1,3 @@
-import math
 import time
 from datetime import datetime
 import json
@@ -13,9 +12,9 @@ from tradingkit.strategy.strategy import Strategy
 from tradingkit.utils.config_injector import ConfigInjector
 from tradingkit.utils.system import System
 
-import threading
 import multiprocessing as mp
 import os.path
+
 
 class Optimizer:
 
@@ -46,19 +45,20 @@ class Optimizer:
             results.append(profit)
             mdd_penalty = 1
             results_.append(profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty)
-            print('mdd ', profit, profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty, result['max_drawdown'], (1 - abs(result['max_drawdown'])) ** mdd_penalty)
+            print('mdd ', profit, profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty, result['max_drawdown'],
+                  (1 - abs(result['max_drawdown'])) ** mdd_penalty)
         else:
             return np.random.uniform(-200, -100, 1)[0]
         total_profit += profit
 
-        mean_result = np.mean(results)
-        median_result = np.median(results)
-        min_result = min(results)
-        weight = [1, 10, 10]
-        metrics = [mean_result * weight[0], median_result * weight[1], min_result * weight[2]]
-        #print(results)
-        #print(metrics, sum(metrics), sum(weight))
-        #score = sum(metrics) / sum(weight)
+        # mean_result = np.mean(results)
+        # median_result = np.median(results)
+        # min_result = min(results)
+        # weight = [1, 10, 10]
+        # metrics = [mean_result * weight[0], median_result * weight[1], min_result * weight[2]]
+        # print(results)
+        # print(metrics, sum(metrics), sum(weight))
+        # score = sum(metrics) / sum(weight)
         score = sum(results_)
 
         if score > 0:
@@ -129,8 +129,6 @@ class Optimizer:
             vartype.append([config['optimizer_config'][param]['type']])
         self.args = args
         self.config = self.get_config()
-
-
         t = datetime.now()
 
         # first evaluation
@@ -138,22 +136,21 @@ class Optimizer:
         score = {}
 
         manager = mp.Manager()
-        threads = [None] * self.population_size
+        process_list = [None] * self.population_size
         results_values = [None] * self.population_size
         results = manager.dict()
         results_data = manager.dict()
 
         i = 0
         for genome in population:
-            # print("Main    : create and start thread %d.", i)
-            threads[i] = mp.Process(target=self.objective_function, args=(genome, results, i, results_data))
-            threads[i].start()
+            process_list[i] = mp.Process(target=self.objective_function, args=(genome, results, i, results_data))
+            process_list[i].start()
             results_values[i] = genome
             i += 1
 
         _t = datetime.now()
-        for i in range(len(threads)):
-            threads[i].join()
+        for i in range(len(process_list)):
+            process_list[i].join()
             score[results[i]] = results_values[i]
             if results_data[i] is not None:
                 c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
@@ -161,9 +158,7 @@ class Optimizer:
                 c_handle.close()
 
         print("Iteration Time.: ", datetime.now() - _t)
-
         print("Lapsed Time.: ", datetime.now() - t)
-
         print("Top 10 solutions:")
 
         best_sol = 0
@@ -222,7 +217,7 @@ class Optimizer:
         new_score = {}
         i = 0
         manager = mp.Manager()
-        threads = [None] * self.population_size
+        process_list = [None] * self.population_size
         results_values = [None] * self.population_size
         results = manager.dict()
         results_data = manager.dict()
@@ -233,23 +228,22 @@ class Optimizer:
                 index = np.random.randint(len(new_genome), size=1)[0]
                 ratio = max(iteration - 10, 0)  # first 10 iterations use max mutation speed and decrease after
                 value = (new_genome[index] * ratio +
-                                     np.random.uniform(varbound[index][0], varbound[index][1], 1)[0]) / (ratio + 1)
+                         np.random.uniform(varbound[index][0], varbound[index][1], 1)[0]) / (ratio + 1)
                 if (type(new_genome[index]) == int):
                     value = int(value)
                 new_genome[index] = value
 
-                # print("Main    : create and start thread %d.", i)
-                threads[i] = mp.Process(target=self.objective_function, args=(new_genome, results, i, results_data))
-                threads[i].start()
+                process_list[i] = mp.Process(target=self.objective_function, args=(new_genome, results, i, results_data))
+                process_list[i].start()
                 results_values[i] = new_genome
 
                 i += 1
             else:
-                #return new_score
+                # return new_score
                 break
         _t = datetime.now()
-        for i in range(len(threads)):
-            threads[i].join()
+        for i in range(len(process_list)):
+            process_list[i].join()
             new_score[results[i]] = results_values[i]
             if results_data[i] is not None:
                 c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
@@ -257,7 +251,4 @@ class Optimizer:
                 c_handle.close()
 
         print("Iteration Time: ", datetime.now() - _t)
-
         return new_score
-
-
