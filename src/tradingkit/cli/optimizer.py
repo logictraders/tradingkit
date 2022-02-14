@@ -26,7 +26,7 @@ class Optimizer:
         self.count = 0
         self.max_iterations = 100
         self.max_iteration_without_improv = 10
-        self.start_time = time.time()
+        self.start_time = int(time.time())
         self.config = None
 
     def objective_function(self, genome, _results, i, results_data):
