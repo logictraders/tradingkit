@@ -70,6 +70,9 @@ class TestEX(Publisher, Subscriber, Exchange):
     def fetch_open_orders(self, symbol=None, since=None, limit=None, params={}):
         return list(self.open_orders.values())
 
+    def fetch_closed_orders(self, symbol=None, since=None, limit=None, params={}):
+        return self.history
+
     def create_order(self, symbol, type, side, amount, price=None, params={}):
         order_id = str(uuid.uuid4())
         now = self.milliseconds()
