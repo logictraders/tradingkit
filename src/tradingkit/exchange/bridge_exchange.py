@@ -322,7 +322,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def update_balance_hist(self, event):
         date = datetime.fromisoformat(event.payload['datetime'])
-        if self.last_balance_check is None or date - self.last_balance_check > timedelta(days=1):
+        if self.last_balance_check is None or date - self.last_balance_check >= timedelta(days=1):
             self.last_balance_check = date
 
             price = event.payload['close']
@@ -345,7 +345,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def get_sharpe_ratio(self):
         profits_history = []
-        for i in range(len(self.balance_history) - 2):
+        for i in range(len(self.balance_history) - 1):
             profit = (self.balance_history[i+1][0] / self.balance_history[i][0] - 1) * 100
             profits_history.append(profit)
 
