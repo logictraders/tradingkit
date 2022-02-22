@@ -315,7 +315,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def update_balance_hist(self, event):
         date = datetime.fromisoformat(event.payload['datetime'])
-        if self.last_balance_check is None or date - self.last_balance_check > timedelta(hours=1):
+        if self.last_balance_check is None or date - self.last_balance_check > timedelta(days=1):
             self.last_balance_check = date
 
             price = event.payload['close']
@@ -326,15 +326,26 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             base_balance = balances[base] if base in balances else 0
             quote_balance = balances[quote] if quote in balances else 0
 
-            # todo use quote equity for kraken (equity = quote_balance + base_balance * price)
-            base_equity = base_balance + quote_balance / price
-
-            self.balance_history.append(base_equity)
+            if self.has_position:
+                base_equity = base_balance + quote_balance / price
+                self.balance_history.append([base_equity, date])
+            else:
+                quote_equity = quote_balance + base_balance * price
+                self.balance_history.append([quote_equity, date])
 
 
     def get_sharpe_ratio(self):
-        standard_deviation = numpy.std(self.balance_history)
-        sharpe_ratio = (self.balance_history[-1] / self.balance_history[0]) / standard_deviation
+        profits_history = []
+        for i in range(len(self.balance_history) - 2):
+            profit = (self.balance_history[i+1][0] / self.balance_history[i][0] - 1) * 100
+            profits_history.append(profit)
+
+        standard_deviation = numpy.std(profits_history)
+        time_delta_years = (self.balance_history[-1][1] - self.balance_history[0][1]).days / 365
+        total_profit = (self.balance_history[-1][0] / self.balance_history[0][0] -1) * 100
+        anual_profit = total_profit / time_delta_years
+        no_risk_profit = 5
+        sharpe_ratio = (anual_profit - no_risk_profit) / standard_deviation
         return sharpe_ratio
 
     def candle_dispatcher(self, trade):
