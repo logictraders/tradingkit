@@ -327,8 +327,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
             price = event.payload['close']
             base, quote = self.symbol.split('/')
-            balances = self.fetch_balance()
-            balances = balances['free'] if balances['free'][base] else balances['total']
+            _balances = self.fetch_balance()
+            balances = _balances['free'] if _balances['free'][base] else _balances['total']
 
             base_balance = balances[base] if base in balances else 0
             quote_balance = balances[quote] if quote in balances else 0
@@ -339,6 +339,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             else:
                 quote_equity = quote_balance + base_balance * price
                 self.balance_history.append([quote_equity, date])
+
+            self.calculate_max_drawdown(_balances['total'][base], _balances['total'][quote])
 
 
     def get_sharpe_ratio(self):
