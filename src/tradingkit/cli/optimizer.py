@@ -24,7 +24,7 @@ class Optimizer:
         self.param_names = []
         self.population_size = 10
         self.count = 0
-        self.max_iterations = 100
+        self.max_iterations = None
         self.max_iteration_without_improv = 10
         self.start_time = int(time.time())
         self.config = None
@@ -120,6 +120,7 @@ class Optimizer:
             self.param_names.append(param)
             varbound.append([config['optimizer_config'][param]['from'], config['optimizer_config'][param]['to']])
             vartype.append([config['optimizer_config'][param]['type']])
+        self.max_iterations = len(self.param_names) * 10
         self.args = args
         self.config = self.get_config()
         t = datetime.now()
