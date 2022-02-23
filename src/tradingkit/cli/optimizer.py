@@ -219,9 +219,13 @@ class Optimizer:
                 new_score[key] = genome
                 new_genome = genome.copy()
                 index = np.random.randint(len(new_genome), size=1)[0]
-                ratio = max(iteration - 10, 0)  # first 10 iterations use max mutation speed and decrease after
-                value = (new_genome[index] * ratio +
-                         np.random.uniform(varbound[index][0], varbound[index][1], 1)[0]) / (ratio + 1)
+                ratio = 1 - iteration / self.max_iterations
+                print("ratio", ratio)
+                adding = bool(np.random.choice([True, False]))
+                if adding:
+                    value = new_genome[index] + ratio * np.random.uniform(0, varbound[index][1] - new_genome[index], 1)[0]
+                else:
+                    value = new_genome[index] - ratio * np.random.uniform(0, new_genome[index] - varbound[index][0], 1)[0]
                 if (type(new_genome[index]) == int):
                     value = int(value)
                 new_genome[index] = value
