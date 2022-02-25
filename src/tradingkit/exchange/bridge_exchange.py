@@ -321,15 +321,17 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             price = event.payload['close']
             base, quote = self.symbol.split('/')
             _balances = self.fetch_balance()
-            balances = _balances['free'] if _balances['free'][base] else _balances['total']
-
-            base_balance = balances[base] if base in balances else 0
-            quote_balance = balances[quote] if quote in balances else 0
 
             if self.has_position:
+                balances = _balances['free']
+                base_balance = balances[base] if base in balances else 0
+                quote_balance = balances[quote] if quote in balances else 0
                 base_equity = base_balance + quote_balance / price
                 self.balance_history.append([base_equity, date])
             else:
+                balances = _balances['total']
+                base_balance = balances[base] if base in balances else 0
+                quote_balance = balances[quote] if quote in balances else 0
                 quote_equity = quote_balance + base_balance * price
                 self.balance_history.append([quote_equity, date])
 
