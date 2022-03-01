@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.1](https://github.com/logictraders/tradingkit/compare/v1.10.0...v1.10.1) (2022-03-01)
+
+
+### Bug Fixes
+
+* **kraken:** problem with private feeder ([8e9502b](https://github.com/logictraders/tradingkit/commit/8e9502b))
+
+
+
 ## [1.10.0](https://github.com/logictraders/tradingkit/compare/v1.9.6...v1.10.0) (2022-02-10)
 
 
