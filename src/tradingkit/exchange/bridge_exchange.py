@@ -337,11 +337,10 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
             self.calculate_max_drawdown(_balances['total'][base], _balances['total'][quote])
 
-
     def get_sharpe_ratio(self):
         profits_history = []
         for i in range(len(self.balance_history) - 1):
-            profit = (self.balance_history[i+1][0] / self.balance_history[i][0] - 1) * 100
+            profit = (self.balance_history[i+1][0] / self.balance_history[0][0] - 1) * 100
             profits_history.append(profit)
 
         standard_deviation = numpy.std(profits_history)
