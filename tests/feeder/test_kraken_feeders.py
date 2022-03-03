@@ -13,6 +13,7 @@ class TestKrakenFeeder(TestCase):
         trade = PublicKrakenFeeder.transform_trade_data(PublicKrakenFeeder, kraken_real_trade_info)[0]
         assert type(trade['timestamp']) is int
         assert trade['symbol'] == 'BTC/EUR'
+        assert trade['exchange'] == 'kraken'
         assert trade['amount'] == 0.02242183
         assert trade['cost'] == 41500.00000 * 0.02242183
 
@@ -43,6 +44,7 @@ class TestKrakenFeeder(TestCase):
 
         assert type(book['timestamp']) is int
         assert book['symbol'] == 'BTC/EUR'
+        assert book['exchange'] == 'kraken'
         assert book['asks'][0][0] == 41500.00000
         assert book['bids'][0][0] == 41499.90000
 
@@ -74,6 +76,7 @@ class TestKrakenFeeder(TestCase):
 
         assert type(order['timestamp']) is int
         assert order['symbol'] == 'BTC/EUR'
+        assert order['exchange'] == 'kraken'
         assert order['amount'] == 1000000000.00000000
         assert order['price'] == 100000.00000
         assert order['id'] == 'TDLH43-DVQXD-2KHVYY'

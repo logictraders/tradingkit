@@ -77,6 +77,7 @@ class PrivateKrakenFeeder(WebsocketFeeder):
                     'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
                     'status': 'filled',
                     'symbol': self.normalized_symbol[dict[order]['pair']],
+                    'exchange': 'kraken',
                     'type': dict[order]['ordertype'],
                     'side': dict[order]['type'],
                     'price': float(dict[order]['price']),

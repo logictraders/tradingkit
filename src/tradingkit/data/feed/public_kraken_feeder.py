@@ -66,7 +66,8 @@ class PublicKrakenFeeder(WebsocketFeeder):
                     ]
                 ],
                 "timestamp": int(float(data[1]["as"][0][2]) * 1000),
-                "symbol": symbol
+                "symbol": symbol,
+                'exchange': 'kraken'
             }
         else:
             if "a" in keys:
@@ -78,6 +79,7 @@ class PublicKrakenFeeder(WebsocketFeeder):
                 ]
                 self.orderbooks[symbol]["timestamp"] = int(float(data[1]["a"][0][2]) * 1000)
                 self.orderbooks[symbol]["symbol"] = symbol
+                self.orderbooks[symbol]["exchange"] = 'kraken'
             if "b" in keys:
                 self.orderbooks[symbol]["bids"] = [
                     [
@@ -87,6 +89,7 @@ class PublicKrakenFeeder(WebsocketFeeder):
                 ]
                 self.orderbooks[symbol]["timestamp"] = int(float(data[1]["b"][0][2]) * 1000)
                 self.orderbooks[symbol]["symbol"] = symbol
+                self.orderbooks[symbol]["exchange"] = 'kraken'
         return self.orderbooks[symbol]
 
     def transform_trade_data(self, data):
@@ -106,7 +109,8 @@ class PublicKrakenFeeder(WebsocketFeeder):
                 'timestamp': timestamp,
                 'side': side,
                 'type': type,
-                'symbol': symbol
+                'symbol': symbol,
+                'exchange': 'kraken'
             }
             trade_data_list.append(trade_data)
         return trade_data_list
