@@ -63,17 +63,24 @@ class PrivateKrakenFeeder(WebsocketFeeder):
     def on_message(self, ws, message):
         data = json.loads(message)
         if "ownTrades" in data:
-            for dict in data[0]:
-                for order in dict:
-                    order_data = {
-                        'id': dict[order]['ordertxid'],
-                        'timestamp': int(float(dict[order]['time']) * 1000),
-                        'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
-                        'status': 'filled',
-                        'symbol': self.normalized_symbol[dict[order]['pair']],
-                        'type': dict[order]['ordertype'],
-                        'side': dict[order]['type'],
-                        'price': float(dict[order]['price']),
-                        'amount': float(dict[order]['vol'])
-                    }
-                    self.dispatch(Order(order_data))
+            order_data_list = self.transform_order_data(message)
+            for order_data in order_data_list:
+                self.dispatch(Order(order_data))
+
+    def transform_order_data(self, data):
+        order_data_list = []
+        for dict in data[0]:
+            for order in dict:
+                order_data = {
+                    'id': dict[order]['ordertxid'],
+                    'timestamp': int(float(dict[order]['time']) * 1000),
+                    'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
+                    'status': 'filled',
+                    'symbol': self.normalized_symbol[dict[order]['pair']],
+                    'type': dict[order]['ordertype'],
+                    'side': dict[order]['type'],
+                    'price': float(dict[order]['price']),
+                    'amount': float(dict[order]['vol'])
+                }
+                order_data_list.append(order_data)
+        return order_data_list
