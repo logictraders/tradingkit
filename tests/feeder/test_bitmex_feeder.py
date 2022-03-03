@@ -18,6 +18,7 @@ class TestBitmexFeeder(TestCase):
 
         assert type(trade['timestamp']) is float
         assert trade['symbol'] == 'BTC/USD'
+        assert trade['exchange'] == 'bitmex'
         assert trade['amount'] == 100
         assert trade['cost'] == 100000
 
@@ -34,6 +35,7 @@ class TestBitmexFeeder(TestCase):
 
         assert type(trade['timestamp']) is int
         assert trade['symbol'] == 'BTC/USD'
+        assert trade['exchange'] == 'bitmex'
 
     def test_order_data_format(self):
 
@@ -53,5 +55,6 @@ class TestBitmexFeeder(TestCase):
 
         assert type(trade['timestamp']) is int
         assert trade['symbol'] == 'BTC/USD'
+        assert trade['exchange'] == 'bitmex'
         assert trade['amount'] == 100
         assert trade['id'] == '91806686-e887fe'
