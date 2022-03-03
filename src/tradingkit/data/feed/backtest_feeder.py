@@ -50,4 +50,5 @@ class BacktestFeeder(Feeder, Publisher):
 
         for trade in json.load(open(full_filename, 'r')):
             if since.timestamp() <= trade['timestamp'] / 1000 < to.timestamp():
+                trade['exchange'] = self.exchange
                 self.dispatch(Trade(trade))
