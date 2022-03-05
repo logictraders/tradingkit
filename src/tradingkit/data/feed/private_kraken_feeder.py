@@ -33,10 +33,11 @@ class PrivateKrakenFeeder(WebsocketFeeder):
         token = self.get_ws_auth_token()
         ws.send(json.dumps({
             'event': 'subscribe',
-            'subscription': {'name': 'ownTrades'},
-            'snapshot': False,
-            'pair': [self.denormalized_symbol[self.symbol]],
-            'token': token
+            'subscription': {
+                'name': 'ownTrades',
+                'token': token,
+                'snapshot': False
+            }
         }))
 
     def get_ws_auth_token(self):
