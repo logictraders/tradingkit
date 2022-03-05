@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.2](https://github.com/logictraders/tradingkit/compare/v1.10.1...v1.10.2) (2022-03-05)
+
+
+### Bug Fixes
+
+* **bridge:** removed calculate_exchange_state implementation due to be source of many bugs ([e4e1fcc](https://github.com/logictraders/tradingkit/commit/e4e1fcc))
+
+
+
 ### [1.10.1](https://github.com/logictraders/tradingkit/compare/v1.10.0...v1.10.1) (2022-03-01)
 
 
