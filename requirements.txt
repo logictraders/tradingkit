@@ -9,6 +9,5 @@ requests~=2.25.1
 chardet==3.0.4
 python-dotenv==0.19.2
 websocket-client==1.2.1
-pyTelegramBotAPI~=3.7.5
 coverage==6.2
 websockets==10.1
