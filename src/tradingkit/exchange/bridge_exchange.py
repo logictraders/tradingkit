@@ -222,38 +222,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         }))
 
     def calculate_exchange_state(self, price, symbol, timestamp):
-        exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
-        base, quote = symbol.split('/')
-        all_balances = self.fetch_balance()
-        balances = all_balances['free'] if base in all_balances['free'] else all_balances['total']
-        base_balance = balances[base] if base in balances else 0
-        quote_balance = balances[quote] if quote in balances else 0
-        equity = quote_balance + base_balance * price
-        base_equity = base_balance + quote_balance / price
-        if self.has_position:
-            position = self.private_get_position()[0]
-            position_vol = position['currentQty']
-            position_price = position['avgEntryPrice']
-
-        else:
-            position_vol = base_balance * price
-            position_price = 0
-
-        self.plot_balances({
-            'all_balances': all_balances,
-            'base_balance': base_balance,
-            'base_equity': base_equity,
-            'equity': equity,
-            'exchange_date': exchange_date,
-            'position_price': position_price,
-            'position_vol': position_vol,
-            'quote': quote,
-            'base': base,
-            'price': price,
-            'quote_balance': quote_balance
-        })
-        if self.is_backtest:
-            self.calculate_max_drawdown(all_balances['total'][base], all_balances['total'][quote])
+        pass
 
     def plot_order(self, event):
         order = event.payload
