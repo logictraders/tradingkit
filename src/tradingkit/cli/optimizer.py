@@ -44,7 +44,7 @@ class Optimizer:
         if result['end_equity'] > 0:
 
             results.append(profit)
-            mdd_penalty = 1
+            mdd_penalty = 0.6
             results_.append(profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty)
         else:
             return np.random.uniform(-200, -100, 1)[0]
@@ -82,7 +82,7 @@ class Optimizer:
         injector = ConfigInjector(self.config)
         feeder = injector.inject('feeder', Feeder)
         exchange = injector.inject('exchange', Exchange)
-        plotter = injector.inject('plotter', Plotter)
+        plotter = None  # injector.inject('plotter', Plotter)
 
         strategy = injector.inject('strategy', Strategy)
         bridge = injector.inject('bridge', Exchange)
@@ -221,7 +221,6 @@ class Optimizer:
                 new_genome = genome.copy()
                 index = np.random.randint(len(new_genome), size=1)[0]
                 ratio = 1 - iteration / self.max_iterations
-                print("ratio", ratio)
                 adding = bool(np.random.choice([True, False]))
                 if adding:
                     value = new_genome[index] + ratio * np.random.uniform(0, varbound[index][1] - new_genome[index], 1)[0]
