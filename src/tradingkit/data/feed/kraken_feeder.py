@@ -254,7 +254,6 @@ class KrakenFeeder(Feeder, Publisher):
                         'amount': float(dict[order]['vol'])
                     }
                     order_data_list.append(order_data)
-
-                else:
+                elif ts - float(dict[order]['time']) < 600: # filter orders since 10 min
                     logging.warning("Order outdated (%s)" % str(dict[order]))
         return order_data_list
