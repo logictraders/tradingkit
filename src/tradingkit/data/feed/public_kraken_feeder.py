@@ -11,7 +11,6 @@ class PublicKrakenFeeder(WebsocketFeeder):
         "BTC/EUR": "XBT/EUR",
         "BTC/USD": "XBT/USD",
         "BTC/USDT": "XBT/USDT",
-        "ETH/BTC": "ETH/XBT",
     }
 
     # Converts symbols from kraken to normal vocab
@@ -19,7 +18,6 @@ class PublicKrakenFeeder(WebsocketFeeder):
         "XBT/EUR": "BTC/EUR",
         "XBT/USD": "BTC/USD",
         "XBT/USDT": "BTC/USDT",
-        "ETH/XBT": "ETH/BTC",
     }
 
     orderbooks = {}
