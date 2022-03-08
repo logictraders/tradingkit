@@ -103,11 +103,13 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 self.orders_history[order['id']].update(order)
                 event.payload = self.orders_history[order['id']]
             self.plot_order(event)
-            self.calculate_exchange_state(order['lastTradeTimestamp'], order['symbol'], self.last_price)
+            if self.last_price is not None:
+                self.calculate_exchange_state(order['lastTradeTimestamp'], order['symbol'], self.last_price)
         if isinstance(event, OpenOrder):
             self.plot_order(event)
             order = event.payload.copy()
-            self.calculate_exchange_state(order['timestamp'], order['symbol'], self.last_price)
+            if self.last_price is not None:
+                self.calculate_exchange_state(order['timestamp'], order['symbol'], self.last_price)
         if isinstance(event, Liquidation):
             trade = event.payload
             self.calculate_exchange_state(trade['timestamp'], trade['symbol'], trade['price'])
