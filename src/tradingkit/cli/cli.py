@@ -26,7 +26,7 @@ class CLI(Command):
     """Trading Kit CLI.
 
     Usage:
-      tk run [<strategy_dir>] [-e <env>] [-y <year>] [-m <month>] [--optimize | --plot | --live_plot] [ --show-open-orders | --show-orders] [--loglevel <level>]
+      tk run [<strategy_dir>] [-e <env>] [-y <year>] [-m <month>] [--optimize | --plot | --live_plot] [ --show-open-orders | --show-orders] [--loglevel <level>] [--stats]
       tk import [-x <exchange>] [-s <symbol>] [-y <year>] [-m <month>] [--no-funding | --only-funding] [--candles]
       tk --help
       tk --version
@@ -45,6 +45,7 @@ class CLI(Command):
       --no-funding                       Import only trades data
       --only-funding                     Import only funding rate data
       --loglevel <level>                 Sets the log level [default: error].
+      --stats                            Show statistics.
       -h, --help                         Show this screen.
       -v, --version                      Show version.
 
@@ -119,7 +120,7 @@ class CLI(Command):
 
             plot = args['--plot'] or args['--live_plot']
 
-            Runner.run(feeder, exchange, plotter, strategy, bridge, feeder_adapters, args['--optimize'], plot)
+            Runner.run(feeder, exchange, plotter, strategy, bridge, args, feeder_adapters, plot)
 
     @staticmethod
     def command_import(exchange_name, symbol, fetcher, year, months, candles=False):

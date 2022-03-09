@@ -88,7 +88,7 @@ class Optimizer:
         bridge = injector.inject('bridge', Exchange)
         feeder_adapters = injector.inject('feeder_adapters', list)
 
-        result = Runner.run(feeder, exchange, plotter, strategy, bridge, feeder_adapters, self.args['--optimize'],
+        result = Runner.run(feeder, exchange, plotter, strategy, bridge, self.args, feeder_adapters,
                             self.args['--plot'])
         return result
 

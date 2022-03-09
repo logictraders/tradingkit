@@ -103,11 +103,13 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 self.orders_history[order['id']].update(order)
                 event.payload = self.orders_history[order['id']]
             self.plot_order(event)
-            self.calculate_exchange_state(order['lastTradeTimestamp'], order['symbol'], self.last_price)
+            if self.last_price is not None:
+                self.calculate_exchange_state(order['lastTradeTimestamp'], order['symbol'], self.last_price)
         if isinstance(event, OpenOrder):
             self.plot_order(event)
             order = event.payload.copy()
-            self.calculate_exchange_state(order['timestamp'], order['symbol'], self.last_price)
+            if self.last_price is not None:
+                self.calculate_exchange_state(order['timestamp'], order['symbol'], self.last_price)
         if isinstance(event, Liquidation):
             trade = event.payload
             self.calculate_exchange_state(trade['timestamp'], trade['symbol'], trade['price'])
@@ -221,8 +223,39 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             },
         }))
 
-    def calculate_exchange_state(self, price, symbol, timestamp):
-        pass
+    def calculate_exchange_state(self, timestamp, symbol, price):
+        exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
+        base, quote = symbol.split('/')
+        all_balances = self.fetch_balance()
+        balances = all_balances['free'] if base in all_balances['free'] else all_balances['total']
+        base_balance = balances[base] if base in balances else 0
+        quote_balance = balances[quote] if quote in balances else 0
+        equity = quote_balance + base_balance * price
+        base_equity = base_balance + quote_balance / price
+        if self.has_position:
+            position = self.private_get_position()[0]
+            position_vol = position['currentQty']
+            position_price = position['avgEntryPrice']
+
+        else:
+            position_vol = base_balance * price
+            position_price = 0
+
+        self.plot_balances({
+            'all_balances': all_balances,
+            'base_balance': base_balance,
+            'base_equity': base_equity,
+            'equity': equity,
+            'exchange_date': exchange_date,
+            'position_price': position_price,
+            'position_vol': position_vol,
+            'quote': quote,
+            'base': base,
+            'price': price,
+            'quote_balance': quote_balance
+        })
+        if self.is_backtest:
+            self.calculate_max_drawdown(all_balances['total'][base], all_balances['total'][quote])
 
     def plot_order(self, event):
         order = event.payload
@@ -284,26 +317,40 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def update_balance_hist(self, event):
         date = datetime.fromisoformat(event.payload['datetime'])
-        if self.last_balance_check is None or date - self.last_balance_check > timedelta(hours=1):
+        if self.last_balance_check is None or date - self.last_balance_check >= timedelta(days=1):
             self.last_balance_check = date
 
             price = event.payload['close']
             base, quote = self.symbol.split('/')
-            balances = self.fetch_balance()
-            balances = balances['free'] if balances['free'][base] else balances['total']
+            _balances = self.fetch_balance()
 
-            base_balance = balances[base] if base in balances else 0
-            quote_balance = balances[quote] if quote in balances else 0
+            if self.has_position:
+                balances = _balances['free']
+                base_balance = balances[base] if base in balances else 0
+                quote_balance = balances[quote] if quote in balances else 0
+                base_equity = base_balance + quote_balance / price
+                self.balance_history.append([base_equity, date])
+            else:
+                balances = _balances['total']
+                base_balance = balances[base] if base in balances else 0
+                quote_balance = balances[quote] if quote in balances else 0
+                quote_equity = quote_balance + base_balance * price
+                self.balance_history.append([quote_equity, date])
 
-            # todo use quote equity for kraken (equity = quote_balance + base_balance * price)
-            base_equity = base_balance + quote_balance / price
-
-            self.balance_history.append(base_equity)
-
+            self.calculate_max_drawdown(_balances['total'][base], _balances['total'][quote])
 
     def get_sharpe_ratio(self):
-        standard_deviation = numpy.std(self.balance_history)
-        sharpe_ratio = (self.balance_history[-1] / self.balance_history[0]) / standard_deviation
+        profits_history = []
+        for i in range(len(self.balance_history) - 1):
+            profit = (self.balance_history[i+1][0] / self.balance_history[0][0] - 1) * 100
+            profits_history.append(profit)
+
+        standard_deviation = numpy.std(profits_history)
+        time_delta_years = (self.balance_history[-1][1] - self.balance_history[0][1]).days / 365
+        total_profit = (self.balance_history[-1][0] / self.balance_history[0][0] -1) * 100
+        anual_profit = total_profit / time_delta_years
+        no_risk_profit = 5
+        sharpe_ratio = (anual_profit - no_risk_profit) / standard_deviation
         return sharpe_ratio
 
     def candle_dispatcher(self, trade):
