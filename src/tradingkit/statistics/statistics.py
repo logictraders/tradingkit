@@ -19,8 +19,11 @@ class Statistics(Publisher, Subscriber):
 
     def __init__(self):
         super().__init__()
+
+        self.exchange_name = None
         self.balance_history = []
         self.last_balance_check = None
+
         self.peak_balance = 0
         self.max_drawdown = 0
         self.last_price = None
@@ -30,18 +33,50 @@ class Statistics(Publisher, Subscriber):
         return [Order, Trade, Book, Candle, Liquidation, Funding, OpenOrder, Plot]
 
     def on_event(self, event: Event):
-        self.dispatch(event)
+        if isinstance(event, Book):
+            self.last_price = event.payload['bids'][0][0]
+        #     if self.last_price is None:
+        #         self.calculate_exchange_state(event.payload['timestamp'], event.payload['symbol'], event.payload['bids'][0][0])
+        #         self.symbol = event.payload['symbol']
+        # if isinstance(event, Candle):
+        #     self.plot_candle(event)
+        #     if self.is_backtest:
+        #         self.update_balance_hist(event)
+        # if isinstance(event, Order):
+        #     order = event.payload.copy()
+        #     if order['id'] in self.orders_history.keys():
+        #         self.orders_history[order['id']].update(order)
+        #         event.payload = self.orders_history[order['id']]
+        #     self.plot_order(event)
+        #     self.calculate_exchange_state(order['lastTradeTimestamp'], order['symbol'], self.last_price)
+        # if isinstance(event, OpenOrder):
+        #     self.plot_order(event)
+        #     order = event.payload.copy()
+        #     self.calculate_exchange_state(order['timestamp'], order['symbol'], self.last_price)
+        # if isinstance(event, Liquidation):
+        #     trade = event.payload
+        #     self.calculate_exchange_state(trade['timestamp'], trade['symbol'], trade['price'])
+        if isinstance(event, Trade):
+            trade = event.payload
+            self.last_price = event.payload['price']
+        #     if self.symbol is None:
+        #         self.symbol = event.payload['symbol']
+        #     self.candle_dispatcher(trade)
+        if isinstance(event, Plot):
+            if event.payload['name'] == 'Equity':
+                self.update_balance_hist(event)
 
     def get_statistics(self):
         return {'MDD': -0.2}
 
     def update_balance_hist(self, event):
-        date = datetime.fromisoformat(event.payload['datetime'])
+        date = datetime.fromisoformat(event.payload['data']['x'])
         if self.last_balance_check is None or date - self.last_balance_check >= timedelta(days=1):
             self.last_balance_check = date
 
-            price = event.payload['close']
-            base, quote = self.symbol.split('/')
+            price = self.last_price
+            base = event.payload['base']
+            quote = event.payload['quote']
             _balances = self.fetch_balance()
 
             if self.has_position:

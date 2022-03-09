@@ -227,7 +227,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         exchange_date = datetime.fromtimestamp(timestamp / 1000.0).isoformat()
         base, quote = symbol.split('/')
         all_balances = self.fetch_balance()
-        balances = all_balances['free'] if base in all_balances['free'] else all_balances['total']
+        balances = all_balances['total']
+        #balances = all_balances['free'] if base in all_balances['free'] else all_balances['total']
         base_balance = balances[base] if base in balances else 0
         quote_balance = balances[quote] if quote in balances else 0
         equity = quote_balance + base_balance * price
@@ -236,6 +237,12 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             position = self.private_get_position()[0]
             position_vol = position['currentQty']
             position_price = position['avgEntryPrice']
+
+            # position = self.private_get_position()[0]
+            # if abs(position['currentQty']) > 0:
+            #     pnl = (price / position['avgEntryPrice'] * position['currentQty'] -
+            #            position['currentQty']) / price
+            #     balance += pnl / price
 
         else:
             position_vol = base_balance * price
