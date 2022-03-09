@@ -106,6 +106,6 @@ class TestIssue64(TestCase):
         plotter = PlotlyPlotter()
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge)
+        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
 
 
