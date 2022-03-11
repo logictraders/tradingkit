@@ -21,10 +21,10 @@ class Statistics(Publisher, Subscriber):
         super().__init__()
 
         self.exchange_name = None
-        self.balance_history = []
+        self.balance_history = None
         self.last_balance_check = None
 
-        self.peak_balance = 0
+        self.peak_equity = 0
         self.max_drawdown = 0
         self.last_price = None
         self.symbol = None
@@ -38,7 +38,8 @@ class Statistics(Publisher, Subscriber):
         #     if self.last_price is None:
         #         self.calculate_exchange_state(event.payload['timestamp'], event.payload['symbol'], event.payload['bids'][0][0])
         #         self.symbol = event.payload['symbol']
-        # if isinstance(event, Candle):
+        if isinstance(event, Candle):
+            self.update_balance_hist_from_candle(event)
         #     self.plot_candle(event)
         #     if self.is_backtest:
         #         self.update_balance_hist(event)
@@ -64,52 +65,72 @@ class Statistics(Publisher, Subscriber):
         #     self.candle_dispatcher(trade)
         if isinstance(event, Plot):
             if event.payload['name'] == 'Equity':
-                self.update_balance_hist(event)
+                self.update_balance_hist_from_plot(event)
 
     def get_statistics(self):
-        return {'MDD': -0.2}
+        mdd = self.get_max_draw_down()
+        return {'mdd': mdd}
 
-    def update_balance_hist(self, event):
-        date = datetime.fromisoformat(event.payload['data']['x'])
-        if self.last_balance_check is None or date - self.last_balance_check >= timedelta(days=1):
-            self.last_balance_check = date
+    def update_balance_hist_from_plot(self, event):
+        if self.last_price is not None:
+            data = event.payload
+            if self.balance_history is None:
+                self.balance_history = [{'date': datetime.fromisoformat(data['data']['x'][0:10])}]
 
-            price = self.last_price
-            base = event.payload['base']
-            quote = event.payload['quote']
-            _balances = self.fetch_balance()
-
-            if self.has_position:
-                balances = _balances['free']
-                base_balance = balances[base] if base in balances else 0
-                quote_balance = balances[quote] if quote in balances else 0
-                base_equity = base_balance + quote_balance / price
-                self.balance_history.append([base_equity, date])
+            if data['has_position']:
+                self.balance_history[-1]['quote_balance'] = data['data']['quote_balance']
+                self.balance_history[-1]['base_balance'] = data['data']['base_balance']
+                self.balance_history[-1]['price'] = self.last_price
+                self.balance_history[-1]['position_vol'] = data['data']['position_vol']
+                self.balance_history[-1]['position_price'] = data['data']['position_price']
             else:
-                balances = _balances['total']
-                base_balance = balances[base] if base in balances else 0
-                quote_balance = balances[quote] if quote in balances else 0
-                quote_equity = quote_balance + base_balance * price
-                self.balance_history.append([quote_equity, date])
+                self.balance_history[-1]['quote_balance'] = data['data']['quote_balance']
+                self.balance_history[-1]['base_balance'] = data['data']['base_balance']
+                self.balance_history[-1]['price'] = self.last_price
 
-            self.calculate_max_drawdown(_balances['total'][base], _balances['total'][quote])
+    def update_balance_hist_from_candle(self, event):
+        data = event.payload
+        date = datetime.fromisoformat(data['datetime'])
+        if self.balance_history is not None and date - self.balance_history[-1]['date'] >= timedelta(days=1):
+            # set prev balance close price and equity
+            self.balance_history[-1]['price'] = self.last_price
+            self.balance_history[-1] = self.calculate_equity(self.balance_history[-1])
 
-    def calculate_max_drawdown(self, base_balance, quote_balance):
-        if self.last_price:
-            balance = quote_balance + base_balance * self.last_price if not self.has_position else base_balance
+            # set current balance
+            current_balance = self.balance_history[-1].copy()
+            current_balance['date'] = datetime.fromisoformat(data['datetime'][0:10])
+            self.balance_history.append(current_balance)
 
-            if self.has_position:
-                position = self.private_get_position()[0]
-                if abs(position['currentQty']) > 0:
-                    pnl = (self.last_price / position['avgEntryPrice'] * position['currentQty'] -
-                           position['currentQty']) / self.last_price
-                    balance += pnl / self.last_price
+            self.calculate_max_drawdown()
 
-            if balance > self.peak_balance:
-                self.peak_balance = balance
+    def calculate_equity(self, current_balance):
+        if 'position_vol' in current_balance.keys():
+            current_balance['equity'] = current_balance['base_balance'] + current_balance['quote_balance'] / \
+                                        current_balance['price']
+            if current_balance['position_vol'] != 0:
+                pnl = current_balance['position_vol'] * (current_balance['price'] - current_balance['position_price'])
+                current_balance['equity'] += pnl / current_balance['price']
+        else:
+            current_balance['equity'] = current_balance['quote_balance'] + current_balance['base_balance'] * \
+                                        current_balance['price']
+        return current_balance
 
-            drawdown = (balance - self.peak_balance) / self.peak_balance
-            self.max_drawdown = min(self.max_drawdown, drawdown)
+    def calculate_max_drawdown(self):
+        equity = self.balance_history[-1]['equity']
+
+        if equity > self.peak_equity:
+            self.peak_equity = equity
+
+        drawdown = (equity - self.peak_equity) / self.peak_equity
+        self.max_drawdown = min(self.max_drawdown, drawdown)
+
+    def get_max_draw_down(self):
+        # set last balance price and equity
+        self.balance_history[-1]['price'] = self.last_price
+        self.balance_history[-1] = self.calculate_equity(self.balance_history[-1])
+
+        self.calculate_max_drawdown()
+        return self.max_drawdown
 
     def get_sharpe_ratio(self):
         profits_history = []
