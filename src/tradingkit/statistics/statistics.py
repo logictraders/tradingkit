@@ -20,14 +20,12 @@ class Statistics(Publisher, Subscriber):
     def __init__(self):
         super().__init__()
 
-        self.exchange_name = None
         self.balance_history = None
         self.last_balance_check = None
 
         self.peak_equity = 0
         self.max_drawdown = 0
         self.last_price = None
-        self.symbol = None
 
     def subscribed_events(self) -> list:
         return [Order, Trade, Book, Candle, Liquidation, Funding, OpenOrder, Plot]
@@ -35,46 +33,27 @@ class Statistics(Publisher, Subscriber):
     def on_event(self, event: Event):
         if isinstance(event, Book):
             self.last_price = event.payload['bids'][0][0]
-        #     if self.last_price is None:
-        #         self.calculate_exchange_state(event.payload['timestamp'], event.payload['symbol'], event.payload['bids'][0][0])
-        #         self.symbol = event.payload['symbol']
+
         if isinstance(event, Candle):
-            self.update_balance_hist_from_candle(event)
-        #     self.plot_candle(event)
-        #     if self.is_backtest:
-        #         self.update_balance_hist(event)
-        # if isinstance(event, Order):
-        #     order = event.payload.copy()
-        #     if order['id'] in self.orders_history.keys():
-        #         self.orders_history[order['id']].update(order)
-        #         event.payload = self.orders_history[order['id']]
-        #     self.plot_order(event)
-        #     self.calculate_exchange_state(order['lastTradeTimestamp'], order['symbol'], self.last_price)
-        # if isinstance(event, OpenOrder):
-        #     self.plot_order(event)
-        #     order = event.payload.copy()
-        #     self.calculate_exchange_state(order['timestamp'], order['symbol'], self.last_price)
-        # if isinstance(event, Liquidation):
-        #     trade = event.payload
-        #     self.calculate_exchange_state(trade['timestamp'], trade['symbol'], trade['price'])
+            if event.payload['timeframe'] == '1d':
+                self.update_balance_hist_from_candle(event)
+
         if isinstance(event, Trade):
-            trade = event.payload
             self.last_price = event.payload['price']
-        #     if self.symbol is None:
-        #         self.symbol = event.payload['symbol']
-        #     self.candle_dispatcher(trade)
+
         if isinstance(event, Plot):
             if event.payload['name'] == 'Equity':
                 self.update_balance_hist_from_plot(event)
 
     def get_statistics(self):
-        mdd = self.get_max_draw_down()
-        return {'mdd': mdd}
+        max_drawdown = self.get_max_draw_down()
+        sharpe_ratio = self.get_sharpe_ratio()
+        return {'max_drawdown': max_drawdown, 'sharpe_ratio': sharpe_ratio}
 
     def update_balance_hist_from_plot(self, event):
         data = event.payload
         if self.balance_history is None:
-            date =datetime.fromisoformat(data['data']['x'][0:10]) - timedelta(days=1)
+            date = datetime.fromisoformat(data['data']['x'][0:10])
             self.balance_history = [{'date': date, 'price': data['price']}]
 
         if data['has_position']:
@@ -91,7 +70,7 @@ class Statistics(Publisher, Subscriber):
         date = datetime.fromisoformat(data['datetime'])
         if self.balance_history is not None and date - self.balance_history[-1]['date'] >= timedelta(days=1):
             # set prev balance close price and equity
-            if len(self.balance_history) > 2:
+            if len(self.balance_history) > 1:
                 self.balance_history[-1]['price'] = self.last_price
             self.balance_history[-1] = self.calculate_equity(self.balance_history[-1])
 
@@ -134,12 +113,14 @@ class Statistics(Publisher, Subscriber):
     def get_sharpe_ratio(self):
         profits_history = []
         for i in range(len(self.balance_history) - 1):
-            profit = (self.balance_history[i+1][0] / self.balance_history[0][0] - 1) * 100
+            profit = (self.balance_history[i + 1]['equity'] / self.balance_history[0]['equity'] - 1) * 100
             profits_history.append(profit)
 
         standard_deviation = numpy.std(profits_history)
-        time_delta_years = (self.balance_history[-1][1] - self.balance_history[0][1]).days / 365
-        total_profit = (self.balance_history[-1][0] / self.balance_history[0][0] -1) * 100
+        time_delta_years = (self.balance_history[-1]['date'] - self.balance_history[0]['date']).days / 365
+        total_profit = (self.balance_history[-1]['equity'] / self.balance_history[0]['equity'] - 1) * 100
+        if time_delta_years == 0:
+            return 0
         anual_profit = total_profit / time_delta_years
         no_risk_profit = 5
         sharpe_ratio = (anual_profit - no_risk_profit) / standard_deviation

@@ -67,7 +67,7 @@ class TestTestex(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_taker_fees(self):
         symbol = 'BTC/EUR'
@@ -120,7 +120,7 @@ class TestTestex(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_maker_fees(self):
         symbol = 'BTC/EUR'
@@ -173,7 +173,7 @@ class TestTestex(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_simple_one_percent_strategy(self):
         symbol = 'BTC/EUR'
@@ -238,7 +238,7 @@ class TestTestex(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_max_draw_dawn(self):
         symbol = 'BTC/EUR'
@@ -280,7 +280,7 @@ class TestTestex(TestCase):
         feeder = ListFeeder(
             [ {
                 'symbol': symbol,
-                'timestamp': timestamp + abs(600 - x) * 1000 * 60,
+                'timestamp': timestamp + abs(600 - x) * 1000 * 60 * 60 * 24,
                 'type': 'limit',
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
@@ -293,7 +293,7 @@ class TestTestex(TestCase):
 
         result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
-        mdd = result['mdd']
+        mdd = result['max_drawdown']
         assert mdd == -0.5
 
     def test_sharpe_ratio(self):
@@ -340,19 +340,18 @@ class TestTestex(TestCase):
                 'price': x,
                 'cost': x,
                 'amount': 1
-            } for x in range(99, 104)]
+            } for x in range(99, 103)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
-        sharpe_ratio = bridge.get_sharpe_ratio()
         total_profit = 2
         days_runing = 2
-        partial_profits = [(101/100-1) * 100, (102/100-1) * 100]
+        partial_profits = [101/100 * 100 - 100, 102/100 * 100 - 100]
         standard_deviation = numpy.std(partial_profits)
         anual_profit = total_profit / days_runing * 365
         zero_risk_profit = 5
         expected_sharpe_ratio = (anual_profit - zero_risk_profit) / standard_deviation
-        assert round(sharpe_ratio) == round(expected_sharpe_ratio)
+        assert result['sharpe_ratio'] == expected_sharpe_ratio

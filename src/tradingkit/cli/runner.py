@@ -31,13 +31,8 @@ class Runner:
             chain = exchange
         chain.register(bridge)
         feeder.feed()
-        if args['--optimize']:
-            result = strategy.finish(False)
-        else:
-            result = strategy.finish()
-            print("Trading results")
-            for info in result:
-                print("%15s: %10.2f" % (info, result[info]))
+
+        result = strategy.finish()
 
         if plotter is not None:
             plotter.plot()
@@ -46,5 +41,10 @@ class Runner:
             stats_result = statistics.get_statistics()
             for stat in stats_result.keys():
                 result[stat] = stats_result[stat]
+
+        if not args['--optimize']:
+            print("Trading results")
+            for info in result:
+                print("%20s: %10.2f" % (info, result[info]))
 
         return result

@@ -68,7 +68,7 @@ class TestBitmexBacktest(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_taker_fees(self):
         symbol = 'BTC/USD'
@@ -120,7 +120,7 @@ class TestBitmexBacktest(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_maker_fees_and_pln(self):
         symbol = 'BTC/USD'
@@ -181,7 +181,7 @@ class TestBitmexBacktest(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_liqudation_price(self):
         symbol = 'BTC/USD'
@@ -245,4 +245,4 @@ class TestBitmexBacktest(TestCase):
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-        self.assertRaises(InsufficientFunds, Runner.run, feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        self.assertRaises(InsufficientFunds, Runner.run, feeder, plotter, strategy, {'--stats': False, '--optimize': False})

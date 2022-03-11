@@ -106,6 +106,6 @@ class TestIssue64(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
 
