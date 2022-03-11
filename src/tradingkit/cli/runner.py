@@ -43,7 +43,8 @@ class Runner:
             plotter.plot()
 
         if args['--stats']:
-            # todo add stats to result
             stats_result = statistics.get_statistics()
+            for stat in stats_result.keys():
+                result[stat] = stats_result[stat]
 
         return result

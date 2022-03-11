@@ -72,28 +72,27 @@ class Statistics(Publisher, Subscriber):
         return {'mdd': mdd}
 
     def update_balance_hist_from_plot(self, event):
-        if self.last_price is not None:
-            data = event.payload
-            if self.balance_history is None:
-                self.balance_history = [{'date': datetime.fromisoformat(data['data']['x'][0:10])}]
+        data = event.payload
+        if self.balance_history is None:
+            date =datetime.fromisoformat(data['data']['x'][0:10]) - timedelta(days=1)
+            self.balance_history = [{'date': date, 'price': data['price']}]
 
-            if data['has_position']:
-                self.balance_history[-1]['quote_balance'] = data['data']['quote_balance']
-                self.balance_history[-1]['base_balance'] = data['data']['base_balance']
-                self.balance_history[-1]['price'] = self.last_price
-                self.balance_history[-1]['position_vol'] = data['data']['position_vol']
-                self.balance_history[-1]['position_price'] = data['data']['position_price']
-            else:
-                self.balance_history[-1]['quote_balance'] = data['data']['quote_balance']
-                self.balance_history[-1]['base_balance'] = data['data']['base_balance']
-                self.balance_history[-1]['price'] = self.last_price
+        if data['has_position']:
+            self.balance_history[-1]['quote_balance'] = data['data']['quote_balance']
+            self.balance_history[-1]['base_balance'] = data['data']['base_balance']
+            self.balance_history[-1]['position_vol'] = data['data']['position_vol']
+            self.balance_history[-1]['position_price'] = data['data']['position_price']
+        else:
+            self.balance_history[-1]['quote_balance'] = data['data']['quote_balance']
+            self.balance_history[-1]['base_balance'] = data['data']['base_balance']
 
     def update_balance_hist_from_candle(self, event):
         data = event.payload
         date = datetime.fromisoformat(data['datetime'])
         if self.balance_history is not None and date - self.balance_history[-1]['date'] >= timedelta(days=1):
             # set prev balance close price and equity
-            self.balance_history[-1]['price'] = self.last_price
+            if len(self.balance_history) > 2:
+                self.balance_history[-1]['price'] = self.last_price
             self.balance_history[-1] = self.calculate_equity(self.balance_history[-1])
 
             # set current balance

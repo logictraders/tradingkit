@@ -28,6 +28,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.peak_balance = 0
         self.max_drawdown = 0
         self.last_price = None
+        #todo remove
         self.symbol = None
         self.has_position = True if "bitmex" in str(exchange.__class__) else False
         self.is_backtest = True if "TestEX" in str(exchange.__class__) or "BitmexBacktest" in str(
@@ -89,10 +90,10 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
 
     def on_event(self, event: Event):
         if isinstance(event, Book):
-            self.last_price = event.payload['bids'][0][0]
             if self.last_price is None:
                 self.calculate_exchange_state(event.payload['timestamp'], event.payload['symbol'], event.payload['bids'][0][0])
                 self.symbol = event.payload['symbol']
+            self.last_price = event.payload['bids'][0][0]
         if isinstance(event, Candle):
             self.plot_candle(event)
             if self.is_backtest:
@@ -209,6 +210,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             'yaxis': 'balance',
             'quote': quote,
             'base': base,
+            'has_position': self.has_position,
+            'price': exchange_state['price'],
             'data': {
                 'x': exchange_state['exchange_date'],
                 'y': exchange_state['equity'],

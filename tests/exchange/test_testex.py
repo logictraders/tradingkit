@@ -291,9 +291,9 @@ class TestTestex(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
-        mdd = bridge.get_max_draw_down()
+        mdd = result['mdd']
         assert mdd == -0.5
 
     def test_sharpe_ratio(self):
