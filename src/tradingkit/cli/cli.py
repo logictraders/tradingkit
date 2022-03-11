@@ -107,20 +107,21 @@ class CLI(Command):
             injector = ConfigInjector(config)
             feeder = injector.inject('feeder', Feeder)
             exchange = injector.inject('exchange', Exchange)
-            plotter = injector.inject('plotter', Plotter)
-            if args['--live_plot']:
-                plotter.set_live()
-            if args['--show-open-orders']:
-                plotter.set_chart_type(2)
-            elif args['--show-orders']:
-                plotter.set_chart_type(1)
+            if args['--plot'] or args['--live_plot']:
+                plotter = injector.inject('plotter', Plotter)
+                if args['--live_plot']:
+                    plotter.set_live()
+                if args['--show-open-orders']:
+                    plotter.set_chart_type(2)
+                elif args['--show-orders']:
+                    plotter.set_chart_type(1)
+            else:
+                plotter = None
             strategy = injector.inject('strategy', Strategy)
             bridge = injector.inject('bridge', Exchange)
             feeder_adapters = injector.inject('feeder_adapters', list)
 
-            plot = args['--plot'] or args['--live_plot']
-
-            Runner.run(feeder, exchange, plotter, strategy, bridge, args, feeder_adapters, plot)
+            Runner.run(feeder, plotter, strategy, args, feeder_adapters)
 
     @staticmethod
     def command_import(exchange_name, symbol, fetcher, year, months, candles=False):

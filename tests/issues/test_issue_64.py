@@ -103,9 +103,9 @@ class TestIssue64(TestCase):
                 'amount': 1
             } for x in (list(range(8200, 7700)) + list(range(7700, 8000)))]
         )
-        plotter = PlotlyPlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
 

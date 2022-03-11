@@ -5,7 +5,10 @@ from tradingkit.statistics.statistics import Statistics
 class Runner:
 
     @staticmethod
-    def run(feeder, exchange, plotter, strategy, bridge, args, feeder_adapters=None, plot=False):
+    def run(feeder, plotter, strategy, args, feeder_adapters=None):
+        bridge = strategy.exchange
+        exchange = bridge.exchange
+
         if feeder_adapters is None:
             feeder_adapters = []
 
@@ -15,7 +18,7 @@ class Runner:
             chain = adapter
 
         bridge.register(strategy)
-        if plot:
+        if plotter is not None:
             bridge.register(plotter)
             strategy.register(plotter)
 
@@ -36,10 +39,11 @@ class Runner:
             for info in result:
                 print("%15s: %10.2f" % (info, result[info]))
 
-        if plot:
+        if plotter is not None:
             plotter.plot()
 
         if args['--stats']:
+            # todo add stats to result
             stats_result = statistics.get_statistics()
 
         return result

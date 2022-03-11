@@ -65,10 +65,10 @@ class TestBitmexBacktest(TestCase):
                 'amount': 1
             } for x in range(100, 1000)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
     def test_taker_fees(self):
         symbol = 'BTC/USD'
@@ -117,10 +117,10 @@ class TestBitmexBacktest(TestCase):
                 'amount': 1
             } for x in range(100, 1000)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
     def test_maker_fees_and_pln(self):
         symbol = 'BTC/USD'
@@ -178,10 +178,10 @@ class TestBitmexBacktest(TestCase):
                 'amount': 1
             } for x in range(100, 1000)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
     def test_liqudation_price(self):
         symbol = 'BTC/USD'
@@ -243,6 +243,6 @@ class TestBitmexBacktest(TestCase):
                 'amount': 1
             } for x in range(1000, 1, -1)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-        self.assertRaises(InsufficientFunds, Runner.run, feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        self.assertRaises(InsufficientFunds, Runner.run, feeder, plotter, strategy, {'--stats': True, '--optimize': False})

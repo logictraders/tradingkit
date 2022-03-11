@@ -64,10 +64,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in range(100, 1000)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
     def test_taker_fees(self):
         symbol = 'BTC/EUR'
@@ -117,10 +117,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in range(100, 1000)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
     def test_maker_fees(self):
         symbol = 'BTC/EUR'
@@ -170,10 +170,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in range(100, 1000)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
     def test_simple_one_percent_strategy(self):
         symbol = 'BTC/EUR'
@@ -235,10 +235,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in (list(range(1000, 100, -1)) + list(range(100, 1000)))]
         )
-        plotter = PlotlyPlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
     def test_max_draw_dawn(self):
         symbol = 'BTC/EUR'
@@ -288,10 +288,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in range(500, 249, -1)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
         mdd = bridge.get_max_draw_down()
         assert mdd == -0.5
@@ -342,10 +342,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in range(99, 104)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge, {'--stats': True, '--optimize': False})
+        Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
         sharpe_ratio = bridge.get_sharpe_ratio()
         total_profit = 2
