@@ -34,9 +34,6 @@ class Runner:
 
         result = strategy.finish()
 
-        if plotter is not None:
-            plotter.plot()
-
         if args['--stats']:
             stats_result = statistics.get_statistics()
             for stat in stats_result.keys():
@@ -46,5 +43,8 @@ class Runner:
             print("Trading results")
             for info in result:
                 print("%20s: %10.2f" % (info, result[info]))
+
+        if plotter is not None:
+            plotter.plot()
 
         return result
