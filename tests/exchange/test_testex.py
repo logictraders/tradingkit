@@ -286,7 +286,7 @@ class TestTestex(TestCase):
                 'price': x,
                 'cost': x,
                 'amount': 1
-            } for x in range(500, 249, -1)]
+            } for x in range(501, 249, -1)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})

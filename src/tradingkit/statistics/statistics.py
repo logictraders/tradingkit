@@ -69,9 +69,7 @@ class Statistics(Publisher, Subscriber):
         data = event.payload
         date = datetime.fromisoformat(data['datetime'])
         if self.balance_history is not None and date - self.balance_history[-1]['date'] >= timedelta(days=1):
-            # set prev balance close price and equity
-            if len(self.balance_history) > 1:
-                self.balance_history[-1]['price'] = self.last_price
+            self.balance_history[-1]['price'] = self.last_price
             self.balance_history[-1] = self.calculate_equity(self.balance_history[-1])
 
             # set current balance
