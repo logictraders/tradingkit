@@ -86,8 +86,8 @@ class Statistics(Publisher, Subscriber):
             current_balance['equity'] = current_balance['base_balance'] + current_balance['quote_balance'] / \
                                         current_balance['price']
             if current_balance['position_vol'] != 0:
-                pnl = current_balance['position_vol'] * (current_balance['price'] - current_balance['position_price'])
-                current_balance['equity'] += pnl / current_balance['price']
+                pnl = (1 / current_balance['position_price'] - 1 / current_balance['price']) * current_balance['position_vol']
+                current_balance['equity'] += pnl
         else:
             current_balance['equity'] = current_balance['quote_balance'] + current_balance['base_balance'] * \
                                         current_balance['price']

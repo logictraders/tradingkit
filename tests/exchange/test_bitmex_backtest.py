@@ -1,4 +1,5 @@
 import random
+import time
 from unittest import TestCase
 
 from ccxt import InsufficientFunds
@@ -246,3 +247,56 @@ class TestBitmexBacktest(TestCase):
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
         self.assertRaises(InsufficientFunds, Runner.run, feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+
+    def test_max_draw_dawn(self):
+        symbol = 'BTC/USD'
+        initial_balance = 100
+        order_price = 500
+        order_amount = initial_balance * order_price
+
+        class TestStrategy(Strategy):
+            maker_order = None
+
+            def get_symbol(self):
+                return symbol
+
+            def subscribed_events(self) -> list:
+                return [Trade, Order, Liquidation]
+
+            def start(self):
+                initial_balance = self.exchange.fetch_balance()['total']
+                self.maker_order = \
+                    self.exchange.create_order(self.get_symbol(), 'limit', 'buy', order_amount, order_price)
+
+            def on_event(self, event: Event):
+                super().on_event(event)
+
+            def finish(self):
+                return {}
+
+        exchange = BitmexBacktest({
+            'balance': {'USD': 0, 'BTC': 100},
+            'fees': {
+                'maker': 0.0,
+                'taker': 0.0
+            }
+        })
+        bridge = BridgeExchange(exchange)
+        timestamp = time.time()
+        feeder = ListFeeder(
+            [{
+                'symbol': symbol,
+                'timestamp':  timestamp + abs(600 - x) * 1000 * 60 * 60 * 24,
+                'type': 'limit',
+                'side': random.choice(['buy', 'sell']),
+                'price': x,
+                'cost': x,
+                'amount': 1
+            } for x in range(500, 399, -1)]
+        )
+        plotter = None
+        strategy = TestStrategy(bridge, {'symbol': symbol})
+
+        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+
+        assert result['max_drawdown'] == (exchange.fetch_balance()['free']['BTC'] - initial_balance) / initial_balance
