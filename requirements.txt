@@ -11,3 +11,4 @@ python-dotenv==0.19.2
 websocket-client==1.2.1
 coverage==6.2
 websockets==10.1
+python-binance==0.7.11
