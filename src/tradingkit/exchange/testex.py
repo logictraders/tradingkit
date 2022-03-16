@@ -70,12 +70,25 @@ class TestEX(Publisher, Subscriber, Exchange):
     def fetch_open_orders(self, symbol=None, since=None, limit=None, params={}):
         return list(self.open_orders.values())
 
+    def fetch_closed_orders(self, symbol=None, since=None, limit=None, params={}):
+        return self.history
+
+    def fetch_order(self, id, symbol=None, params={}):
+        if id in self.open_orders.keys():
+            return self.open_orders[id]
+        else:
+            for order in self.history:
+                if order['id'] == id:
+                    return order
+        return None
+
     def create_order(self, symbol, type, side, amount, price=None, params={}):
         order_id = str(uuid.uuid4())
         now = self.milliseconds()
         order = {
             'id': order_id,
             'timestamp': now,
+            'datetime': datetime.fromtimestamp(self.seconds()).isoformat(),
             'status': 'closed' if type == 'market' else 'open',
             'symbol': symbol,
             'type': type,
