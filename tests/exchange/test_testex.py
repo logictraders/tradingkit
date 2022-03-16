@@ -1,5 +1,7 @@
 import random
 import time
+import numpy
+
 from unittest import TestCase
 
 from tradingkit.cli.runner import Runner
@@ -62,10 +64,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in range(100, 1000)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge)
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_taker_fees(self):
         symbol = 'BTC/EUR'
@@ -115,10 +117,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in range(100, 1000)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge)
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_maker_fees(self):
         symbol = 'BTC/EUR'
@@ -168,10 +170,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in range(100, 1000)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge)
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_simple_one_percent_strategy(self):
         symbol = 'BTC/EUR'
@@ -233,10 +235,10 @@ class TestTestex(TestCase):
                 'amount': 1
             } for x in (list(range(1000, 100, -1)) + list(range(100, 1000)))]
         )
-        plotter = PlotlyPlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge)
+        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_max_draw_dawn(self):
         symbol = 'BTC/EUR'
@@ -261,7 +263,7 @@ class TestTestex(TestCase):
                     order = event.payload
                     if order['id'] == self.maker_order['id']:
                         balance = self.exchange.fetch_balance()['total']
-                        #assert balance['BTC'] == 1
+                        assert balance['BTC'] == 100000/500
 
             def finish(self):
                 return {}
@@ -278,18 +280,78 @@ class TestTestex(TestCase):
         feeder = ListFeeder(
             [ {
                 'symbol': symbol,
-                'timestamp': timestamp + abs(600 - x) * 1000 * 60,
+                'timestamp': timestamp + abs(600 - x) * 1000 * 60 * 60 * 24,
                 'type': 'limit',
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
                 'amount': 1
-            } for x in range(500, 249, -1)]
+            } for x in range(501, 249, -1)]
         )
-        plotter = NonePlotter()
+        plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        Runner.run(feeder, exchange, plotter, strategy, bridge)
+        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
 
-        mdd = bridge.get_max_draw_down()
+        mdd = result['max_drawdown']
         assert mdd == -0.5
+
+    def test_sharpe_ratio(self):
+        symbol = 'BTC/EUR'
+
+        class TestStrategy(Strategy):
+            maker_order = None
+            initial_balance = None
+
+            def get_symbol(self):
+                return symbol
+
+            def subscribed_events(self) -> list:
+                return [Trade, Order, Book]
+
+            def start(self):
+                self.initial_balance = self.exchange.fetch_balance()['total']
+
+            def on_event(self, event: Event):
+                super().on_event(event)
+                if isinstance(event, Book):
+                    if event.payload['bids'][0][0] == 100:
+                        self.order = self.exchange.create_order(self.get_symbol(), 'market', 'buy', 100000/100)
+                        assert self.order['status'] == 'closed'
+
+            def finish(self):
+                return {}
+
+        exchange = TestEX({
+            'balance': {'EUR': 100000, 'BTC': 0},
+            'fees': {
+                'maker': 0.0,
+                'taker': 0.0
+            }
+        })
+        bridge = BridgeExchange(exchange)
+        timestamp = time.time() * 1000
+        feeder = ListFeeder(
+            [ {
+                'symbol': symbol,
+                'timestamp': timestamp + x * 1000 * 60 * 60 * 24,
+                'type': 'limit',
+                'side': random.choice(['buy', 'sell']),
+                'price': x,
+                'cost': x,
+                'amount': 1
+            } for x in range(99, 103)]
+        )
+        plotter = None
+        strategy = TestStrategy(bridge, {'symbol': symbol})
+
+        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+
+        total_profit = 2
+        days_runing = 2
+        partial_profits = [101/100 * 100 - 100, 102/100 * 100 - 100]
+        standard_deviation = numpy.std(partial_profits)
+        anual_profit = total_profit / days_runing * 365
+        zero_risk_profit = 5
+        expected_sharpe_ratio = (anual_profit - zero_risk_profit) / standard_deviation
+        assert result['sharpe_ratio'] == expected_sharpe_ratio

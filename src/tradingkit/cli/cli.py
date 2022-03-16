@@ -26,7 +26,7 @@ class CLI(Command):
     """Trading Kit CLI.
 
     Usage:
-      tk run [<strategy_dir>] [-e <env>] [-y <year>] [-m <month>] [--optimize | --plot | --live_plot] [ --show-open-orders | --show-orders] [--loglevel <level>]
+      tk run [<strategy_dir>] [-e <env>] [-y <year>] [-m <month>] [--optimize | --plot | --live_plot] [ --show-open-orders | --show-orders] [--loglevel <level>] [--stats]
       tk import [-x <exchange>] [-s <symbol>] [-y <year>] [-m <month>] [--no-funding | --only-funding] [--candles]
       tk --help
       tk --version
@@ -45,6 +45,7 @@ class CLI(Command):
       --no-funding                       Import only trades data
       --only-funding                     Import only funding rate data
       --loglevel <level>                 Sets the log level [default: error].
+      --stats                            Show statistics.
       -h, --help                         Show this screen.
       -v, --version                      Show version.
 
@@ -106,20 +107,21 @@ class CLI(Command):
             injector = ConfigInjector(config)
             feeder = injector.inject('feeder', Feeder)
             exchange = injector.inject('exchange', Exchange)
-            plotter = injector.inject('plotter', Plotter)
-            if args['--live_plot']:
-                plotter.set_live()
-            if args['--show-open-orders']:
-                plotter.set_chart_type(2)
-            elif args['--show-orders']:
-                plotter.set_chart_type(1)
+            if args['--plot'] or args['--live_plot']:
+                plotter = injector.inject('plotter', Plotter)
+                if args['--live_plot']:
+                    plotter.set_live()
+                if args['--show-open-orders']:
+                    plotter.set_chart_type(2)
+                elif args['--show-orders']:
+                    plotter.set_chart_type(1)
+            else:
+                plotter = None
             strategy = injector.inject('strategy', Strategy)
             bridge = injector.inject('bridge', Exchange)
             feeder_adapters = injector.inject('feeder_adapters', list)
 
-            plot = args['--plot'] or args['--live_plot']
-
-            Runner.run(feeder, exchange, plotter, strategy, bridge, feeder_adapters, args['--optimize'], plot)
+            Runner.run(feeder, plotter, strategy, args, feeder_adapters)
 
     @staticmethod
     def command_import(exchange_name, symbol, fetcher, year, months, candles=False):

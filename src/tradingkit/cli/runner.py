@@ -1,10 +1,14 @@
 from tradingkit.exchange.testex import TestEX
+from tradingkit.statistics.statistics import Statistics
 
 
 class Runner:
 
     @staticmethod
-    def run(feeder, exchange, plotter, strategy, bridge, feeder_adapters=None, optimize=False, plot=False):
+    def run(feeder, plotter, strategy, args, feeder_adapters=None):
+        bridge = strategy.exchange
+        exchange = bridge.exchange
+
         if feeder_adapters is None:
             feeder_adapters = []
 
@@ -14,24 +18,33 @@ class Runner:
             chain = adapter
 
         bridge.register(strategy)
-        if plot:
+        if plotter is not None:
             bridge.register(plotter)
             strategy.register(plotter)
+
+        if args['--stats']:
+            statistics = Statistics()
+            bridge.register(statistics)
 
         if isinstance(exchange, TestEX):
             chain.register(exchange)
             chain = exchange
         chain.register(bridge)
         feeder.feed()
-        if optimize:
-            result = strategy.finish(False)
-        else:
-            result = strategy.finish()
+
+        result = strategy.finish()
+
+        if args['--stats']:
+            stats_result = statistics.get_statistics()
+            for stat in stats_result.keys():
+                result[stat] = stats_result[stat]
+
+        if not args['--optimize']:
             print("Trading results")
             for info in result:
-                print("%15s: %10.2f" % (info, result[info]))
+                print("%20s: %10.2f" % (info, result[info]))
 
-        if plot:
+        if plotter is not None:
             plotter.plot()
 
         return result

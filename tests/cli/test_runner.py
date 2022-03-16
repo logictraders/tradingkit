@@ -51,6 +51,6 @@ class TestRunner(TestCase):
         plotter = HighstockPlotter()
         strategy = TestStrategy(bridge, {'symbol': symbol})
 
-        self.assertRaises(InsufficientFunds, Runner.run, feeder, exchange, plotter, strategy, bridge)
+        self.assertRaises(InsufficientFunds, Runner.run, feeder, plotter, strategy, {'--stats': False, '--optimize': False})
 
 
