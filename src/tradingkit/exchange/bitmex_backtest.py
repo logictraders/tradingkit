@@ -28,6 +28,7 @@ class BitmexBacktest(TestEX):
                          }
         self.leverage = 100
         self.funding_rate = None
+        self.name = 'bitmex'
 
     def match_order(self, trade, order, price, base, quote):
         # TODO:

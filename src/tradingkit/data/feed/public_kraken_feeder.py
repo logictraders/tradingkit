@@ -20,9 +20,10 @@ class PublicKrakenFeeder(WebsocketFeeder):
         "XBT/USDT": "BTC/USDT",
     }
 
+    orderbooks = {}
+
     def __init__(self, symbol):
         super().__init__(symbol, None, "wss://ws.kraken.com")
-        self.orderbooks = {}
 
     def on_open(self, ws):
         ws.send(json.dumps({
@@ -39,62 +40,77 @@ class PublicKrakenFeeder(WebsocketFeeder):
     def on_message(self, ws, message):
         data = json.loads(message)
         if "trade" in data:
-            symbol = self.normalized_symbol[data[-1]]
-            for trade in data[1]:
-                price = float(trade[0])
-                amount = float(trade[1])
-                cost = float(trade[0]) * float(trade[1])
-                timestamp = int(float(trade[2]) * 1000)
-                side = 'buy' if trade[3] == 'b' else 'sell'
-                type = 'market' if trade[4] == 'm' else 'limit'
-                trade_data = {
-                    'price': price,
-                    'amount': amount,
-                    'cost': cost,
-                    'timestamp': timestamp,
-                    'side': side,
-                    'type': type,
-                    'symbol': symbol
-                }
+            trade_data_list = self.transform_trade_data(message)
+            for trade_data in trade_data_list:
                 self.dispatch(Trade(trade_data))
 
         elif "book-10" in data:
-            keys = data[1].keys()
-            symbol = self.normalized_symbol[data[-1]]
-            if "as" in keys:
-                self.orderbooks[symbol] = {
-                    "bids": [
-                        [
-                            float(data[1]["bs"][0][0]),
-                            float(data[1]["bs"][0][1])
-                        ]
-                    ],
-                    "asks": [
-                        [
-                            float(data[1]["as"][0][0]),
-                            float(data[1]["as"][0][1])
-                        ]
-                    ],
-                    "timestamp": int(float(data[1]["as"][0][2]) * 1000),
-                    "symbol": symbol
-                }
-            else:
-                if "a" in keys:
-                    self.orderbooks[symbol]["asks"] = [
-                        [
-                            float(data[1]["a"][0][0]),
-                            float(data[1]["a"][0][1])
-                        ]
+            order_book = self.transform_book_data(message)
+            self.dispatch(Book(order_book))
+
+    def transform_book_data(self, data):
+        keys = data[1].keys()
+        symbol = self.normalized_symbol[data[-1]]
+        if "as" in keys:
+            self.orderbooks[symbol] = {
+                "bids": [
+                    [
+                        float(data[1]["bs"][0][0]),
+                        float(data[1]["bs"][0][1])
                     ]
-                    self.orderbooks[symbol]["timestamp"] = int(float(data[1]["a"][0][2]) * 1000)
-                    self.orderbooks[symbol]["symbol"] = symbol
-                if "b" in keys:
-                    self.orderbooks[symbol]["bids"] = [
-                        [
-                            float(data[1]["b"][0][0]),
-                            float(data[1]["b"][0][1])
-                        ]
+                ],
+                "asks": [
+                    [
+                        float(data[1]["as"][0][0]),
+                        float(data[1]["as"][0][1])
                     ]
-                    self.orderbooks[symbol]["timestamp"] = int(float(data[1]["b"][0][2]) * 1000)
-                    self.orderbooks[symbol]["symbol"] = symbol
-            self.dispatch(Book(self.orderbooks[symbol]))
+                ],
+                "timestamp": int(float(data[1]["as"][0][2]) * 1000),
+                "symbol": symbol,
+                'exchange': 'kraken'
+            }
+        else:
+            if "a" in keys:
+                self.orderbooks[symbol]["asks"] = [
+                    [
+                        float(data[1]["a"][0][0]),
+                        float(data[1]["a"][0][1])
+                    ]
+                ]
+                self.orderbooks[symbol]["timestamp"] = int(float(data[1]["a"][0][2]) * 1000)
+                self.orderbooks[symbol]["symbol"] = symbol
+                self.orderbooks[symbol]["exchange"] = 'kraken'
+            if "b" in keys:
+                self.orderbooks[symbol]["bids"] = [
+                    [
+                        float(data[1]["b"][0][0]),
+                        float(data[1]["b"][0][1])
+                    ]
+                ]
+                self.orderbooks[symbol]["timestamp"] = int(float(data[1]["b"][0][2]) * 1000)
+                self.orderbooks[symbol]["symbol"] = symbol
+                self.orderbooks[symbol]["exchange"] = 'kraken'
+        return self.orderbooks[symbol]
+
+    def transform_trade_data(self, data):
+        trade_data_list = []
+        symbol = self.normalized_symbol[data[-1]]
+        for trade in data[1]:
+            price = float(trade[0])
+            amount = float(trade[1])
+            cost = float(trade[0]) * float(trade[1])
+            timestamp = int(float(trade[2]) * 1000)
+            side = 'buy' if trade[3] == 'b' else 'sell'
+            type = 'market' if trade[4] == 'm' else 'limit'
+            trade_data = {
+                'price': price,
+                'amount': amount,
+                'cost': cost,
+                'timestamp': timestamp,
+                'side': side,
+                'type': type,
+                'symbol': symbol,
+                'exchange': 'kraken'
+            }
+            trade_data_list.append(trade_data)
+        return trade_data_list

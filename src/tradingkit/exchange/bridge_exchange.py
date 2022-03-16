@@ -306,7 +306,9 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                     'vol': trade['amount'],
                     'cost': trade['cost'],
                     'trades': 1,
-                    'timeframe': tf
+                    'timeframe': tf,
+                    'symbol': trade['symbol'],
+                    'exchange': trade['exchange']
                 }
                 if self.last_candle[tf] is not None:
                     candle = Candle(self.last_candle[tf])

@@ -39,6 +39,7 @@ class TestEX(Publisher, Subscriber, Exchange):
         self.max_invested = 0
         self.ready = False
         self.undispatched_orders = []
+        self.name = 'kraken'
 
         # timestamp in milliseconds
         self.timestamp = 0
@@ -157,6 +158,7 @@ class TestEX(Publisher, Subscriber, Exchange):
     def dispatch(self, event: Event):
         # prevent from dispatching events if the exchange is not ready
         if self.ready:
+            event.payload['exchange'] = self.name
             super().dispatch(event)
 
     def update_order_book(self, trade):
