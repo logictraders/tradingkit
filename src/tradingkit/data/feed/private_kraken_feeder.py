@@ -65,7 +65,7 @@ class PrivateKrakenFeeder(WebsocketFeeder):
     def on_message(self, ws, message):
         data = json.loads(message)
         if "ownTrades" in data:
-            order_data_list = self.transform_order_data(message)
+            order_data_list = self.transform_order_data(data)
             for order_data in order_data_list:
                 self.dispatch(Order(order_data))
 
@@ -87,3 +87,12 @@ class PrivateKrakenFeeder(WebsocketFeeder):
                 }
                 order_data_list.append(order_data)
         return order_data_list
+
+    def on_error(self, ws, error):
+        print("private ws error", error)
+        if error == 'Connection to remote host was lost.':
+            self.feed()
+
+    def on_close(self, ws):
+        print("private ws closed")
+        self.feed()
