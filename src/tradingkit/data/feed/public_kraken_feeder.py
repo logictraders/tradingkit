@@ -116,3 +116,11 @@ class PublicKrakenFeeder(WebsocketFeeder):
             }
             trade_data_list.append(trade_data)
         return trade_data_list
+
+    def on_error(self, ws, error):
+        print("public ws error", error)
+        self.feed()
+
+    def on_close(self, ws):
+        print("public ws closed")
+        self.feed()

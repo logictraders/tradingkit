@@ -87,3 +87,11 @@ class PrivateKrakenFeeder(WebsocketFeeder):
                 }
                 order_data_list.append(order_data)
         return order_data_list
+
+    def on_error(self, ws, error):
+        print("private ws error", error)
+        self.feed()
+
+    def on_close(self, ws):
+        print("private ws closed")
+        self.feed()
