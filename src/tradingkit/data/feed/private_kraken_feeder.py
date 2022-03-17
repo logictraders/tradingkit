@@ -65,7 +65,7 @@ class PrivateKrakenFeeder(WebsocketFeeder):
     def on_message(self, ws, message):
         data = json.loads(message)
         if "ownTrades" in data:
-            order_data_list = self.transform_order_data(message)
+            order_data_list = self.transform_order_data(data)
             for order_data in order_data_list:
                 self.dispatch(Order(order_data))
 

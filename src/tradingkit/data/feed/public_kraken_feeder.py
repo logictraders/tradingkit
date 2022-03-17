@@ -42,12 +42,12 @@ class PublicKrakenFeeder(WebsocketFeeder):
     def on_message(self, ws, message):
         data = json.loads(message)
         if "trade" in data:
-            trade_data_list = self.transform_trade_data(message)
+            trade_data_list = self.transform_trade_data(data)
             for trade_data in trade_data_list:
                 self.dispatch(Trade(trade_data))
 
         elif "book-10" in data:
-            order_book = self.transform_book_data(message)
+            order_book = self.transform_book_data(data)
             self.dispatch(Book(order_book))
 
     def transform_book_data(self, data):
