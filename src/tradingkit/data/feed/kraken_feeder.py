@@ -26,6 +26,7 @@ class KrakenFeeder(Feeder, Publisher):
             "BTC/EUR": "XBT/EUR",
             "BTC/USD": "XBT/USD",
             "BTC/USDT": "XBT/USDT",
+            "ETH/BTC": "ETH/XBT",
         }
 
     # Converts symbols from kraken to normal vocab
@@ -33,6 +34,7 @@ class KrakenFeeder(Feeder, Publisher):
         "XBT/EUR": "BTC/EUR",
         "XBT/USD": "BTC/USD",
         "XBT/USDT": "BTC/USDT",
+        "ETH/XBT": "ETH/BTC",
     }
 
     orderbooks = {}
