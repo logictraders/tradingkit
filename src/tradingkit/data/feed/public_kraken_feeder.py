@@ -100,3 +100,11 @@ class PublicKrakenFeeder(WebsocketFeeder):
                     self.orderbooks[symbol]["timestamp"] = int(float(data[1]["b"][0][2]) * 1000)
                     self.orderbooks[symbol]["symbol"] = symbol
             self.dispatch(Book(self.orderbooks[symbol]))
+
+    def on_error(self, ws, error):
+        print("public ws error", error)
+        self.feed()
+
+    def on_close(self, ws):
+        print("public ws closed")
+        self.feed()

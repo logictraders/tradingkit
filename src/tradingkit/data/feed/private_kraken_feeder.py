@@ -79,3 +79,12 @@ class PrivateKrakenFeeder(WebsocketFeeder):
                         'amount': float(dict[order]['vol'])
                     }
                     self.dispatch(Order(order_data))
+
+    def on_error(self, ws, error):
+        print("private ws error", error)
+        self.feed()
+
+    def on_close(self, ws):
+        print("private ws closed")
+        self.feed()
+
