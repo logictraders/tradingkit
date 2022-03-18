@@ -60,6 +60,7 @@ class BinanceFeeder(WebsocketFeeder):
         order_book = {"bids": [[float(message['b']), float(message['B'])]],
                       "ascs": [[float(message['a']), float(message['A'])]],
                       "timestamp": int(message['E']),
+                      'exchange': 'binance',
                       "symbol": self.normalized_symbol[message['s']]  # message['s']
                       }
         return order_book
@@ -70,6 +71,7 @@ class BinanceFeeder(WebsocketFeeder):
                       'lastTradeTimestamp': message['E'],
                       'status': 'filled',
                       'symbol': self.normalized_symbol[message['s']],  # message['s']
+                      'exchange': 'binance',
                       'type': message['o'],
                       'side': message['S'],
                       'price': float(message['L']),
@@ -86,7 +88,8 @@ class BinanceFeeder(WebsocketFeeder):
             'timestamp': int(message['E'] / 1000),
             'side': side,
             'type': 'limit',
-            'symbol': self.normalized_symbol[message['s']]
+            'symbol': self.normalized_symbol[message['s']],
+            'exchange': 'binance',
         }
         return trade_data
 
