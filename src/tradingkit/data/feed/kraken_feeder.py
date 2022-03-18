@@ -191,7 +191,8 @@ class KrakenFeeder(Feeder, Publisher):
                     ]
                 ],
                 "timestamp": int(float(message[1]["as"][0][2]) * 1000),
-                "symbol": symbol
+                "symbol": symbol,
+                'exchange': 'kraken'
             }
         else:
             if "a" in keys:
@@ -212,6 +213,7 @@ class KrakenFeeder(Feeder, Publisher):
                 ]
                 self.orderbooks[symbol]["timestamp"] = int(float(message[1]["b"][0][2]) * 1000)
                 self.orderbooks[symbol]["symbol"] = symbol
+                self.orderbooks[symbol]["exchange"] = 'kraken'
         return self.orderbooks[symbol]
 
     def transform_trade_data(self, message):
@@ -231,7 +233,8 @@ class KrakenFeeder(Feeder, Publisher):
                 'timestamp': timestamp,
                 'side': side,
                 'type': type,
-                'symbol': symbol
+                'symbol': symbol,
+                'exchange': 'kraken'
             }
             trade_data_list.append(trade_data)
         return trade_data_list
@@ -248,6 +251,7 @@ class KrakenFeeder(Feeder, Publisher):
                         'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
                         'status': 'filled',
                         'symbol': self.NORMALIZED_SYMBOL[dict[order]['pair']],
+                        'exchange': 'kraken',
                         'type': dict[order]['ordertype'],
                         'side': dict[order]['type'],
                         'price': float(dict[order]['price']),
