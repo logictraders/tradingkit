@@ -9,7 +9,8 @@ import time
 import urllib.request
 from datetime import datetime
 
-from websocket import create_connection, _logging
+from websocket import create_connection
+import logging
 
 from tradingkit.data.feed.feeder import Feeder
 from tradingkit.pubsub.core.publisher import Publisher
@@ -26,6 +27,7 @@ class KrakenFeeder(Feeder, Publisher):
             "BTC/EUR": "XBT/EUR",
             "BTC/USD": "XBT/USD",
             "BTC/USDT": "XBT/USDT",
+            "ETH/BTC": "ETH/XBT",
         }
 
     # Converts symbols from kraken to normal vocab
@@ -33,6 +35,7 @@ class KrakenFeeder(Feeder, Publisher):
         "XBT/EUR": "BTC/EUR",
         "XBT/USD": "BTC/USD",
         "XBT/USDT": "BTC/USDT",
+        "ETH/XBT": "ETH/BTC",
     }
 
     orderbooks = {}
@@ -75,13 +78,13 @@ class KrakenFeeder(Feeder, Publisher):
         try:
             self.public_ws = create_connection(api_domain)
         except Exception as error:
-            _logging.warning("WebSocket connection failed (%s)" % error)
+            logging.info("WebSocket connection failed (%s)" % error)
             time.sleep(600)
             self.on_open()
         try:
             self.private_ws = create_connection(auth_api_domain)
         except Exception as error:
-            _logging.warning("WebSocket connection failed (%s)" % error)
+            logging.info("WebSocket connection failed (%s)" % error)
             time.sleep(600)
             self.on_open()
         token = self.authenticate()
@@ -102,7 +105,7 @@ class KrakenFeeder(Feeder, Publisher):
             self.public_ws.send(book_feed)
             self.private_ws.send(own_trades_feed)
         except Exception as error:
-            _logging.warning("Feed subscription failed (%s)" % error)
+            logging.info("Feed subscription failed (%s)" % error)
             self.public_ws.close()
             self.private_ws.close()
             sys.exit(1)
@@ -143,8 +146,8 @@ class KrakenFeeder(Feeder, Publisher):
                 _ws.close()
                 sys.exit(0)
             except Exception as error:
-                _logging.warning("[WebSocket error] %s" % str(error))
-                _logging.warning("[WebSocket data] %s" % str(ws_data))
+                logging.info("[WebSocket error] %s" % str(error))
+                logging.info("[WebSocket data] %s" % str(ws_data))
                 time.sleep(60)
                 self.on_open()
                 if is_private:
@@ -166,9 +169,9 @@ class KrakenFeeder(Feeder, Publisher):
 
         # wait until threads finish their job
         public_t.join()
-        _logging.warning("[WebSocket data public STOP] %s" % str(public_t))
+        logging.info("[WebSocket data public STOP] %s" % str(public_t))
         private_t.join()
-        _logging.warning("[WebSocket data private STOP] %s" % str(private_t))
+        logging.info("[WebSocket data private STOP] %s" % str(private_t))
 
     def transform_book_data(self, message):
         keys = message[1].keys()
@@ -188,7 +191,8 @@ class KrakenFeeder(Feeder, Publisher):
                     ]
                 ],
                 "timestamp": int(float(message[1]["as"][0][2]) * 1000),
-                "symbol": symbol
+                "symbol": symbol,
+                'exchange': 'kraken'
             }
         else:
             if "a" in keys:
@@ -209,6 +213,7 @@ class KrakenFeeder(Feeder, Publisher):
                 ]
                 self.orderbooks[symbol]["timestamp"] = int(float(message[1]["b"][0][2]) * 1000)
                 self.orderbooks[symbol]["symbol"] = symbol
+                self.orderbooks[symbol]["exchange"] = 'kraken'
         return self.orderbooks[symbol]
 
     def transform_trade_data(self, message):
@@ -228,7 +233,8 @@ class KrakenFeeder(Feeder, Publisher):
                 'timestamp': timestamp,
                 'side': side,
                 'type': type,
-                'symbol': symbol
+                'symbol': symbol,
+                'exchange': 'kraken'
             }
             trade_data_list.append(trade_data)
         return trade_data_list
@@ -245,6 +251,7 @@ class KrakenFeeder(Feeder, Publisher):
                         'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
                         'status': 'filled',
                         'symbol': self.NORMALIZED_SYMBOL[dict[order]['pair']],
+                        'exchange': 'kraken',
                         'type': dict[order]['ordertype'],
                         'side': dict[order]['type'],
                         'price': float(dict[order]['price']),

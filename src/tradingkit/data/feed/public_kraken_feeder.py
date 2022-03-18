@@ -11,6 +11,7 @@ class PublicKrakenFeeder(WebsocketFeeder):
         "BTC/EUR": "XBT/EUR",
         "BTC/USD": "XBT/USD",
         "BTC/USDT": "XBT/USDT",
+        "ETH/BTC": "ETH/XBT",
     }
 
     # Converts symbols from kraken to normal vocab
@@ -18,9 +19,14 @@ class PublicKrakenFeeder(WebsocketFeeder):
         "XBT/EUR": "BTC/EUR",
         "XBT/USD": "BTC/USD",
         "XBT/USDT": "BTC/USDT",
+        "ETH/XBT": "ETH/BTC",
     }
 
     orderbooks = {}
+    ws_errors = [
+        "ping/pong timed out",
+        "Connection to remote host was lost."
+    ]
 
     def __init__(self, symbol):
         super().__init__(symbol, None, "wss://ws.kraken.com")
@@ -40,12 +46,12 @@ class PublicKrakenFeeder(WebsocketFeeder):
     def on_message(self, ws, message):
         data = json.loads(message)
         if "trade" in data:
-            trade_data_list = self.transform_trade_data(message)
+            trade_data_list = self.transform_trade_data(data)
             for trade_data in trade_data_list:
                 self.dispatch(Trade(trade_data))
 
         elif "book-10" in data:
-            order_book = self.transform_book_data(message)
+            order_book = self.transform_book_data(data)
             self.dispatch(Book(order_book))
 
     def transform_book_data(self, data):
@@ -114,3 +120,16 @@ class PublicKrakenFeeder(WebsocketFeeder):
             }
             trade_data_list.append(trade_data)
         return trade_data_list
+
+    def on_error(self, ws, error):
+        print("public ws error", error)
+        if error in self.ws_errors:
+            self.feed()
+
+    def on_close(self, ws, arg1=None, arg2=None):
+        if arg1 is not None:
+            print('arg1', arg1)
+        if arg2 is not None:
+            print('arg2', arg2)
+        print("public ws closed")
+        self.feed()

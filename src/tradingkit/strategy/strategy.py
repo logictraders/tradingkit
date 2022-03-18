@@ -29,9 +29,10 @@ class Strategy(Publisher, Subscriber, ABC):
         symbol = self.config['symbol']
         base, quote = symbol.split('/')
         quote_balance = balance[quote] if quote in balance else 0
-        self.start_equity = quote_balance + balance[base] * self.exchange.fetch_ticker(symbol)['bid']
-        self.start_base_equity = quote_balance / self.exchange.fetch_ticker(symbol)['bid'] + balance[base]
-        self.start_base_balance = balance[base]
+        base_balance = balance[base] if base in balance else 0
+        self.start_equity = quote_balance + base_balance * self.exchange.fetch_ticker(symbol)['bid']
+        self.start_base_equity = quote_balance / self.exchange.fetch_ticker(symbol)['bid'] + base_balance
+        self.start_base_balance = base_balance
         logging.info("Initial Equity: %s" % str(self.start_equity))
 
     def on_event(self, event: Event):
