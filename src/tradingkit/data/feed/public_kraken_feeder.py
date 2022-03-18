@@ -23,6 +23,10 @@ class PublicKrakenFeeder(WebsocketFeeder):
     }
 
     orderbooks = {}
+    ws_errors = [
+        "ping/pong timed out",
+        "Connection to remote host was lost."
+    ]
 
     def __init__(self, symbol):
         super().__init__(symbol, None, "wss://ws.kraken.com")
@@ -119,9 +123,13 @@ class PublicKrakenFeeder(WebsocketFeeder):
 
     def on_error(self, ws, error):
         print("public ws error", error)
-        if error == 'Connection to remote host was lost.':
+        if error in self.ws_errors:
             self.feed()
 
-    def on_close(self, ws):
+    def on_close(self, ws, arg1=None, arg2=None):
+        if arg1 is not None:
+            print('arg1', arg1)
+        if arg2 is not None:
+            print('arg2', arg2)
         print("public ws closed")
         self.feed()
