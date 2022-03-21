@@ -367,3 +367,60 @@ class TestBitmexBacktest(TestCase):
         expected_sharpe_ratio = (anual_profit - zero_risk_profit) / standard_deviation
 
         assert result['sharpe_ratio'] == expected_sharpe_ratio
+
+    def test_trades_statistics(self):
+        symbol = 'BTC/USD'
+        initial_balance = 100
+        order_price = 100
+        order_amount = initial_balance * order_price
+
+        class TestStrategy(Strategy):
+            maker_order = None
+
+            def get_symbol(self):
+                return symbol
+
+            def subscribed_events(self) -> list:
+                return [Trade, Order, Liquidation]
+
+            def start(self):
+                initial_balance = self.exchange.fetch_balance()['total']
+
+            def on_event(self, event: Event):
+                super().on_event(event)
+                if isinstance(event, Trade):
+                    if event.payload['price'] >= 100 and self.maker_order is None:
+                        self.maker_order = \
+                            self.exchange.create_order(self.get_symbol(), 'market', 'buy', order_amount)
+
+            def finish(self):
+                return {}
+
+        exchange = BitmexBacktest({
+            'balance': {'USD': 0, 'BTC': 100},
+            'fees': {
+                'maker': 0.0,
+                'taker': 0.0
+            }
+        })
+        bridge = BridgeExchange(exchange)
+        timestamp = time.time() * 1000
+        feeder = ListFeeder(
+            [{
+                'symbol': symbol,
+                'timestamp':  timestamp + x * 1000 * 60 * 60 * 24,
+                'type': 'limit',
+                'side': random.choice(['buy', 'sell']),
+                'price': x,
+                'cost': x,
+                'amount': 1
+            } for x in range(100, 202)]
+        )
+        plotter = None
+        strategy = TestStrategy(bridge, {'symbol': symbol})
+
+        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+
+        assert int(result['max_no_trading_days']) == 99
+        assert result['volume_traded'] == 100
+        assert result['days_running'] == 100
