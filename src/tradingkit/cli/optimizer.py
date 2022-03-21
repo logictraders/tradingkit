@@ -32,7 +32,6 @@ class Optimizer:
         self.mdd_penalty = 0.6
         self.no_trade_penalty = 0
 
-
     def objective_function(self, genome, results, i, results_data):
         self.count += 1
 
@@ -44,11 +43,10 @@ class Optimizer:
             profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
         if result['end_equity'] > 0:
 
-
             mdd_factor = (1 - abs(result['max_drawdown'])) ** self.mdd_penalty
-            mdd_factor = (1 - result['max_no_trading_days'] / 365) ** self.no_trade_penalty
+            no_trade_factor = (1 - result['max_no_trading_days'] / 365) ** self.no_trade_penalty
 
-            score = profit * mdd_factor * mdd_factor
+            score = profit * mdd_factor * no_trade_factor
         else:
             score = np.random.uniform(-200, -100, 1)[0]
 
@@ -72,8 +70,6 @@ class Optimizer:
         else:
             results_data[i] = None
 
-
-
     def run_simulation(self, genome):
 
         for i in range(len(self.param_names)):
@@ -86,7 +82,6 @@ class Optimizer:
         strategy = injector.inject('strategy', Strategy)
         injector.inject('bridge', Exchange)
         injector.inject('feeder_adapters', list)
-
 
         result = Runner.run(feeder, None, strategy, {'--stats': True, '--optimize': True})
         return result
@@ -222,14 +217,17 @@ class Optimizer:
                 ratio = 1 - iteration / self.max_iterations
                 adding = bool(np.random.choice([True, False]))
                 if adding:
-                    value = new_genome[index] + ratio * np.random.uniform(0, varbound[index][1] - new_genome[index], 1)[0]
+                    value = new_genome[index] + ratio * np.random.uniform(0, varbound[index][1] - new_genome[index], 1)[
+                        0]
                 else:
-                    value = new_genome[index] - ratio * np.random.uniform(0, new_genome[index] - varbound[index][0], 1)[0]
+                    value = new_genome[index] - ratio * np.random.uniform(0, new_genome[index] - varbound[index][0], 1)[
+                        0]
                 if (type(new_genome[index]) == int):
                     value = int(value)
                 new_genome[index] = value
 
-                process_list[i] = mp.Process(target=self.objective_function, args=(new_genome, results, i, results_data))
+                process_list[i] = mp.Process(target=self.objective_function,
+                                             args=(new_genome, results, i, results_data))
                 process_list[i].start()
                 results_values[i] = new_genome
 
