@@ -24,16 +24,17 @@ class Optimizer:
         self.param_names = []
         self.population_size = 10
         self.count = 0
-        self.max_iterations = 100
+        self.max_iterations = None
         self.max_iteration_without_improv = 10
-        self.start_time = time.time()
+        self.start_time = int(time.time())
         self.config = None
 
-    def objective_function(self, genome, _results, i, results_data):
+        self.mdd_penalty = 0.6
+        self.no_trade_penalty = 0
+
+
+    def objective_function(self, genome, results, i, results_data):
         self.count += 1
-        total_profit = 0
-        results = []
-        results_ = []
 
         result = self.run_simulation(genome)
 
@@ -43,23 +44,24 @@ class Optimizer:
             profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
         if result['end_equity'] > 0:
 
-            results.append(profit)
-            mdd_penalty = 1
-            results_.append(profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty)
-        else:
-            return np.random.uniform(-200, -100, 1)[0]
-        total_profit += profit
 
-        score = sum(results_)
+            mdd_factor = (1 - abs(result['max_drawdown'])) ** self.mdd_penalty
+            mdd_factor = (1 - result['max_no_trading_days'] / 365) ** self.no_trade_penalty
+
+            score = profit * mdd_factor * mdd_factor
+        else:
+            score = np.random.uniform(-200, -100, 1)[0]
+
+        results[i] = score
 
         if score > 0:
             data = []
             data.append("  T prof:")
-            data.append(round(total_profit, 2))
+            data.append(round(profit, 2))
             data.append("%  ")
             data.append(score)
             data.append(" ")
-            data.append(results)
+            data.append('results')
             data.append(" MDD  ")
             data.append(result['max_drawdown'])
             data.append("   ")
@@ -70,9 +72,7 @@ class Optimizer:
         else:
             results_data[i] = None
 
-        if _results is not None:
-            _results[i] = score
-        return score
+
 
     def run_simulation(self, genome):
 
@@ -81,12 +81,12 @@ class Optimizer:
 
         injector = ConfigInjector(self.config)
         feeder = injector.inject('feeder', Feeder)
-        exchange = injector.inject('exchange', Exchange)
-        plotter = injector.inject('plotter', Plotter)
+        injector.inject('exchange', Exchange)
 
         strategy = injector.inject('strategy', Strategy)
-        bridge = injector.inject('bridge', Exchange)
-        feeder_adapters = injector.inject('feeder_adapters', list)
+        injector.inject('bridge', Exchange)
+        injector.inject('feeder_adapters', list)
+
 
         result = Runner.run(feeder, None, strategy, {'--stats': True, '--optimize': True})
         return result
@@ -119,6 +119,7 @@ class Optimizer:
             self.param_names.append(param)
             varbound.append([config['optimizer_config'][param]['from'], config['optimizer_config'][param]['to']])
             vartype.append([config['optimizer_config'][param]['type']])
+        self.max_iterations = len(self.param_names) * 10
         self.args = args
         self.config = self.get_config()
         t = datetime.now()
@@ -218,9 +219,12 @@ class Optimizer:
                 new_score[key] = genome
                 new_genome = genome.copy()
                 index = np.random.randint(len(new_genome), size=1)[0]
-                ratio = max(iteration - 10, 0)  # first 10 iterations use max mutation speed and decrease after
-                value = (new_genome[index] * ratio +
-                         np.random.uniform(varbound[index][0], varbound[index][1], 1)[0]) / (ratio + 1)
+                ratio = 1 - iteration / self.max_iterations
+                adding = bool(np.random.choice([True, False]))
+                if adding:
+                    value = new_genome[index] + ratio * np.random.uniform(0, varbound[index][1] - new_genome[index], 1)[0]
+                else:
+                    value = new_genome[index] - ratio * np.random.uniform(0, new_genome[index] - varbound[index][0], 1)[0]
                 if (type(new_genome[index]) == int):
                     value = int(value)
                 new_genome[index] = value
