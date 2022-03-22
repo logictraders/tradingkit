@@ -29,11 +29,11 @@ class Optimizer:
         self.start_time = int(time.time())
         self.config = None
 
-    def objective_function(self, genome, _results, i, results_data):
+        self.mdd_penalty = 0.6
+        self.no_trade_penalty = 0
+
+    def objective_function(self, genome, results, i, results_data):
         self.count += 1
-        total_profit = 0
-        results = []
-        results_ = []
 
         result = self.run_simulation(genome)
 
@@ -43,23 +43,23 @@ class Optimizer:
             profit = (result['base_balance'] - result['start_base_balance']) / result['start_base_balance'] * 100
         if result['end_equity'] > 0:
 
-            results.append(profit)
-            mdd_penalty = 0.6
-            results_.append(profit * (1 - abs(result['max_drawdown'])) ** mdd_penalty)
-        else:
-            return np.random.uniform(-200, -100, 1)[0]
-        total_profit += profit
+            mdd_factor = (1 - abs(result['max_drawdown'])) ** self.mdd_penalty
+            no_trade_factor = (1 - result['max_no_trading_days'] / 365) ** self.no_trade_penalty
 
-        score = sum(results_)
+            score = profit * mdd_factor * no_trade_factor
+        else:
+            score = np.random.uniform(-200, -100, 1)[0]
+
+        results[i] = score
 
         if score > 0:
             data = []
             data.append("  T prof:")
-            data.append(round(total_profit, 2))
+            data.append(round(profit, 2))
             data.append("%  ")
             data.append(score)
             data.append(" ")
-            data.append(results)
+            data.append('results')
             data.append(" MDD  ")
             data.append(result['max_drawdown'])
             data.append("   ")
@@ -70,10 +70,6 @@ class Optimizer:
         else:
             results_data[i] = None
 
-        if _results is not None:
-            _results[i] = score
-        return score
-
     def run_simulation(self, genome):
 
         for i in range(len(self.param_names)):
@@ -81,12 +77,11 @@ class Optimizer:
 
         injector = ConfigInjector(self.config)
         feeder = injector.inject('feeder', Feeder)
-        exchange = injector.inject('exchange', Exchange)
-        plotter = None  # injector.inject('plotter', Plotter)
+        injector.inject('exchange', Exchange)
 
         strategy = injector.inject('strategy', Strategy)
-        bridge = injector.inject('bridge', Exchange)
-        feeder_adapters = injector.inject('feeder_adapters', list)
+        injector.inject('bridge', Exchange)
+        injector.inject('feeder_adapters', list)
 
         result = Runner.run(feeder, None, strategy, {'--stats': True, '--optimize': True})
         return result
@@ -222,7 +217,8 @@ class Optimizer:
                 ratio = 1 - iteration / self.max_iterations
                 adding = bool(np.random.choice([True, False]))
                 if adding:
-                    value = new_genome[index] + ratio * np.random.uniform(0, varbound[index][1] - new_genome[index], 1)[0]
+                    value = new_genome[index] + ratio * np.random.uniform(0, varbound[index][1] - new_genome[index], 1)[
+                        0]
                 else:
                     value = new_genome[index] - ratio * np.random.uniform(0, new_genome[index] - varbound[index][0], 1)[0]
                 if (type(new_genome[index]) == int):

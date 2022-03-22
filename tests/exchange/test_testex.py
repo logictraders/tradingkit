@@ -355,3 +355,58 @@ class TestTestex(TestCase):
         zero_risk_profit = 5
         expected_sharpe_ratio = (anual_profit - zero_risk_profit) / standard_deviation
         assert result['sharpe_ratio'] == expected_sharpe_ratio
+
+    def test_trades_statistics(self):
+        symbol = 'BTC/EUR'
+
+        class TestStrategy(Strategy):
+            maker_order = None
+            initial_balance = None
+
+            def get_symbol(self):
+                return symbol
+
+            def subscribed_events(self) -> list:
+                return [Trade, Order, Book]
+
+            def start(self):
+                self.initial_balance = self.exchange.fetch_balance()['total']
+
+            def on_event(self, event: Event):
+                super().on_event(event)
+                if isinstance(event, Book):
+                    if event.payload['bids'][0][0] == 100:
+                        self.order = self.exchange.create_order(self.get_symbol(), 'market', 'buy', 100000/100)
+                        assert self.order['status'] == 'closed'
+
+            def finish(self):
+                return {}
+
+        exchange = TestEX({
+            'balance': {'EUR': 100000, 'BTC': 0},
+            'fees': {
+                'maker': 0.0,
+                'taker': 0.0
+            }
+        })
+        bridge = BridgeExchange(exchange)
+        timestamp = time.time() * 1000
+        feeder = ListFeeder(
+            [ {
+                'symbol': symbol,
+                'timestamp': timestamp + x * 1000 * 60 * 60 * 24,
+                'type': 'limit',
+                'side': random.choice(['buy', 'sell']),
+                'price': x,
+                'cost': x,
+                'amount': 1
+            } for x in range(100, 202)]
+        )
+        plotter = None
+        strategy = TestStrategy(bridge, {'symbol': symbol})
+
+        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+
+        assert int(result['max_no_trading_days']) == 99
+        assert result['volume_traded'] == 100000
+        assert result['days_running'] == 100
