@@ -57,11 +57,11 @@ class Optimizer:
             data.append("  T prof:")
             data.append(round(profit, 2))
             data.append("%  ")
-            data.append(score)
-            data.append(" ")
-            data.append('results')
+            data.append(round(score, 2))
+            data.append("MNOD  ")
+            data.append(int(result['max_no_trading_days']))
             data.append(" MDD  ")
-            data.append(result['max_drawdown'])
+            data.append(round(result['max_drawdown'], 4))
             data.append("   ")
             data.append(genome)
             data.append("      ")
@@ -169,7 +169,7 @@ class Optimizer:
 
             print(iteration, "Top 10 solutions:")
             f_handle = open(strategy_dir + '/' + str(self.start_time) + "_best.csv", 'a')
-            np.savetxt(f_handle, [[iteration]], delimiter="  ", fmt="%s")
+            np.savetxt(f_handle, [["Iteration:",iteration, "Lapsed time: ", datetime.now() - t]], delimiter="  ", fmt="%s")
             f_handle.close()
             i = 0
             for key, value in sorted(score.items(), reverse=True):
