@@ -21,8 +21,6 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
     def __init__(self, exchange: Exchange):
         super().__init__()
         self.exchange = exchange
-        self.closed_orders = {}
-        self.orders_history = {}
         self.last_price = None
         self.has_position = True if "bitmex" in str(exchange.__class__) else False
         self.candles = None
@@ -86,16 +84,13 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         if isinstance(event, Candle):
             self.plot_candle(event)
         if isinstance(event, Order):
-            order = event.payload.copy()
-            if order['id'] in self.orders_history.keys():
-                self.orders_history[order['id']].update(order)
-                event.payload = self.orders_history[order['id']]
+            order = event.payload
             self.plot_order(event)
             if self.last_price is not None:
                 self.calculate_exchange_state(order['lastTradeTimestamp'], order['symbol'], self.last_price)
         if isinstance(event, OpenOrder):
             self.plot_order(event)
-            order = event.payload.copy()
+            order = event.payload
             if self.last_price is not None:
                 self.calculate_exchange_state(order['timestamp'], order['symbol'], self.last_price)
         if isinstance(event, Liquidation):
@@ -103,7 +98,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             self.calculate_exchange_state(trade['timestamp'], trade['symbol'], trade['price'])
         if isinstance(event, Trade):
             trade = event.payload
-            self.last_price = event.payload['price']
+            self.last_price = trade['price']
             self.candle_dispatcher(trade)
         self.dispatch(event)
 
@@ -120,7 +115,6 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             if amount < 0:
                 amount = -amount
         order = self.exchange.create_order(symbol, type, side, amount, price, params)
-        self.orders_history[order['id']] = order
         return order
 
     def cancel_order(self, order_id, symbol=None, params={}):
