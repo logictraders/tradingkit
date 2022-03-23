@@ -41,6 +41,9 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             "2w": 1209600
         }
 
+    def set_timeframes(self, timeframes):
+        self.timeframes = timeframes
+
     def sec(self):
         return self.exchange.sec()
 
