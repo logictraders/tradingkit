@@ -283,15 +283,15 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
             sec = self.timeframes[tf]
             key = trade['timestamp'] // (sec * 1000) * sec
             key = str(datetime.fromtimestamp(key))
-            if self.last_candle[tf] is not None and key in self.candles[tf]:
-                self.candles[tf][key]['high'] = max(self.candles[tf][key]['high'], trade['price'])
-                self.candles[tf][key]['low'] = min(self.candles[tf][key]['low'], trade['price'])
-                self.candles[tf][key]['close'] = trade['price']
-                self.candles[tf][key]['vol'] += trade['amount']
-                self.candles[tf][key]['cost'] += trade['cost']
-                self.candles[tf][key]['trades'] += 1
+            if self.last_candle[tf] is not None and key in self.candles[tf]['datetime']:
+                self.candles[tf]['high'] = max(self.candles[tf]['high'], trade['price'])
+                self.candles[tf]['low'] = min(self.candles[tf]['low'], trade['price'])
+                self.candles[tf]['close'] = trade['price']
+                self.candles[tf]['vol'] += trade['amount']
+                self.candles[tf]['cost'] += trade['cost']
+                self.candles[tf]['trades'] += 1
             else:
-                self.candles[tf][key] = {
+                self.candles[tf] = {
                     'datetime': key,
                     'open': trade['price'],
                     'high': trade['price'],
@@ -308,4 +308,4 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                     candle = Candle(self.last_candle[tf])
                     self.dispatch(candle)
                     self.plot_candle(candle)
-            self.last_candle[tf] = self.candles[tf][key]
+            self.last_candle[tf] = self.candles[tf]
