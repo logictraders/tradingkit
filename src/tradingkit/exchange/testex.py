@@ -139,7 +139,6 @@ class TestEX(Publisher, Subscriber, Exchange):
                 if asset not in self.balance:
                     self.balance[asset] = 0
             base, quote = assets
-            self.plot_balances(base, quote, trade['price'])
             for order_id in self.open_orders:
                 order = self.open_orders[order_id]
                 if order['symbol'] == symbol:
@@ -215,29 +214,6 @@ class TestEX(Publisher, Subscriber, Exchange):
 
         for order in orders_to_dispatch:
             self.dispatch(Order(order))
-
-    def plot_balances(self, base, quote, price):
-        balance = self.balance.copy()
-        exchange_date = datetime.fromtimestamp(self.seconds()).isoformat()
-        base_value = balance[base] * price
-        equity = balance[quote] + base_value
-        ttip = "<b>Total: %.2f %s</b><br />Quote: %.2f %s<br />Base: %.2f %s" % (
-            equity, quote,
-            balance[quote], quote,
-            balance[base], base
-        )
-        self.dispatch(Plot({
-            'name': 'Equity',
-            'type': 'scatter',
-            'mode': 'lines',
-            'color': 'blue',
-            'yaxis': 'balance',
-            'data': {
-                'x': exchange_date,
-                'y': equity,
-                'tooltip': ttip
-            },
-        }))
 
     def funds_enough(self, order):
         base, quote = order['symbol'].split('/')
