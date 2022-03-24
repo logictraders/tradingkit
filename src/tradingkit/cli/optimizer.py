@@ -80,8 +80,10 @@ class Optimizer:
         injector.inject('exchange', Exchange)
 
         strategy = injector.inject('strategy', Strategy)
-        injector.inject('bridge', Exchange)
+        bridge = injector.inject('bridge', Exchange)
         injector.inject('feeder_adapters', list)
+
+        bridge.set_timeframes({"1d": 86400})
 
         result = Runner.run(feeder, None, strategy, {'--stats': True, '--optimize': True})
         return result
