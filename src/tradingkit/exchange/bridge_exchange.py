@@ -24,7 +24,6 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         self.last_price = None
         self.has_position = True if "bitmex" in str(exchange.__class__) else False
         self.candles = None
-        self.last_candle = None
         self.timeframes = {
             "1m": 60,
             "5m": 300,
@@ -279,14 +278,11 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
         if self.candles is None:
             self.candles = {x: {} for x in self.timeframes.keys()}
 
-        if self.last_candle is None:
-            self.last_candle = {x: None for x in self.timeframes.keys()}
-
         for tf in self.timeframes.keys():
             sec = self.timeframes[tf]
             key = trade['timestamp'] // (sec * 1000) * sec
             key = str(datetime.fromtimestamp(key))
-            if self.last_candle[tf] is not None and key in self.candles[tf]['datetime']:
+            if 'datetime' in self.candles[tf] and key == self.candles[tf]['datetime']:
                 self.candles[tf]['high'] = max(self.candles[tf]['high'], trade['price'])
                 self.candles[tf]['low'] = min(self.candles[tf]['low'], trade['price'])
                 self.candles[tf]['close'] = trade['price']
@@ -307,8 +303,7 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                     'symbol': trade['symbol'],
                     'exchange': trade['exchange']
                 }
-                if self.last_candle[tf] is not None:
-                    candle = Candle(self.last_candle[tf])
-                    self.dispatch(candle)
-                    self.plot_candle(candle)
-            self.last_candle[tf] = self.candles[tf]
+                candle = Candle(self.candles[tf])
+                self.dispatch(candle)
+                self.plot_candle(candle)
+

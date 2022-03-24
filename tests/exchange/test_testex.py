@@ -340,7 +340,7 @@ class TestTestex(TestCase):
                 'price': x,
                 'cost': x,
                 'amount': 1
-            } for x in range(99, 103)]
+            } for x in range(100, 103)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
@@ -400,7 +400,7 @@ class TestTestex(TestCase):
                 'price': x,
                 'cost': x,
                 'amount': 1
-            } for x in range(100, 202)]
+            } for x in range(100, 201)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
