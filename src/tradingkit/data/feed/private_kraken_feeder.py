@@ -29,7 +29,8 @@ class PrivateKrakenFeeder(WebsocketFeeder):
     }
     ws_errors = [
         "ping/pong timed out",
-        "Connection to remote host was lost."
+        "Connection to remote host was lost.",
+        "Invalid close opcode."
     ]
 
     def __init__(self, symbol, credentials):
