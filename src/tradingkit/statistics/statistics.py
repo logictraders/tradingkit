@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import numpy
+import time
 
 from tradingkit.pubsub.core.event import Event
 from tradingkit.pubsub.core.publisher import Publisher
@@ -29,6 +30,9 @@ class Statistics(Publisher, Subscriber):
         self.last_trade_timestamp = None
         self.max_no_trades_time = 0
         self.volume_traded = 0
+        self.buy_orders = 0
+        self.sell_orders = 0
+        self.start_time = time.time()
 
     def subscribed_events(self) -> list:
         return [Order, Trade, Book, Candle, Liquidation, Funding, OpenOrder, Plot]
@@ -52,6 +56,10 @@ class Statistics(Publisher, Subscriber):
             order = event.payload.copy()
             amount = order['amount'] / order['price'] if order['exchange'] == 'bitmex' else order['amount'] * order['price']
             self.update_trades_statistics(order['lastTradeTimestamp'], amount)
+            if order['side'] == 'buy':
+                self.buy_orders += 1
+            else:
+                self.sell_orders += 1
 
     def get_statistics(self):
         max_drawdown = self.get_max_draw_down()
@@ -62,6 +70,9 @@ class Statistics(Publisher, Subscriber):
                 'days_running': (self.balance_history[-1]['date'] - self.balance_history[0]['date']).days,
                 'max_no_trading_days': self.max_no_trades_time / 1000 / 60 / 60 / 24,
                 'volume_traded': self.volume_traded,
+                'buy_orders': self.buy_orders,
+                'sell_orders': self.sell_orders,
+                'lapsed_minutes': (time.time() - self.start_time) / 60,
                 }
 
     def update_balance_hist_from_plot(self, event):

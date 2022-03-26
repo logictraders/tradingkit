@@ -42,7 +42,7 @@ class Runner:
         if not args['--optimize']:
             print("Trading results")
             for info in result:
-                print("%20s: %10.2f" % (info, result[info]))
+                print("%20s: %16.2f" % (info, result[info]))
 
         if plotter is not None:
             plotter.plot()
