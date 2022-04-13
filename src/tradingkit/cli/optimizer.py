@@ -29,8 +29,8 @@ class Optimizer:
         self.start_time = int(time.time())
         self.config = None
 
-        self.mdd_penalty = 0.6
-        self.no_trade_penalty = 0
+        self.mdd_penalty = 0
+        self.no_trade_penalty = 0.5
 
     def objective_function(self, genome, results, i, results_data):
         self.count += 1
@@ -44,7 +44,7 @@ class Optimizer:
         if result['end_equity'] > 0:
 
             mdd_factor = (1 - abs(result['max_drawdown'])) ** self.mdd_penalty
-            no_trade_factor = (1 - result['max_no_trading_days'] / 365) ** self.no_trade_penalty
+            no_trade_factor = (1 - min(result['max_no_trading_days'] / 365, 0.9999)) ** self.no_trade_penalty
 
             score = profit * mdd_factor * no_trade_factor
         else:
@@ -108,7 +108,7 @@ class Optimizer:
             config = json.load(open(route, 'r'))
         else:
             raise ValueError("The path: %s due not exist." % str(route))
-        c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
+        c_handle = open(strategy_dir + '/optimizations/' + str(self.start_time) + "_out.csv", 'a')
         c_handle.close()
         varbound = []
         vartype = []
@@ -143,7 +143,7 @@ class Optimizer:
             process_list[i].join()
             score[results[i]] = results_values[i]
             if results_data[i] is not None:
-                c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
+                c_handle = open(strategy_dir + '/optimizations/' + str(self.start_time) + "_out.csv", 'a')
                 np.savetxt(c_handle, [results_data[i]], delimiter="  ", fmt="%s")
                 c_handle.close()
 
@@ -170,7 +170,7 @@ class Optimizer:
             print("Lapsed Time: ", datetime.now() - t)
 
             print(iteration, "Top 10 solutions:")
-            f_handle = open(strategy_dir + '/' + str(self.start_time) + "_best.csv", 'a')
+            f_handle = open(strategy_dir + '/optimizations/' + str(self.start_time) + "_best.csv", 'a')
             np.savetxt(f_handle, [["Iteration:",iteration, "Lapsed time: ", datetime.now() - t]], delimiter="  ", fmt="%s")
             f_handle.close()
             i = 0
@@ -183,7 +183,7 @@ class Optimizer:
                         else:
                             iteration_without_improv += 1
                     print(i, key, value)
-                    f_handle = open(strategy_dir + '/' + str(self.start_time) + "_best.csv", 'a')
+                    f_handle = open(strategy_dir + '/optimizations/' + str(self.start_time) + "_best.csv", 'a')
                     np.savetxt(f_handle, [[key, value]], delimiter="  ", fmt="%s")
                     f_handle.close()
                     i += 1
@@ -240,7 +240,7 @@ class Optimizer:
             process_list[i].join()
             new_score[results[i]] = results_values[i]
             if results_data[i] is not None:
-                c_handle = open(strategy_dir + '/' + str(self.start_time) + "_out.csv", 'a')
+                c_handle = open(strategy_dir + '/optimizations/' + str(self.start_time) + "_out.csv", 'a')
                 np.savetxt(c_handle, [results_data[i]], delimiter="  ", fmt="%s")
                 c_handle.close()
 
