@@ -26,6 +26,7 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
         for trade in json.load(open(full_filename, 'r')):
             if since.timestamp() <= trade['timestamp'] / 1000 < to.timestamp():
                 self.dispatch_founding_rate(trade, exchange, base, quote)
+                trade['exchange'] = 'bitmex'
                 self.dispatch(Trade(trade))
 
     def dispatch_founding_rate(self, trade, exchange, base, quote):

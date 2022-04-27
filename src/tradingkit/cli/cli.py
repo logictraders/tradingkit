@@ -105,23 +105,42 @@ class CLI(Command):
                 config['to'] = to.isoformat()
 
             injector = ConfigInjector(config)
-            feeder = injector.inject('feeder', Feeder)
-            exchange = injector.inject('exchange', Exchange)
-            if args['--plot'] or args['--live_plot']:
-                plotter = injector.inject('plotter', Plotter)
-                if args['--live_plot']:
-                    plotter.set_live()
-                if args['--show-open-orders']:
-                    plotter.set_chart_type(2)
-                elif args['--show-orders']:
-                    plotter.set_chart_type(1)
-            else:
-                plotter = None
-            strategy = injector.inject('strategy', Strategy)
-            bridge = injector.inject('bridge', Exchange)
-            feeder_adapters = injector.inject('feeder_adapters', list)
 
-            Runner.run(feeder, plotter, strategy, args, feeder_adapters)
+            if "exchanges" in config['config'].keys():
+                exchanges_config = config['config']['exchanges']
+                exchange_chains = []
+                for exchange_config in exchanges_config:
+                    feeder = injector.inject(exchange_config['feeder'], Feeder)
+                    exchange = injector.inject(exchange_config['exchange'], Exchange)
+                    bridge = injector.inject('bridge', Exchange)
+                    exchange_chains.append({"feeder": feeder, "exchange": exchange, "bridge": bridge, "name": exchange_config['name']})
+                feeder_adapters = None
+                plotter = None
+                strategy = injector.inject('strategy', Strategy)
+
+                Runner.run(exchange_chains, plotter, strategy, args)
+
+            else:
+                feeder = injector.inject('feeder', Feeder)
+                exchange = injector.inject('exchange', Exchange)
+                bridge = injector.inject('bridge', Exchange)
+
+                feeder_adapters = injector.inject('feeder_adapters', list)
+                strategy = injector.inject('strategy', Strategy)
+                exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+
+                if args['--plot'] or args['--live_plot']:
+                    plotter = injector.inject('plotter', Plotter)
+                    if args['--live_plot']:
+                        plotter.set_live()
+                    if args['--show-open-orders']:
+                        plotter.set_chart_type(2)
+                    elif args['--show-orders']:
+                        plotter.set_chart_type(1)
+                else:
+                    plotter = None
+
+                Runner.run(exchange_chains, plotter, strategy, args, feeder_adapters)
 
     @staticmethod
     def command_import(exchange_name, symbol, fetcher, year, months, candles=False):
