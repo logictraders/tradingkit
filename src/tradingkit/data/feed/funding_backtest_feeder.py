@@ -28,7 +28,6 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
             if since.timestamp() <= trade['timestamp'] / 1000 < to.timestamp():
                 self.dispatch_founding_rate(trade, exchange, base, quote)
                 trade['exchange'] = 'bitmex'
-                time.sleep(10000)
                 self.dispatch(Trade(trade))
 
     def dispatch_founding_rate(self, trade, exchange, base, quote):

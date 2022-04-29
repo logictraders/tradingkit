@@ -52,4 +52,4 @@ class BacktestFeeder(Feeder, Publisher):
             if since.timestamp() <= trade['timestamp'] / 1000 < to.timestamp():
                 trade['exchange'] = self.exchange
                 self.dispatch(Trade(trade))
-                time.sleep(10)
+

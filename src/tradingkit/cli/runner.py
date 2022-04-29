@@ -1,7 +1,7 @@
 from tradingkit.exchange.testex import TestEX
 from tradingkit.exchange.bitmex_backtest import BitmexBacktest
 from tradingkit.statistics.statistics import Statistics
-import multiprocessing
+import threading
 
 
 class Runner:
@@ -60,7 +60,7 @@ class Runner:
 
                 chain = feeder
                 bridge.register(strategy)
-                if isinstance(exchange, TestEX) or isinstance(exchange, BitmexBacktest) :
+                if isinstance(exchange, TestEX) or isinstance(exchange, BitmexBacktest):
                     chain.register(exchange)
                     chain = exchange
                 chain.register(bridge)
@@ -72,7 +72,7 @@ class Runner:
 
             children = []
             for feeder in feeders:
-                child = multiprocessing.Process(target=feeder.feed)
+                child = threading.Thread(target=feeder.feed)
                 child.start()
                 children.append(child)
 
