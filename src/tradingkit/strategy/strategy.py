@@ -27,14 +27,14 @@ class Strategy(Publisher, Subscriber, ABC):
         logging.info("Start strategy %s" % str(self.__class__))
         if hasattr(self, 'exchanges'):
             for exchange in self.exchanges.keys():
-                _, base_balance, start_base_equity, start_equity = self.get_exchange_balance(
+                _, base_balance, start_base_equity, start_equity, _ = self.get_exchange_balance(
                     self.exchanges[exchange].exchange, self.config['symbol'])
                 self.start_equity += start_equity
                 self.start_base_equity += start_base_equity
                 self.start_base_balance += base_balance
 
         else:
-            _, base_balance, start_base_equity, start_equity = self.get_exchange_balance(self.exchange,
+            _, base_balance, start_base_equity, start_equity, _ = self.get_exchange_balance(self.exchange,
                                                                                       self.config['symbol'])
 
             self.start_equity = start_equity
@@ -48,9 +48,10 @@ class Strategy(Publisher, Subscriber, ABC):
         base, quote = symbol.split('/')
         quote_balance = balance[quote] if quote in balance else 0
         base_balance = balance[base] if base in balance else 0
-        equity = quote_balance + base_balance * exchange.fetch_ticker(symbol)['bid']
-        base_equity = quote_balance / exchange.fetch_ticker(symbol)['bid'] + base_balance
-        return quote_balance, base_balance, base_equity, equity
+        price = exchange.fetch_ticker(symbol)['bid']
+        equity = quote_balance + base_balance * price
+        base_equity = quote_balance / price + base_balance
+        return quote_balance, base_balance, base_equity, equity, price
 
     def on_event(self, event: Event):
         if not self.is_started:
@@ -62,12 +63,13 @@ class Strategy(Publisher, Subscriber, ABC):
         if hasattr(self, 'exchanges'):
             quote_balance = base_balance = end_base_equity = end_equity = 0
             for exchange in self.exchanges.keys():
-                _quote_balance, _base_balance, _end_base_equity, _end_equity = self.get_exchange_balance(
+                _quote_balance, _base_balance, _end_base_equity, _end_equity, price = self.get_exchange_balance(
                     self.exchanges[exchange].exchange, self.config['symbol'])
-                if self.exchange.has_position:
-                    position = self.exchange.private_get_position()[0]
-                    pnl = (price / position['avgEntryPrice'] - 1) * position['currentQty']
-                    _end_equity += pnl
+                if self.exchanges[exchange].has_position:
+                    position = self.exchanges[exchange].private_get_position()[0]
+                    if position['currentQty'] != 0:
+                        pnl = (price / position['avgEntryPrice'] - 1) * position['currentQty']
+                        _end_equity += pnl
 
                 quote_balance += _quote_balance
                 base_balance += _base_balance
@@ -75,12 +77,13 @@ class Strategy(Publisher, Subscriber, ABC):
                 end_equity += _end_equity
 
         else:
-            quote_balance, base_balance, end_base_equity, end_equity = self.get_exchange_balance(self.exchange,
+            quote_balance, base_balance, end_base_equity, end_equity, price = self.get_exchange_balance(self.exchange,
                                                                                       self.config['symbol'])
             if self.exchange.has_position:
                 position = self.exchange.private_get_position()[0]
-                pnl = (price / position['avgEntryPrice'] - 1) * position['currentQty']
-                end_equity += pnl
+                if position['currentQty'] != 0:
+                    pnl = (price / position['avgEntryPrice'] - 1) * position['currentQty']
+                    end_equity += pnl
 
         logging.info("Equity: %.2f EUR" % end_equity)
 

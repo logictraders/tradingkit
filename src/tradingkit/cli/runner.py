@@ -11,7 +11,6 @@ class Runner:
     def run(exchange_chains, plotter, strategy, args, feeder_adapters=[]):
 
         if len(exchange_chains) == 1:
-
             feeder = exchange_chains[0]['feeder']
             exchange = exchange_chains[0]['exchange']
             bridge = exchange_chains[0]['bridge']
@@ -51,10 +50,10 @@ class Runner:
             if plotter is not None:
                 plotter.plot()
 
-        else:
+        else: # multi exchange
             # creating a lock
             lock = threading.Lock()
-            feeders_syncronizer = FeedersSycronizer(lock)
+            feeders_synchronizer = FeedersSycronizer(lock)
             feeders = []
             exchanges = {}
             for exchange_chain in exchange_chains:
@@ -63,8 +62,8 @@ class Runner:
                 bridge = exchange_chain['bridge']
 
                 chain = feeder
-                chain.register(feeders_syncronizer)
-                chain = feeders_syncronizer
+                chain.register(feeders_synchronizer)
+                chain = feeders_synchronizer
                 if isinstance(exchange, TestEX) or isinstance(exchange, BitmexBacktest):
                     chain.register(exchange)
                     chain = exchange

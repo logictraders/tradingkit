@@ -16,6 +16,7 @@ from tradingkit.cli.runner import Runner
 from tradingkit.cli.optimizer import Optimizer
 from tradingkit.data.feed.feeder import Feeder
 from tradingkit.display.plotter import Plotter
+from tradingkit.exchange.bridge_exchange import BridgeExchange
 from tradingkit.strategy.strategy import Strategy
 from tradingkit.utils.config_injector import ConfigInjector
 from tradingkit.utils.system import System
@@ -112,9 +113,8 @@ class CLI(Command):
                 for exchange_config in exchanges_config:
                     feeder = injector.inject(exchange_config['feeder'], Feeder)
                     exchange = injector.inject(exchange_config['exchange'], Exchange)
-                    bridge = injector.inject('bridge', Exchange)
+                    bridge = BridgeExchange(exchange)
                     exchange_chains.append({"feeder": feeder, "exchange": exchange, "bridge": bridge, "name": exchange_config['name']})
-                feeder_adapters = None
                 plotter = None
                 strategy = injector.inject('strategy', Strategy)
 
