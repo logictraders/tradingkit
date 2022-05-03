@@ -1,6 +1,7 @@
 from tradingkit.exchange.testex import TestEX
 from tradingkit.exchange.bitmex_backtest import BitmexBacktest
 from tradingkit.statistics.statistics import Statistics
+from tradingkit.data.adapter.feeders_syncronizer import FeedersSycronizer
 import threading
 
 
@@ -51,6 +52,9 @@ class Runner:
                 plotter.plot()
 
         else:
+            # creating a lock
+            lock = threading.Lock()
+            feeders_syncronizer = FeedersSycronizer(lock)
             feeders = []
             exchanges = {}
             for exchange_chain in exchange_chains:
@@ -59,11 +63,13 @@ class Runner:
                 bridge = exchange_chain['bridge']
 
                 chain = feeder
-                bridge.register(strategy)
+                chain.register(feeders_syncronizer)
+                chain = feeders_syncronizer
                 if isinstance(exchange, TestEX) or isinstance(exchange, BitmexBacktest):
                     chain.register(exchange)
                     chain = exchange
                 chain.register(bridge)
+                bridge.register(strategy)
 
                 feeders.append(feeder)
                 exchanges[exchange_chain['name']] = bridge
