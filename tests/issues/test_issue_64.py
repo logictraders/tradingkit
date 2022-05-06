@@ -105,7 +105,7 @@ class TestIssue64(TestCase):
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        Runner.run(exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
 

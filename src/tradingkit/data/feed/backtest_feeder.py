@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime
-import time
+
 from dateutil.relativedelta import relativedelta
 
 from tradingkit.utils.system import System
@@ -52,4 +52,3 @@ class BacktestFeeder(Feeder, Publisher):
             if since.timestamp() <= trade['timestamp'] / 1000 < to.timestamp():
                 trade['exchange'] = self.exchange
                 self.dispatch(Trade(trade))
-
