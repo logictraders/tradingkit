@@ -87,8 +87,8 @@ class Optimizer:
         strategy = injector.inject('strategy', Strategy)
         bridge = injector.inject('bridge', Exchange)
         feeder_adapters = injector.inject('feeder_adapters', list)
-
-        result = Runner.run(feeder, None, strategy, {'--stats': True, '--optimize': True})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        result = Runner.run(exchange_chains, None, strategy, {'--stats': True, '--optimize': True})
         return result
 
     def get_config(self):
