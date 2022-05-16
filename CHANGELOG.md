@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.11.0](https://github.com/logictraders/tradingkit/compare/v1.10.2...v1.11.0) (2022-05-16)
+
+
+### Features
+
+* **feeder:** added exchange labels for different exchanges ([#50](https://github.com/logictraders/tradingkit/issues/50)) ([2bed4bd](https://github.com/logictraders/tradingkit/commit/2bed4bdcc3abbf836ee0e1397f9cf48118c04c1f))
+* **kraken:** added new pairs with eth ([#53](https://github.com/logictraders/tradingkit/issues/53)) ([f48c8cf](https://github.com/logictraders/tradingkit/commit/f48c8cf50f16e7cfbdf1b86306e91129ff0fdb4e))
+* **statistics:** separated statistics module ([#52](https://github.com/logictraders/tradingkit/issues/52)) ([313037c](https://github.com/logictraders/tradingkit/commit/313037c1032e3f74a4f8e5b188a405593b01c190))
+* **testex:** fetch closed orders ([#48](https://github.com/logictraders/tradingkit/issues/48)) ([69f94e8](https://github.com/logictraders/tradingkit/commit/69f94e81bd82d1d4e536dbc83186e7f725832fb7))
+
+
+### Bug Fixes
+
+* **optimizer:** speed refactor ([#47](https://github.com/logictraders/tradingkit/issues/47)) ([0547f8b](https://github.com/logictraders/tradingkit/commit/0547f8b57b979690c65c5a7f6677666dcf696f2d))
+* **telegram:** removed telegram integration ([#44](https://github.com/logictraders/tradingkit/issues/44)) ([7081ff5](https://github.com/logictraders/tradingkit/commit/7081ff56e64b34209936dfac072940a1690db57d))
+
 ### [1.10.2](https://github.com/logictraders/tradingkit/compare/v1.10.1...v1.10.2) (2022-03-05)
 
 
