@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.1](https://github.com/logictraders/tradingkit/compare/v1.11.0...v1.11.1) (2022-05-17)
+
+
+### Bug Fixes
+
+* **deps:** downgraded ccxt dependency due to errors in bitmex ([46967a9](https://github.com/logictraders/tradingkit/commit/46967a93a48e4439d6f5a47b17e7cae010684b27))
+
 ## [1.11.0](https://github.com/logictraders/tradingkit/compare/v1.10.2...v1.11.0) (2022-05-16)
 
 
