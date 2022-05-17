@@ -1,9 +1,9 @@
-ccxt==1.82.62
+ccxt==1.62.56
 docopt~=0.6.2
 python-dateutil~=2.8.1
 plotly==5.8.0
 pandas==1.4.2
-setuptools==62.2.0
+setuptools==62.3.1
 numpy==1.22.3
 requests~=2.27.1
 chardet==3.0.4
