@@ -30,6 +30,9 @@ class BitmexBacktest(TestEX):
         self.funding_rate = None
         self.name = 'bitmex'
 
+    def set_name(self, name):
+        self.name = name
+
     def match_order(self, trade, order, price, base, quote):
         # TODO:
         #   - partial fills
@@ -86,22 +89,23 @@ class BitmexBacktest(TestEX):
         logging.debug("position_updated: %s" % str(self.position))
 
     def on_event(self, event: Event):
-        super().on_event(event)
-        if isinstance(event, Trade):
-            self.set_mark_price(event.payload)
-            if self.position['currentQty'] > 0:
-                if self.position['liquidationPrice'] >= self.position['markPrice']:
-                    self.execute_liquidation(event.payload)
+        if event.payload['exchange'] == self.name:
+            super().on_event(event)
+            if isinstance(event, Trade):
+                self.set_mark_price(event.payload)
+                if self.position['currentQty'] > 0:
+                    if self.position['liquidationPrice'] >= self.position['markPrice']:
+                        self.execute_liquidation(event.payload)
 
-            elif self.position['currentQty'] < 0:
-                if self.position['liquidationPrice'] <= self.position['markPrice']:
-                    self.execute_liquidation(event.payload)
+                elif self.position['currentQty'] < 0:
+                    if self.position['liquidationPrice'] <= self.position['markPrice']:
+                        self.execute_liquidation(event.payload)
 
-        if isinstance(event, Funding):
-            base, quote = event.payload['symbol'].split('/')
-            self.balance[base] -= self.position['currentQty'] * event.payload['rate'] / event.payload['price']
-            self.funding_rate = {"timestamp": event.payload['timestamp'], "rate": event.payload['rate']}
-        super().on_event(event)
+            if isinstance(event, Funding):
+                base, quote = event.payload['symbol'].split('/')
+                self.balance[base] -= self.position['currentQty'] * event.payload['rate'] / event.payload['price']
+                self.funding_rate = {"timestamp": event.payload['timestamp'], "rate": event.payload['rate']}
+            super().on_event(event)
 
     def execute_liquidation(self, trade):
         time = datetime.fromtimestamp(self.seconds())

@@ -10,6 +10,7 @@ from tradingkit.data.feed.backtest_feeder import BacktestFeeder
 from tradingkit.pubsub.core.publisher import Publisher
 from tradingkit.pubsub.event.trade import Trade
 from tradingkit.pubsub.event.funding import Funding
+import time
 
 
 class FundingBacktestFeeder(BacktestFeeder, Publisher):
@@ -17,6 +18,10 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
         super().__init__(exchange, symbol, since8601, to8601)
         self.founding_rate_data = None
         self.next_founding_rate_index = 0
+        self.name = 'bitmex'
+
+    def set_name(self, name):
+        self.name = name
 
     def dispatch_month(self, exchange, symbol, year, month, since, to):
         import_dir = System.get_import_dir()
@@ -27,6 +32,7 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
             if since.timestamp() <= trade['timestamp'] / 1000 < to.timestamp():
                 self.dispatch_founding_rate(trade, exchange, base, quote)
                 trade['exchange'] = 'bitmex'
+                #time.sleep(100000)
                 self.dispatch(Trade(trade))
 
     def dispatch_founding_rate(self, trade, exchange, base, quote):
@@ -46,6 +52,8 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
                                                     "date": row['timestamp'],
                                                     "price": trade['price'],
                                                     "symbol": trade['symbol']})
+            self.founding_rate_data[0]['exchange'] = 'bitmex'
+            #time.sleep(100000)
             self.dispatch(Funding(self.founding_rate_data[0]))
             self.next_founding_rate_index += 1
 
