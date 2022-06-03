@@ -50,7 +50,7 @@ class Runner:
             if plotter is not None:
                 plotter.plot()
 
-        else: # multi exchange
+        else:  # multi exchange
             # creating a lock
             lock = threading.Lock()
             feeders_synchronizer = FeedersSycronizer(lock)
@@ -65,6 +65,7 @@ class Runner:
                 chain.register(feeders_synchronizer)
                 chain = feeders_synchronizer
                 if isinstance(exchange, TestEX) or isinstance(exchange, BitmexBacktest):
+                    feeders_synchronizer.add_feeder(exchange_chain['name'])
                     chain.register(exchange)
                     chain = exchange
                 chain.register(bridge)

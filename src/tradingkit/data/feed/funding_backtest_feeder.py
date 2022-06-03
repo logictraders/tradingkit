@@ -59,6 +59,7 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
 
         elif self.next_founding_rate_index < len(self.founding_rate_data) and \
                 trade['timestamp'] > self.founding_rate_data[self.next_founding_rate_index]["timestamp"]:
+            self.founding_rate_data[self.next_founding_rate_index]['exchange'] = 'bitmex'
             self.dispatch(Funding(self.founding_rate_data[self.next_founding_rate_index]))
             self.next_founding_rate_index += 1
 
