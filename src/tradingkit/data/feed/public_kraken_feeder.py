@@ -26,7 +26,8 @@ class PublicKrakenFeeder(WebsocketFeeder):
     ws_errors = [
         "ping/pong timed out",
         "Connection to remote host was lost.",
-        "Invalid close opcode."
+        "Invalid close opcode.",
+        "Connection reset by peer"
     ]
 
     def __init__(self, symbol):
@@ -124,8 +125,10 @@ class PublicKrakenFeeder(WebsocketFeeder):
 
     def on_error(self, ws, error):
         print("public ws error", error)
-        if error in self.ws_errors:
+        if str(error) in self.ws_errors:
             self.feed()
+        else:
+            print("unknown error", ">"+str(error)+"<")
 
     def on_close(self, ws, arg1=None, arg2=None):
         if arg1 is not None:
