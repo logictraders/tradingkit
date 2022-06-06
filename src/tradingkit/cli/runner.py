@@ -59,6 +59,8 @@ class Runner:
             for exchange_chain in exchange_chains:
                 feeder = exchange_chain['feeder']
                 exchange = exchange_chain['exchange']
+                feeder.set_name(exchange_chain['name'])
+                exchange.set_name(exchange_chain['name'])
                 bridge = exchange_chain['bridge']
 
                 chain = feeder

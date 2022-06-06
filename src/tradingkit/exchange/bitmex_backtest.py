@@ -105,7 +105,7 @@ class BitmexBacktest(TestEX):
                 base, quote = event.payload['symbol'].split('/')
                 self.balance[base] -= self.position['currentQty'] * event.payload['rate'] / event.payload['price']
                 self.funding_rate = {"timestamp": event.payload['timestamp'], "rate": event.payload['rate']}
-            super().on_event(event)
+            #super().on_event(event)
 
     def execute_liquidation(self, trade):
         time = datetime.fromtimestamp(self.seconds())

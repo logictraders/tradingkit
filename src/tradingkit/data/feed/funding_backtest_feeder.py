@@ -31,7 +31,7 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
         for trade in json.load(open(full_filename, 'r')):
             if since.timestamp() <= trade['timestamp'] / 1000 < to.timestamp():
                 self.dispatch_founding_rate(trade, exchange, base, quote)
-                trade['exchange'] = 'bitmex'
+                trade['exchange'] = self.name
                 #time.sleep(100000)
                 self.dispatch(Trade(trade))
 
@@ -52,14 +52,14 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
                                                     "date": row['timestamp'],
                                                     "price": trade['price'],
                                                     "symbol": trade['symbol']})
-            self.founding_rate_data[0]['exchange'] = 'bitmex'
+            self.founding_rate_data[0]['exchange'] = self.name
             #time.sleep(100000)
             self.dispatch(Funding(self.founding_rate_data[0]))
             self.next_founding_rate_index += 1
 
         elif self.next_founding_rate_index < len(self.founding_rate_data) and \
                 trade['timestamp'] > self.founding_rate_data[self.next_founding_rate_index]["timestamp"]:
-            self.founding_rate_data[self.next_founding_rate_index]['exchange'] = 'bitmex'
+            self.founding_rate_data[self.next_founding_rate_index]['exchange'] = self.name
             self.dispatch(Funding(self.founding_rate_data[self.next_founding_rate_index]))
             self.next_founding_rate_index += 1
 
