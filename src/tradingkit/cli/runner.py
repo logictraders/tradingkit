@@ -3,7 +3,7 @@ from tradingkit.exchange.bitmex_backtest import BitmexBacktest
 from tradingkit.statistics.statistics import Statistics
 from tradingkit.data.adapter.feeders_syncronizer import FeedersSycronizer
 import threading
-
+import copy
 
 class Runner:
 
@@ -57,11 +57,16 @@ class Runner:
             feeders = []
             exchanges = {}
             for exchange_chain in exchange_chains:
-                feeder = exchange_chain['feeder']
-                exchange = exchange_chain['exchange']
+                feeder = copy.deepcopy(exchange_chain['feeder'])
+                exchange = copy.deepcopy(exchange_chain['exchange'])
+
                 feeder.set_name(exchange_chain['name'])
                 exchange.set_name(exchange_chain['name'])
                 bridge = exchange_chain['bridge']
+
+                print('feeder ID:', id(feeder), feeder.name)
+                print('exchange ID:', id(exchange), exchange.name)
+                print('bridge ID:', id(bridge), exchange_chain['name'])
 
                 chain = feeder
                 chain.register(feeders_synchronizer)
