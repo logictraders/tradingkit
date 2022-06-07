@@ -63,10 +63,6 @@ class Runner:
                 feeder.set_name(exchange_chain['name'])
                 exchange.set_name(exchange_chain['name'])
 
-                print('feeder ID:', id(feeder), feeder.name)
-                print('exchange ID:', id(exchange), exchange.name)
-                print('bridge ID:', id(bridge), exchange_chain['name'])
-
                 chain = feeder
                 chain.register(feeders_synchronizer)
                 chain = feeders_synchronizer
