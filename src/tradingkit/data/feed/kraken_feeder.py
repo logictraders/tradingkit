@@ -56,6 +56,7 @@ class KrakenFeeder(Feeder, Publisher):
         self.ignore_outdated = ignore_outdated
         self.lock = None
         self.candle = {'id': '', 'data': {}}
+        self.name = 'kraken'
 
     def authenticate(self):
         api_nonce = bytes(str(int(time.time() * 1000)), "utf-8")
@@ -192,7 +193,7 @@ class KrakenFeeder(Feeder, Publisher):
                 ],
                 "timestamp": int(float(message[1]["as"][0][2]) * 1000),
                 "symbol": symbol,
-                'exchange': 'kraken'
+                'exchange': self.name
             }
         else:
             if "a" in keys:
@@ -213,7 +214,7 @@ class KrakenFeeder(Feeder, Publisher):
                 ]
                 self.orderbooks[symbol]["timestamp"] = int(float(message[1]["b"][0][2]) * 1000)
                 self.orderbooks[symbol]["symbol"] = symbol
-                self.orderbooks[symbol]["exchange"] = 'kraken'
+                self.orderbooks[symbol]["exchange"] = self.name
         return self.orderbooks[symbol]
 
     def transform_trade_data(self, message):
@@ -234,7 +235,7 @@ class KrakenFeeder(Feeder, Publisher):
                 'side': side,
                 'type': type,
                 'symbol': symbol,
-                'exchange': 'kraken'
+                'exchange': self.name
             }
             trade_data_list.append(trade_data)
         return trade_data_list
@@ -251,7 +252,7 @@ class KrakenFeeder(Feeder, Publisher):
                         'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
                         'status': 'filled',
                         'symbol': self.NORMALIZED_SYMBOL[dict[order]['pair']],
-                        'exchange': 'kraken',
+                        'exchange': self.name,
                         'type': dict[order]['ordertype'],
                         'side': dict[order]['type'],
                         'price': float(dict[order]['price']),

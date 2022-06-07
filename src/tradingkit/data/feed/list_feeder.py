@@ -7,6 +7,7 @@ class ListFeeder(Feeder, Publisher):
     def __init__(self, trades):
         super().__init__()
         self.trades = trades
+        self.name = 'list_feeder'
 
     def feed(self):
         for trade in self.trades:

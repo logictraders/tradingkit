@@ -20,9 +20,6 @@ class BacktestFeeder(Feeder, Publisher):
         self.exchange = exchange
         self.name = 'kraken'
 
-    def set_name(self, name):
-        self.name = name
-
     def feed(self):
         start_month = self.since.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         end_month = self.to.replace(day=1, hour=0, minute=0, second=0, microsecond=0)

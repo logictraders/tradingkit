@@ -39,6 +39,7 @@ class BitmexFeeder(WebsocketFeeder):
 
     def __init__(self, symbol='BTC/USD', credentials=None, url="wss://ws.bitmex.com/realtime"):
         super().__init__(symbol, credentials, url)
+        self.name = 'bitmex'
 
     def on_open(self, ws):
         self.subscribe(ws, 'trade:%s' % self.BITMEX_SYMBOL_MAP[self.symbol])
@@ -95,7 +96,7 @@ class BitmexFeeder(WebsocketFeeder):
         order_book = payload['data'][0]
         order_book['timestamp'] = int(parser.isoparse(payload['data'][0]['timestamp']).timestamp() * 1000)
         order_book['symbol'] = self.BITMEX_SYMBOL_MAP_REV[order_book['symbol']]
-        order_book['exchange'] = 'bitmex'
+        order_book['exchange'] = self.name
 
         return order_book
 
@@ -103,7 +104,7 @@ class BitmexFeeder(WebsocketFeeder):
         trade = payload['data'][0].copy()
         trade['timestamp'] = parser.isoparse(trade['timestamp']).timestamp() * 1000
         trade['symbol'] = self.BITMEX_SYMBOL_MAP_REV[trade['symbol']]
-        trade['exchange'] = 'bitmex'
+        trade['exchange'] = self.name
 
         trade['amount'] = trade['size']
         trade['info'] = payload['data'][0].copy()
@@ -124,7 +125,7 @@ class BitmexFeeder(WebsocketFeeder):
             "timestamp": timestamp,
             "lastTradeTimestamp": int(time.time() * 1000),
             "symbol": symbol,
-            "exchange": 'bitmex',
+            "exchange": self.name,
             "leavesQty": payload['data'][0]['leavesQty']
         }
 

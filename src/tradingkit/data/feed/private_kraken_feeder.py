@@ -34,6 +34,7 @@ class PrivateKrakenFeeder(WebsocketFeeder):
 
     def __init__(self, symbol, credentials):
         super().__init__(symbol, credentials, "wss://ws-auth.kraken.com")
+        self.name = 'kraken'
 
     def on_open(self, ws):
         token = self.get_ws_auth_token()
@@ -83,7 +84,7 @@ class PrivateKrakenFeeder(WebsocketFeeder):
                     'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
                     'status': 'filled',
                     'symbol': self.normalized_symbol[dict[order]['pair']],
-                    'exchange': 'kraken',
+                    'exchange': self.name,
                     'type': dict[order]['ordertype'],
                     'side': dict[order]['type'],
                     'price': float(dict[order]['price']),

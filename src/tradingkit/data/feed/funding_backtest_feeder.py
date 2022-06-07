@@ -20,9 +20,6 @@ class FundingBacktestFeeder(BacktestFeeder, Publisher):
         self.next_founding_rate_index = 0
         self.name = 'bitmex'
 
-    def set_name(self, name):
-        self.name = name
-
     def dispatch_month(self, exchange, symbol, year, month, since, to):
         import_dir = System.get_import_dir()
         base, quote = symbol.split('/')
