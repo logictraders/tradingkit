@@ -61,7 +61,8 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(100, 1000)]
         )
         plotter = None
@@ -114,7 +115,8 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(100, 1000)]
         )
         plotter = None
@@ -167,7 +169,8 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(100, 1000)]
         )
         plotter = None
@@ -232,7 +235,8 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in (list(range(1000, 100, -1)) + list(range(100, 1000)))]
         )
         plotter = None
@@ -285,7 +289,8 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(501, 249, -1)]
         )
         plotter = None
@@ -339,7 +344,8 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(99, 103)]
         )
         plotter = None

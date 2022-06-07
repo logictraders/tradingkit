@@ -45,7 +45,8 @@ class TestRunner(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(100, 1000)]
         )
         plotter = HighstockPlotter()

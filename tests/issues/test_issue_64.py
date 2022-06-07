@@ -100,7 +100,8 @@ class TestIssue64(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in (list(range(8200, 7700)) + list(range(7700, 8000)))]
         )
         plotter = None

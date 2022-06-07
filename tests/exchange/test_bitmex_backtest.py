@@ -64,7 +64,9 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
+
             } for x in range(100, 1000)]
         )
         plotter = None
@@ -116,7 +118,8 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(100, 1000)]
         )
         plotter = None
@@ -177,7 +180,8 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(100, 1000)]
         )
         plotter = None
@@ -242,7 +246,8 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(1000, 1, -1)]
         )
         plotter = None
@@ -293,7 +298,8 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(501, 399, -1)]
         )
         plotter = None
@@ -348,7 +354,8 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(99, 103)]
         )
         plotter = None
