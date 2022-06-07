@@ -111,6 +111,7 @@ class CLI(Command):
             if "exchanges" in config['config'].keys():
                 exchanges_config = config['config']['exchanges']
                 exchange_chains = []
+                # use paralel and syncronized feeder->exchange->bridge chains and one strategy
                 for exchange_config in exchanges_config:
                     feeder = copy.deepcopy(injector.inject(exchange_config['feeder'], Feeder))
                     exchange = copy.deepcopy(injector.inject(exchange_config['exchange'], Exchange))
