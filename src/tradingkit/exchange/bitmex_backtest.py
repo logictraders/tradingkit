@@ -30,9 +30,6 @@ class BitmexBacktest(TestEX):
         self.funding_rate = None
         self.name = 'bitmex'
 
-    def set_name(self, name):
-        self.name = name
-
     def match_order(self, trade, order, price, base, quote):
         # TODO:
         #   - partial fills

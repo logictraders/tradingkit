@@ -57,12 +57,16 @@ class Runner:
             feeders = []
             exchanges = {}
             for exchange_chain in exchange_chains:
-                feeder = copy.deepcopy(exchange_chain['feeder'])
-                exchange = copy.deepcopy(exchange_chain['exchange'])
+                feeder = exchange_chain['feeder']
+                exchange = exchange_chain['exchange']
+                bridge = exchange_chain['bridge']
+
+                # feeder = copy.deepcopy(exchange_chain['feeder'])
+                # exchange = copy.deepcopy(exchange_chain['exchange'])
+                # bridge = copy.deepcopy(exchange_chain['bridge'])
 
                 feeder.set_name(exchange_chain['name'])
                 exchange.set_name(exchange_chain['name'])
-                bridge = exchange_chain['bridge']
 
                 print('feeder ID:', id(feeder), feeder.name)
                 print('exchange ID:', id(exchange), exchange.name)

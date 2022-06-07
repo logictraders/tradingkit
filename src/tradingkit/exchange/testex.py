@@ -41,14 +41,11 @@ class TestEX(Publisher, Subscriber, Exchange):
         self.undispatched_orders = []
         self.name = 'kraken'
 
-    def set_name(self, name):
-        self.name = name
-
         # timestamp in milliseconds
         self.timestamp = 0
 
-        #self.candles = {}
-        #self.last_candle = None
+    def set_name(self, name):
+        self.name = name
 
     def sec(self):
         return self.seconds()

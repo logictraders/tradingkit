@@ -21,6 +21,7 @@ from tradingkit.strategy.strategy import Strategy
 from tradingkit.utils.config_injector import ConfigInjector
 from tradingkit.utils.system import System
 from tradingkit.data.fetch.ccxt_fetcher import CCXTFetcher
+import copy
 
 
 class CLI(Command):
@@ -111,8 +112,8 @@ class CLI(Command):
                 exchanges_config = config['config']['exchanges']
                 exchange_chains = []
                 for exchange_config in exchanges_config:
-                    feeder = injector.inject(exchange_config['feeder'], Feeder)
-                    exchange = injector.inject(exchange_config['exchange'], Exchange)
+                    feeder = copy.deepcopy(injector.inject(exchange_config['feeder'], Feeder))
+                    exchange = copy.deepcopy(injector.inject(exchange_config['exchange'], Exchange))
                     bridge = BridgeExchange(exchange)
                     exchange_chains.append({"feeder": feeder, "exchange": exchange, "bridge": bridge, "name": exchange_config['name']})
                 plotter = None
