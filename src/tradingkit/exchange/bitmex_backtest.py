@@ -59,7 +59,6 @@ class BitmexBacktest(TestEX):
             logging.debug("fees apply: %s $" % str(-fee_pnl))
             self.balance[base] -= fee_pnl / price
             self.orders_scheduled_to_close.append(order)
-            self.plot_balances(base, quote, price)
 
     def update_position(self, quote_volume, avg_order_price, base):
         against = quote_volume * self.position['currentQty'] < 0
@@ -129,26 +128,6 @@ class BitmexBacktest(TestEX):
                          }
         self.dispatch(Liquidation(trade))
         raise InsufficientFunds("Zero balance: %s" % str(self.balance))
-
-    def plot_balances(self, base, quote, price):
-        exchange_date = datetime.fromtimestamp(self.timestamp / 1000.0).isoformat()
-        value = self.balance[quote] + self.balance[base]
-        quote_value = value * price
-        self.dispatch(Plot({
-            'name': 'Equity',
-            'type': 'scatter',
-            'mode': 'lines',
-            'color': 'blue',
-            'yaxis': 'balance',
-            'data': {
-                'x': exchange_date,
-                'y': quote_value,
-                'base_value': value,
-                'position_vol': self.position['currentQty'],
-                'position_price': self.position['avgEntryPrice'],
-                'tooltip': "%.2f %s" % (quote_value, quote)
-            },
-        }))
 
     def funds_enough(self, order):
         sum_same_side_orders = sum([o['amount'] for o in self.open_orders.values() if o['side'] == order['side']])
