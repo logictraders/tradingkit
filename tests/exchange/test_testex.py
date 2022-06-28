@@ -61,13 +61,14 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(100, 1000)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        Runner.run(exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_taker_fees(self):
         symbol = 'BTC/EUR'
@@ -114,13 +115,14 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(100, 1000)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        Runner.run(exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_maker_fees(self):
         symbol = 'BTC/EUR'
@@ -167,13 +169,14 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(100, 1000)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        Runner.run(exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_simple_one_percent_strategy(self):
         symbol = 'BTC/EUR'
@@ -232,13 +235,14 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in (list(range(1000, 100, -1)) + list(range(100, 1000)))]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        Runner.run(exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_max_draw_dawn(self):
         symbol = 'BTC/EUR'
@@ -285,13 +289,14 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(501, 249, -1)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        result = Runner.run(exchange_chains, plotter, strategy, {'--stats': True, '--optimize': False})
 
         mdd = result['max_drawdown']
         assert mdd == -0.5
@@ -339,13 +344,14 @@ class TestTestex(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(99, 103)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        result = Runner.run(exchange_chains, plotter, strategy, {'--stats': True, '--optimize': False})
 
         total_profit = 2
         days_runing = 2

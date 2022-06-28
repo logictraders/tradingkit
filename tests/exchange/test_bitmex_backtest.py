@@ -64,13 +64,15 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
+
             } for x in range(100, 1000)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        Runner.run(exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_taker_fees(self):
         symbol = 'BTC/USD'
@@ -116,13 +118,14 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(100, 1000)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        Runner.run(exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_maker_fees_and_pln(self):
         symbol = 'BTC/USD'
@@ -177,13 +180,14 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(100, 1000)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        Runner.run(feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        Runner.run(exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_liqudation_price(self):
         symbol = 'BTC/USD'
@@ -242,12 +246,14 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(1000, 1, -1)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-        self.assertRaises(InsufficientFunds, Runner.run, feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        self.assertRaises(InsufficientFunds, Runner.run, exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
     def test_max_draw_dawn(self):
         symbol = 'BTC/USD'
@@ -292,13 +298,14 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(501, 399, -1)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        result = Runner.run(exchange_chains, plotter, strategy, {'--stats': True, '--optimize': False})
 
         assert result['max_drawdown'] == (exchange.fetch_balance()['free']['BTC'] - initial_balance) / initial_balance
 
@@ -347,13 +354,14 @@ class TestBitmexBacktest(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'bitmex'
             } for x in range(99, 103)]
         )
         plotter = None
         strategy = TestStrategy(bridge, {'symbol': symbol})
-
-        result = Runner.run(feeder, plotter, strategy, {'--stats': True, '--optimize': False})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
+        result = Runner.run(exchange_chains, plotter, strategy, {'--stats': True, '--optimize': False})
 
 
         days_runing = 2

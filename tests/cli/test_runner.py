@@ -45,12 +45,14 @@ class TestRunner(TestCase):
                 'side': random.choice(['buy', 'sell']),
                 'price': x,
                 'cost': x,
-                'amount': 1
+                'amount': 1,
+                'exchange': 'kraken'
             } for x in range(100, 1000)]
         )
         plotter = HighstockPlotter()
         strategy = TestStrategy(bridge, {'symbol': symbol})
+        exchange_chains = [{"feeder": feeder, "exchange": exchange, "bridge": bridge}]
 
-        self.assertRaises(InsufficientFunds, Runner.run, feeder, plotter, strategy, {'--stats': False, '--optimize': False})
+        self.assertRaises(InsufficientFunds, Runner.run, exchange_chains, plotter, strategy, {'--stats': False, '--optimize': False})
 
 

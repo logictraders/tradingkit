@@ -44,8 +44,8 @@ class TestEX(Publisher, Subscriber, Exchange):
         # timestamp in milliseconds
         self.timestamp = 0
 
-        #self.candles = {}
-        #self.last_candle = None
+    def set_name(self, name):
+        self.name = name
 
     def sec(self):
         return self.seconds()
@@ -128,31 +128,32 @@ class TestEX(Publisher, Subscriber, Exchange):
         return [Order, Trade, Book, Candle, Funding]
 
     def on_event(self, event: Event):
-        self.dispatch(event)
-        if isinstance(event, Trade):
-            trade = event.payload
-            self.timestamp = trade['timestamp']
-            self.update_order_book(trade)
-            symbol = trade['symbol']
-            assets = symbol.split('/')
-            for asset in assets:
-                if asset not in self.balance:
-                    self.balance[asset] = 0
-            base, quote = assets
-            self.plot_balances(base, quote, trade['price'])
-            for order_id in self.open_orders:
-                order = self.open_orders[order_id]
-                if order['symbol'] == symbol:
-                    price = trade['price'] if order['type'] == 'market' else order['price']
-                    self.match_order(trade, order, price, base, quote)
-            for order in self.undispatched_orders:
-                self.dispatch(Order(order))
-            self.undispatched_orders = []
-            self.clean_orders()
-            self.ready = True
-            book = self.orderbooks[symbol].copy()
-            book['symbol'] = symbol
-            self.dispatch(Book(book))
+        if event.payload['exchange'] == self.name:
+            self.dispatch(event)
+            if isinstance(event, Trade):
+                trade = event.payload
+                self.timestamp = trade['timestamp']
+                self.update_order_book(trade)
+                symbol = trade['symbol']
+                assets = symbol.split('/')
+                for asset in assets:
+                    if asset not in self.balance:
+                        self.balance[asset] = 0
+                base, quote = assets
+                self.plot_balances(base, quote, trade['price'])
+                for order_id in self.open_orders:
+                    order = self.open_orders[order_id]
+                    if order['symbol'] == symbol:
+                        price = trade['price'] if order['type'] == 'market' else order['price']
+                        self.match_order(trade, order, price, base, quote)
+                for order in self.undispatched_orders:
+                    self.dispatch(Order(order))
+                self.undispatched_orders = []
+                self.clean_orders()
+                self.ready = True
+                book = self.orderbooks[symbol].copy()
+                book['symbol'] = symbol
+                self.dispatch(Book(book))
 
 
     def dispatch(self, event: Event):

@@ -18,6 +18,7 @@ class BacktestFeeder(Feeder, Publisher):
         self.to = datetime.fromisoformat(to8601)
         self.symbol = symbol
         self.exchange = exchange
+        self.name = 'kraken'
 
     def feed(self):
         start_month = self.since.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -50,5 +51,5 @@ class BacktestFeeder(Feeder, Publisher):
 
         for trade in json.load(open(full_filename, 'r')):
             if since.timestamp() <= trade['timestamp'] / 1000 < to.timestamp():
-                trade['exchange'] = self.exchange
+                trade['exchange'] = self.name
                 self.dispatch(Trade(trade))
