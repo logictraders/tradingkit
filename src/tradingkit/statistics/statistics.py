@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import numpy
+import time
 
 from tradingkit.pubsub.core.event import Event
 from tradingkit.pubsub.core.publisher import Publisher
@@ -26,6 +27,12 @@ class Statistics(Publisher, Subscriber):
         self.peak_equity = 0
         self.max_drawdown = 0
         self.last_price = None
+        self.last_trade_timestamp = None
+        self.max_no_trades_time = 0
+        self.volume_traded = 0
+        self.buy_orders = 0
+        self.sell_orders = 0
+        self.start_time = time.time()
 
     def subscribed_events(self) -> list:
         return [Order, Trade, Book, Candle, Liquidation, Funding, OpenOrder, Plot]
@@ -45,16 +52,35 @@ class Statistics(Publisher, Subscriber):
             if event.payload['name'] == 'Equity':
                 self.update_balance_hist_from_plot(event)
 
+        if isinstance(event, Order):
+            order = event.payload.copy()
+            amount = order['amount'] / order['price'] if order['exchange'] == 'bitmex' else order['amount'] * order['price']
+            self.update_trades_statistics(order['lastTradeTimestamp'], amount)
+            if order['side'] == 'buy':
+                self.buy_orders += 1
+            else:
+                self.sell_orders += 1
+
     def get_statistics(self):
         max_drawdown = self.get_max_draw_down()
         sharpe_ratio = self.get_sharpe_ratio()
-        return {'max_drawdown': max_drawdown, 'sharpe_ratio': sharpe_ratio}
+        self.update_trades_statistics(self.balance_history[-1]['date'].timestamp() * 1000, 0)
+        return {'max_drawdown': max_drawdown,
+                'sharpe_ratio': sharpe_ratio,
+                'days_running': (self.balance_history[-1]['date'] - self.balance_history[0]['date']).days,
+                'max_no_trading_days': self.max_no_trades_time / 1000 / 60 / 60 / 24,
+                'volume_traded': self.volume_traded,
+                'buy_orders': self.buy_orders,
+                'sell_orders': self.sell_orders,
+                'lapsed_minutes': (time.time() - self.start_time) / 60,
+                }
 
     def update_balance_hist_from_plot(self, event):
         data = event.payload
         if self.balance_history is None:
             date = datetime.fromisoformat(data['data']['x'][0:10])
             self.balance_history = [{'date': date, 'price': data['price']}]
+            self.last_trade_timestamp = date.timestamp() * 1000
 
         if data['has_position']:
             self.balance_history[-1]['quote_balance'] = data['data']['quote_balance']
@@ -123,3 +149,12 @@ class Statistics(Publisher, Subscriber):
         no_risk_profit = 5
         sharpe_ratio = (anual_profit - no_risk_profit) / standard_deviation
         return sharpe_ratio
+
+    def update_trades_statistics(self, timestamp, amount):
+        if self.last_trade_timestamp is None:
+            self.last_trade_timestamp = timestamp
+        else:
+            self.max_no_trades_time = max(self.max_no_trades_time, timestamp - self.last_trade_timestamp)
+            self.last_trade_timestamp = timestamp
+
+        self.volume_traded += amount
