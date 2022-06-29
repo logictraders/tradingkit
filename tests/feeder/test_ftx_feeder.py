@@ -48,21 +48,28 @@ class TestFtxFeeder(TestCase):
     def test_order_data_format(self):
 
         now = datetime.now()
-        trade = FtxFeeder.transform_order_data(FtxFeeder, {
-            'table': 'orderBook10',
-            'data': [{'timestamp': "2015-01-18T10:14:06.802Z",
-                      'symbol': 'XBTUSD',
-                      'orderID': '91806686-e887fe',
-                      'ordStatus': 'closed',
-                      'cumQty': 100,
-                      'leavesQty': 0,
-                      'type': 'limit',
-                      'side': 'buy',
-                      'price': 1000
-                      }]})
+        trade = FtxFeeder.transform_order_data(FtxFeeder, {'channel': 'orders', 'type': 'update', 'data':
+            {'id': 159161415489,
+             'clientId': 'tv-treceymedio@protonmail.com-DgRqWRUZ-1656513222623',
+             'market': 'BTC/USDT',
+             'type': 'limit',
+             'side': 'buy',
+             'price': 20111.0,
+             'size': 0.0001,
+             'status': 'closed',
+             'filledSize': 0.0001,
+             'remainingSize': 0.0,
+             'reduceOnly': False,
+             'liquidation': False,
+             'avgFillPrice': 20111.0,
+             'postOnly': False,
+             'ioc': False,
+             'createdAt': '2022-06-29T14:33:43.638469+00:00'}}
+        )
 
         assert type(trade['timestamp']) is int
-        assert trade['symbol'] == 'BTC/USD'
-        assert trade['exchange'] == 'bitmex'
-        assert trade['amount'] == 100
-        assert trade['id'] == '91806686-e887fe'
+        assert trade['symbol'] == 'BTC/USDT'
+        assert trade['exchange'] == 'ftx'
+        assert trade['amount'] == 0.0001
+        assert trade['price'] == 20111.0
+        assert trade['id'] == 159161415489
