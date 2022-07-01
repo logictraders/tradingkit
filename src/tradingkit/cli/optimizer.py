@@ -25,12 +25,12 @@ class Optimizer:
         self.population_size = 10
         self.count = 0
         self.max_iterations = None
-        self.max_iteration_without_improv = 10
+        self.max_iteration_without_improv = 15
         self.start_time = int(time.time())
         self.config = None
 
         self.mdd_penalty = 0
-        self.no_trade_penalty = 0.5
+        self.no_trade_penalty = 0.9
 
     def objective_function(self, genome, results, i, results_data):
         self.count += 1
