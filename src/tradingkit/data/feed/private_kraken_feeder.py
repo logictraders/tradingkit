@@ -91,16 +91,3 @@ class PrivateKrakenFeeder(WebsocketFeeder):
                 }
                 order_data_list.append(order_data)
         return order_data_list
-
-    def on_error(self, ws, error):
-        print("private ws error", error)
-        if error in self.ws_errors:
-            self.feed()
-
-    def on_close(self, ws, arg1=None, arg2=None):
-        if arg1 is not None:
-            print('arg1', arg1)
-        if arg2 is not None:
-            print('arg2', arg2)
-        print("private ws closed")
-        self.feed()

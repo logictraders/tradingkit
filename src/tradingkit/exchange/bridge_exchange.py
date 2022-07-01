@@ -195,9 +195,8 @@ class BridgeExchange(Publisher, Subscriber, Exchange):
                 'x': exchange_state['exchange_date'],
                 'y': exchange_state['equity'],
                 'base_equity': exchange_state['base_equity'],
-                'base_balance': exchange_state['all_balances']['total'][base],
-                'quote_balance': exchange_state[
-                    'all_balances']['total'][quote] if quote in exchange_state['all_balances'][ 'total'] else 0,
+                'base_balance': exchange_state['all_balances']['total'][base] if base in exchange_state['all_balances']['total'] else 0,
+                'quote_balance': exchange_state['all_balances']['total'][quote] if quote in exchange_state['all_balances']['total'] else 0,
                 'position_vol': exchange_state['position_vol'],
                 'position_price': exchange_state['position_price'],
                 'invested': exchange_state['base_balance'] * exchange_state['price'],
