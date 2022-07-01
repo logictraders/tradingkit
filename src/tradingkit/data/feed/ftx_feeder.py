@@ -15,7 +15,7 @@ class FtxFeeder(WebsocketFeeder):
 
     FTX_SYMBOL_MAP = {
         'BTC/USD': 'BTC/USD',
-        'BTC/USDT': 'XBTUSDT'
+        'BTC/USDT': 'BTC/USDT'
     }
 
     FTX_SYMBOL_MAP_REV = {
@@ -57,10 +57,12 @@ class FtxFeeder(WebsocketFeeder):
             if order_book is not None:
                 self.dispatch(Book(order_book))
 
-        elif payload['channel'] == 'order' and payload['type'] == 'update':
-            order = self.transform_order_data(payload)
-            if order is not None:
-                self.dispatch(Order(order))
+        elif payload['channel'] == 'orders' and payload['type'] == 'update':
+            if payload['data']['status'] == 'closed' and payload['data']['filledSize'] > 0:
+
+                order = self.transform_order_data(payload)
+                if order is not None:
+                    self.dispatch(Order(order))
 
     def transform_book_data(self, payload):
         symbol = self.FTX_SYMBOL_MAP[payload['market']]
@@ -70,12 +72,16 @@ class FtxFeeder(WebsocketFeeder):
         order_book['timestamp'] = payload['data']['time'] * 1000
         order_book['symbol'] = symbol
         order_book['exchange'] = 'ftx'
-        if order_book['asks']:
+        if order_book['asks'] != []:
             self.orderbooks[symbol]["asks"] = order_book['asks']
-        if order_book['bids']:
+        else:
+            order_book['asks'] = self.orderbooks[symbol]["asks"]
+        if order_book['bids'] != []:
             self.orderbooks[symbol]["bids"] = order_book['bids']
+        else:
+            order_book['bids'] = self.orderbooks[symbol]["bids"]
 
-        if self.orderbooks[symbol]["asks"] and self.orderbooks[symbol]["bids"]:
+        if order_book["asks"] != [] and order_book["bids"] != []:
             return order_book
 
     def transform_trade_data(self, payload):
@@ -92,12 +98,15 @@ class FtxFeeder(WebsocketFeeder):
 
     def transform_order_data(self, payload):
         symbol = self.FTX_SYMBOL_MAP_REV[payload['data']['market']]
+
         timestamp = int(parser.isoparse(payload['data']['createdAt']).timestamp() * 1000)
         logging.debug("PAYLOAD: %s" % str(payload))
         order_payload = payload['data']
         order_payload['timestamp'] = timestamp
+        order_payload['lastTradeTimestamp'] = int(time.time() * 1000)
         order_payload['symbol'] = symbol
         order_payload['amount'] = payload['data']['size']
+        order_payload['id'] = str(payload['data']['id'])
         order_payload['exchange'] = 'ftx'
 
         if 'avgFillPrice' in payload['data']:

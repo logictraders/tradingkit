@@ -72,4 +72,4 @@ class TestFtxFeeder(TestCase):
         assert trade['exchange'] == 'ftx'
         assert trade['amount'] == 0.0001
         assert trade['price'] == 20111.0
-        assert trade['id'] == 159161415489
+        assert trade['id'] == '159161415489'
