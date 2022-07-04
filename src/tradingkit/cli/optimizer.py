@@ -30,7 +30,7 @@ class Optimizer:
         self.config = None
 
         self.mdd_penalty = 0
-        self.no_trade_penalty = 0.9
+        self.no_trade_penalty = 0
 
     def objective_function(self, genome, results, i, results_data):
         self.count += 1
