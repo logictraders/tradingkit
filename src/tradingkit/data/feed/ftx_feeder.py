@@ -60,22 +60,23 @@ class FtxFeeder(WebsocketFeeder):
 
     def on_message(self, ws, message):
         payload = json.loads(message)
-        if payload['channel'] == 'trades' and payload['type'] == 'update':
-            trade_data_list = self.transform_trade_data(payload)
-            for trade_data in trade_data_list:
-                self.dispatch(Trade(trade_data))
+        if 'channel' in payload.keys():
+            if payload['channel'] == 'trades' and payload['type'] == 'update':
+                trade_data_list = self.transform_trade_data(payload)
+                for trade_data in trade_data_list:
+                    self.dispatch(Trade(trade_data))
 
-        elif payload['channel'] == 'orderbook' and payload['type'] == 'update':
-            order_book = self.transform_book_data(payload)
-            if order_book is not None:
-                self.dispatch(Book(order_book))
+            elif payload['channel'] == 'orderbook' and payload['type'] == 'update':
+                order_book = self.transform_book_data(payload)
+                if order_book is not None:
+                    self.dispatch(Book(order_book))
 
-        elif payload['channel'] == 'orders' and payload['type'] == 'update':
-            if payload['data']['status'] == 'closed' and payload['data']['filledSize'] > 0:
+            elif payload['channel'] == 'orders' and payload['type'] == 'update':
+                if payload['data']['status'] == 'closed' and payload['data']['filledSize'] > 0:
 
-                order = self.transform_order_data(payload)
-                if order is not None:
-                    self.dispatch(Order(order))
+                    order = self.transform_order_data(payload)
+                    if order is not None:
+                        self.dispatch(Order(order))
 
     def transform_book_data(self, payload):
         symbol = self.FTX_SYMBOL_MAP[payload['market']]
