@@ -25,8 +25,9 @@ class FtxFeeder(WebsocketFeeder):
 
     orderbooks = {}
 
-    def __init__(self, symbol='BTC/USD', credentials=None, url='wss://ftx.com/ws/'):
+    def __init__(self, symbol='BTC/USD', credentials=None, url='wss://ftx.com/ws/', reconnect=False):
         super().__init__(symbol, credentials, url)
+        self.reconnect = reconnect
 
     def on_open(self, ws):
         self.subscribe(ws, 'trades', self.FTX_SYMBOL_MAP[self.symbol])
@@ -44,6 +45,18 @@ class FtxFeeder(WebsocketFeeder):
 
     def subscribe(self, ws, channel, market):
         ws.send(json.dumps({'op': 'subscribe', 'channel': channel, 'market': market}))
+
+    def on_error(self, ws, error):
+        logging.info("[Websocket error] %s" % str(error))
+        if self.reconnect:
+            self.feed()
+        else:
+            raise error
+
+    def on_close(self, ws):
+        logging.info("WebSocket closed")
+        if self.reconnect:
+            self.feed()
 
     def on_message(self, ws, message):
         payload = json.loads(message)
@@ -117,5 +130,5 @@ class FtxFeeder(WebsocketFeeder):
 if __name__ == "__main__":
 
     # TODO remove call data
-    feeder = FtxFeeder('BTC/USD')
+    feeder = FtxFeeder('BTC/USD', reconnect=True)
     feeder.feed()
