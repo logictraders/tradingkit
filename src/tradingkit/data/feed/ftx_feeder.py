@@ -126,10 +126,3 @@ class FtxFeeder(WebsocketFeeder):
         if 'avgFillPrice' in payload['data']:
             order_payload["price"] = payload['data']['avgFillPrice']
         return order_payload
-
-
-if __name__ == "__main__":
-
-    # TODO remove call data
-    feeder = FtxFeeder('BTC/USD', reconnect=True)
-    feeder.feed()
