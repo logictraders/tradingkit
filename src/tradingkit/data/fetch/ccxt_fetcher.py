@@ -36,7 +36,11 @@ class CCXTFetcher(Fetcher):
         while since < to and not end:
             try:
                 sys.stdout.write("Since %s\n" % (time.ctime(since // 1000)))
-                step = self.exchange.fetch_trades(symbol, since)
+                if self.exchange.name == 'FTX':
+                    candles = self.exchange.fetch_ohlcv(symbol, '15s', since)
+                    step = self.get_trades_from_candles(symbol, candles)
+                else:
+                    step = self.exchange.fetch_trades(symbol, since)
                 if len(step) > 0:
                     if since != step[-1]['timestamp']:
                         since = step[-1]['timestamp']
@@ -62,6 +66,37 @@ class CCXTFetcher(Fetcher):
                     print(message)
                     sys.exit(-1)
 
+    def get_trades_from_candles(selfself, symbol, candles):
+        step = []
+        for candle in candles:
+            is_bullish = candle[1] < candle[4]
+            trade = {}
+            trade['timestamp'] = candle[0]
+            trade['id'] = str(candle[0])
+            trade['symbol'] = symbol
+            trade['type'] = 'market'
+            trade['side'] = 'buy'
+            trade['price'] = candle[1]
+            trade['amount'] = candle[5] / 4
+            trade['cost'] = trade['amount'] * trade['price']
+            step.append(trade)
+
+            trade = trade.copy()
+            trade['price'] = candle[3] if is_bullish else candle[2]
+            trade['cost'] = trade['amount'] * trade['price']
+            step.append(trade)
+
+            trade = trade.copy()
+            trade['price'] = candle[2] if is_bullish else candle[3]
+            trade['cost'] = trade['amount'] * trade['price']
+            step.append(trade)
+
+            trade = trade.copy()
+            trade['price'] = candle[4]
+            trade['cost'] = trade['amount'] * trade['price']
+            step.append(trade)
+
+        return step
 
     def fetch_all(self, symbol, since8601, to8601=None, candles=False):
         trades = []
