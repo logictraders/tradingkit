@@ -9,6 +9,15 @@
       }
     ]
   },
+  "ftx": {
+    "class": "ccxt.ftx",
+    "arguments": [
+      {
+        "apiKey": "%env(API_KEY)%",
+        "secret": "%env(API_SECRET)%"
+      }
+    ]
+  },
     "binance": {
     "class": "ccxt.binance",
     "arguments": [
@@ -101,6 +110,16 @@
   },
   "bitmex_feeder": {
     "class": "tradingkit.data.feed.bitmex_feeder.BitmexFeeder",
+    "arguments": {
+      "symbol": "%env(str:SYMBOL:BTC/USD)%",
+      "credentials":{
+        "apiKey": "%env(str:API_KEY)%",
+        "secret": "%env(str:API_SECRET)%"
+      }
+    }
+  },
+  "ftx_feeder": {
+    "class": "tradingkit.data.feed.ftx_feeder.FtxFeeder",
     "arguments": {
       "symbol": "%env(str:SYMBOL:BTC/USD)%",
       "credentials":{
