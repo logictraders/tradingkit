@@ -25,7 +25,7 @@ class Optimizer:
         self.population_size = 10
         self.count = 0
         self.max_iterations = None
-        self.max_iteration_without_improv = 10
+        self.max_iteration_without_improv = 15
         self.start_time = int(time.time())
         self.config = None
 

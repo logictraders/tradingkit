@@ -244,7 +244,7 @@ class KrakenFeeder(Feeder, Publisher):
         ts = time.time()
         for dict in message[0]:
             for order in dict:
-                if ts - float(dict[order]['time']) < 60:  # filter orders since 60 seg
+                if ts - float(dict[order]['time']) < 120:  # filter orders since 60 seg
                     order_data = {
                         'id': dict[order]['ordertxid'],
                         'timestamp': int(float(dict[order]['time']) * 1000),
