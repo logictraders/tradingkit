@@ -126,6 +126,7 @@ class PublicKrakenFeeder(WebsocketFeeder):
     def on_error(self, ws, error):
         print("public ws error", error)
         if str(error) in self.ws_errors:
+            ws.close()
             self.feed()
         else:
             print("unknown error", ">"+str(error)+"<")
