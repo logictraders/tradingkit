@@ -36,11 +36,11 @@ class CCXTFetcher(Fetcher):
         while since < to and not end:
             try:
                 sys.stdout.write("Since %s\n" % (time.ctime(since // 1000)))
-                if self.exchange.name == 'FTX':
-                    candles = self.exchange.fetch_ohlcv(symbol, '15s', since)
-                    step = self.get_trades_from_candles(symbol, candles)
-                else:
+                if self.exchange.name.upper() == 'KRAKEN':
                     step = self.exchange.fetch_trades(symbol, since)
+                else:
+                    candles = self.exchange.fetch_ohlcv(symbol, '1m', since)
+                    step = self.get_trades_from_candles(symbol, candles)
                 if len(step) > 0:
                     if since != step[-1]['timestamp']:
                         since = step[-1]['timestamp']
