@@ -66,19 +66,50 @@ class CCXTFetcher(Fetcher):
     def fetch_all(self, symbol, since8601, to8601=None, candles=False):
         trades = []
         last_trade = None
+        lo_trade = None
+        hi_trade = None
+        pst = 0.01
         for step in self.fetch(symbol, since8601, to8601):
             for trade in step:
+                print(trade['price'])
                 if last_trade is None:
                     last_trade = trade.copy()
-                elif last_trade['price'] == trade['price'] and last_trade['side'] == trade['side']:
-                    last_trade['amount'] += trade['amount']
-                    # last_trade['cost'] += trade['cost']  # on some exchanges is None
-                else:
-                    trades.append(last_trade)
-                    if candles:
-                        self.trade_to_candle(last_trade)
-                    last_trade = trade.copy()
-            trades.append(last_trade)
+                    lo_trade = trade.copy()
+                    hi_trade = trade.copy()
+
+                elif trade['price'] < lo_trade['price']:
+                    lo_trade = trade.copy()
+                    if hi_trade['price'] / lo_trade['price'] - 1 > pst:
+                        print("LO", datetime.fromtimestamp(trade['timestamp']/1000), lo_trade['price'], hi_trade['price'])
+                        trades.append(hi_trade)
+                        trades.append(lo_trade)
+                        if candles:
+                            self.trade_to_candle(hi_trade)
+                            self.trade_to_candle(lo_trade)
+                        last_trade = trade.copy()
+                        lo_trade = trade.copy()
+                        hi_trade = trade.copy()
+
+                elif trade['price'] > hi_trade['price']:
+                    hi_trade = trade.copy()
+                    if hi_trade['price'] / lo_trade['price'] - 1 > pst:
+                        print("HI", datetime.fromtimestamp(trade['timestamp'] / 1000), hi_trade['price'],
+                              lo_trade['price'])
+                        trades.append(lo_trade)
+                        trades.append(hi_trade)
+                        if candles:
+                            self.trade_to_candle(lo_trade)
+                            self.trade_to_candle(hi_trade)
+                        last_trade = trade.copy()
+                        lo_trade = trade.copy()
+                        hi_trade = trade.copy()
+
+            print("ED", datetime.fromtimestamp(trade['timestamp'] / 1000), lo_trade['price'], hi_trade['price'])
+            trades.append(lo_trade)
+            trades.append(hi_trade)
+            if candles:
+                self.trade_to_candle(lo_trade)
+                self.trade_to_candle(hi_trade)
             print("ACC trades", len(trades))
         return [trades, self.candles]
 
