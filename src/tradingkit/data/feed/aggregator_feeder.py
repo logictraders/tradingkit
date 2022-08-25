@@ -34,17 +34,8 @@ class AggregatorFeeder(Feeder, Subscriber, Publisher):
             children.append(child)
 
         # Active loop to check feeder children
-        child_ended = 0
-        while child_ended == 0:
+        while True:
             time.sleep(1)
             for child in children:
                 if not child.is_alive():
-                    child_ended = child.pid
-
-        for child in children:
-            child.terminate()
-
-        raise ValueError("Feeder process %d ended" % child_ended)
-
-
-
+                    raise ValueError("Feeder process %d ended" % child.pid)
