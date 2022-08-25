@@ -29,6 +29,7 @@ class AggregatorFeeder(Feeder, Subscriber, Publisher):
         for feeder in self.feeders:
             feeder.register(self)
             child = multiprocessing.Process(target=feeder.feed)
+            child.daemon = True
             child.start()
             children.append(child)
 
