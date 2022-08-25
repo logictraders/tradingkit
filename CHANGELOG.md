@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.3](https://github.com/logictraders/tradingkit/compare/v1.11.2...v1.11.3) (2022-08-25)
+
+
+### Bug Fixes
+
+* **feeder:** enforce terminate subprocesses when parent gets terminated ([5c2c331](https://github.com/logictraders/tradingkit/commit/5c2c331))
+* **feeder:** no need to terminate the rest of children when main process ends ([3adb78d](https://github.com/logictraders/tradingkit/commit/3adb78d))
+
+
+
 ### [1.11.2](https://github.com/logictraders/tradingkit/compare/v1.11.1...v1.11.2) (2022-06-27)
 
 
@@ -9,6 +19,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **bridge:** checking if base is in balances before access (was raising keyerror) ([037c7ac](https://github.com/logictraders/tradingkit/commit/037c7aca52845a1d0d14b93f6e229126ab155f10))
 * **kraken:** removing feeder reconnection, feeder was hiding errors from strategy ([448b8a6](https://github.com/logictraders/tradingkit/commit/448b8a6a8ed08909bbd7f34994217b28d2c7a00a))
+
+
 
 ### [1.11.1](https://github.com/logictraders/tradingkit/compare/v1.11.0...v1.11.1) (2022-05-17)
 
