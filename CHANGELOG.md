@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.4](https://github.com/logictraders/tradingkit/compare/v1.11.3...v1.11.4) (2022-10-20)
+
+
+### Bug Fixes
+
+* **feeder:** congregate events from feeders in the main process ([1283b81](https://github.com/logictraders/tradingkit/commit/1283b81))
+
+
+
 ### [1.11.3](https://github.com/logictraders/tradingkit/compare/v1.11.2...v1.11.3) (2022-08-25)
 
 
