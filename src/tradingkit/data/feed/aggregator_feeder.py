@@ -17,12 +17,17 @@ class AggregatorFeeder(Feeder, Subscriber, Publisher):
     def __init__(self, feeders):
         super().__init__()
         self.feeders = feeders
+        self.pr, self.pw = multiprocessing.Pipe()
 
     def subscribed_events(self) -> list:
         return [Order, Book, Trade, Candle, Position]
 
     def on_event(self, event: Event):
-        self.dispatch(event)
+        parent = multiprocessing.parent_process()
+        if parent is None:  # main process, dispatch event
+            self.dispatch(event)
+        else:  # child process, send by pipe to parent
+            self.pw.send(event)
 
     def feed(self):
         children = []
@@ -33,9 +38,11 @@ class AggregatorFeeder(Feeder, Subscriber, Publisher):
             child.start()
             children.append(child)
 
-        # Active loop to check feeder children
-        while True:
-            time.sleep(1)
-            for child in children:
-                if not child.is_alive():
-                    raise ValueError("Feeder process %d ended" % child.pid)
+        event = self.pr.recv()
+        while event:
+            self.dispatch(event)
+            event = self.pr.recv()
+            if len(multiprocessing.active_children()) < len(self.feeders):
+                raise ValueError("Feeder process ended, ending main process too")
+
+        raise ValueError("All feeders ended")
