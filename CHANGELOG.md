@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.6](https://github.com/logictraders/tradingkit/compare/v1.11.5...v1.11.6) (2022-10-26)
+
+
+### Bug Fixes
+
+* **kraken:** improved kraken feeder and aggregator ([4d9c083](https://github.com/logictraders/tradingkit/commit/4d9c083))
+* **setup:** bumped minimum python version to 3.9 ([61ead7c](https://github.com/logictraders/tradingkit/commit/61ead7c))
+
+
+
 ### [1.11.5](https://github.com/logictraders/tradingkit/compare/v1.11.4...v1.11.5) (2022-10-26)
 
 
