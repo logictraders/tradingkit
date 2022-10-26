@@ -40,9 +40,8 @@ class PrivateKrakenFeeder(WebsocketFeeder):
         ws.send(json.dumps({
             'event': 'subscribe',
             'subscription': {
-                'name': 'ownTrades',
-                'token': token,
-                'snapshot': False
+                'name': 'openOrders',
+                'token': token
             }
         }))
 
@@ -68,7 +67,7 @@ class PrivateKrakenFeeder(WebsocketFeeder):
 
     def on_message(self, ws, message):
         data = json.loads(message)
-        if "ownTrades" in data:
+        if "openOrders" in data:
             order_data_list = self.transform_order_data(data)
             for order_data in order_data_list:
                 self.dispatch(Order(order_data))
@@ -77,17 +76,18 @@ class PrivateKrakenFeeder(WebsocketFeeder):
         order_data_list = []
         for dict in data[0]:
             for order in dict:
-                order_data = {
-                    'id': dict[order]['ordertxid'],
-                    'timestamp': int(float(dict[order]['time']) * 1000),
-                    'lastTradeTimestamp': int(float(dict[order]['time']) * 1000),
-                    'status': 'filled',
-                    'symbol': self.normalized_symbol[dict[order]['pair']],
-                    'exchange': 'kraken',
-                    'type': dict[order]['ordertype'],
-                    'side': dict[order]['type'],
-                    'price': float(dict[order]['price']),
-                    'amount': float(dict[order]['vol'])
-                }
-                order_data_list.append(order_data)
+                raw_order_data = dict[order]
+                if 'status' in raw_order_data and raw_order_data['status'] == 'closed':
+                    order_data = {
+                        'id': order,
+                        'timestamp': int(float(raw_order_data['lastupdated']) * 1000),
+                        'lastTradeTimestamp': int(float(raw_order_data['lastupdated']) * 1000),
+                        'status': raw_order_data['status'],
+                        'amount': float(raw_order_data['vol_exec']),
+                        'price': float(raw_order_data['avg_price']),
+                        'cost': float(raw_order_data['cost']),
+                        'fee': float(raw_order_data['fee']),
+                        'exchange': 'kraken'
+                    }
+                    order_data_list.append(order_data)
         return order_data_list
