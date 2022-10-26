@@ -1,4 +1,5 @@
 import base64
+import datetime
 import hashlib
 import hmac
 import json
@@ -34,6 +35,7 @@ class PrivateKrakenFeeder(WebsocketFeeder):
 
     def __init__(self, symbol, credentials):
         super().__init__(symbol, credentials, "wss://ws-auth.kraken.com")
+        self.open_orders = {}
 
     def on_open(self, ws):
         token = self.get_ws_auth_token()
@@ -76,18 +78,24 @@ class PrivateKrakenFeeder(WebsocketFeeder):
         order_data_list = []
         for dict in data[0]:
             for order in dict:
-                raw_order_data = dict[order]
-                if 'status' in raw_order_data and raw_order_data['status'] == 'closed':
-                    order_data = {
-                        'id': order,
-                        'timestamp': int(float(raw_order_data['lastupdated']) * 1000),
-                        'lastTradeTimestamp': int(float(raw_order_data['lastupdated']) * 1000),
-                        'status': raw_order_data['status'],
-                        'amount': float(raw_order_data['vol_exec']),
-                        'price': float(raw_order_data['avg_price']),
-                        'cost': float(raw_order_data['cost']),
-                        'fee': float(raw_order_data['fee']),
-                        'exchange': 'kraken'
-                    }
-                    order_data_list.append(order_data)
+                if order not in self.open_orders:
+                    self.open_orders[order] = {}
+                self.open_orders[order] |= dict[order]
+                order_data = {
+                    'id': order,
+                    'timestamp': int(float(self.open_orders[order]['opentm']) * 1000),
+                    'lastTradeTimestamp': int(datetime.datetime.now().timestamp() * 1000),
+                    'status': self.open_orders[order]['status'],
+                    'symbol': self.open_orders[order]['descr']['pair'],
+                    'type': self.open_orders[order]['descr']['ordertype'],
+                    'side': self.open_orders[order]['descr']['type'],
+                    'amount': float(self.open_orders[order]['vol_exec']),
+                    'price': float(self.open_orders[order]['avg_price']),
+                    'cost': float(self.open_orders[order]['cost']),
+                    'fee': float(self.open_orders[order]['fee']),
+                    'exchange': 'kraken'
+                }
+                order_data_list.append(order_data)
+                if order_data['status'] in ['closed', 'canceled']:
+                    del self.open_orders[order]
         return order_data_list

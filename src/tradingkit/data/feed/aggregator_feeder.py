@@ -1,3 +1,4 @@
+import sys
 import time
 import multiprocessing
 
@@ -26,15 +27,16 @@ class AggregatorFeeder(Feeder, Subscriber, Publisher):
         parent = multiprocessing.parent_process()
         if parent is None:  # main process, dispatch event
             self.dispatch(event)
-        else:  # child process, send by pipe to parent
+        elif parent.is_alive():  # child process and parent alive, send by pipe to parent
             self.pw.send(event)
+        else:  # parent is dead, error
+            raise ValueError("Parent process ended, ending child too.")
 
     def feed(self):
         children = []
         for feeder in self.feeders:
             feeder.register(self)
             child = multiprocessing.Process(target=feeder.feed)
-            child.daemon = True
             child.start()
             children.append(child)
 
