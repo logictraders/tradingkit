@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.5](https://github.com/logictraders/tradingkit/compare/v1.11.4...v1.11.5) (2022-10-26)
+
+
+### Bug Fixes
+
+* **bridge:** disabled plotting ([45b2b8b](https://github.com/logictraders/tradingkit/commit/45b2b8bdaf543eb4d4320a91589bdd6056557732))
+* **feeder:** improved private kraken feeder ([c6bc8fc](https://github.com/logictraders/tradingkit/commit/c6bc8fc6707daaacd6caf41e7a2c9d29d13ceb55))
+
 ### [1.11.4](https://github.com/logictraders/tradingkit/compare/v1.11.3...v1.11.4) (2022-10-20)
 
 
