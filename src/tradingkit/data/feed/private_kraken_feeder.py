@@ -89,8 +89,8 @@ class PrivateKrakenFeeder(WebsocketFeeder):
                     'symbol': self.open_orders[order]['descr']['pair'],
                     'type': self.open_orders[order]['descr']['ordertype'],
                     'side': self.open_orders[order]['descr']['type'],
-                    'amount': float(self.open_orders[order]['vol_exec']),
-                    'price': float(self.open_orders[order]['avg_price']),
+                    'amount': float(self.open_orders[order]['vol']),
+                    'price': float(self.open_orders[order]['descr']['price']),
                     'cost': float(self.open_orders[order]['cost']),
                     'fee': float(self.open_orders[order]['fee']),
                     'exchange': 'kraken'
