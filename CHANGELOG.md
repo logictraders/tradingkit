@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.3-1](https://github.com/logictraders/tradingkit/compare/v1.11.3...v1.11.4) (2023-01-18)
+
+
+### Bug Fixes
+
+* **dependencies:** upgraded to CCXT 2.0 ([d0fc9eb](https://github.com/logictraders/tradingkit/commit/d0fc9eb))
+
+
+
+
 ### [1.11.3](https://github.com/logictraders/tradingkit/compare/v1.11.2...v1.11.3) (2022-08-25)
 
 
