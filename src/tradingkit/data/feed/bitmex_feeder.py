@@ -28,16 +28,16 @@ from tradingkit.pubsub.event.trade import Trade
 class BitmexFeeder(WebsocketFeeder):
 
     BITMEX_SYMBOL_MAP = {
-        'BTC/USD': 'XBTUSD',
-        'BTC/USDT': 'XBTUSDT'
+        'BTC/USD:BTC': 'XBTUSD',
+        'BTC/USDT:USDT': 'XBTUSDT'
     }
 
     BITMEX_SYMBOL_MAP_REV = {
-        'XBTUSD': 'BTC/USD',
-        'XBTUSDT': 'BTC/USDT'
+        'XBTUSD': 'BTC/USD:BTC',
+        'XBTUSDT': 'BTC/USDT:USDT'
     }
 
-    def __init__(self, symbol='BTC/USD', credentials=None, url="wss://ws.bitmex.com/realtime"):
+    def __init__(self, symbol='BTC/USD:BTC', credentials=None, url="wss://ws.bitmex.com/realtime"):
         super().__init__(symbol, credentials, url)
 
     def on_open(self, ws):
