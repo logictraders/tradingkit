@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.8](https://github.com/logictraders/tradingkit/compare/v1.11.3-2...v1.11.8) (2023-05-28)
+
+
+### Bug Fixes
+
+* **bitmex:** updated symbols to match ccxt naming convenion ([0dc25b0](https://github.com/logictraders/tradingkit/commit/0dc25b075bfa75d36c68b93b8ca14f598b823a96))
+
 ### [1.11.3-2](https://github.com/logictraders/tradingkit/compare/v1.11.3-1...v1.11.4) (2023-05-28)
 
 ### [1.11.3-1](https://github.com/logictraders/tradingkit/compare/v1.11.3...v1.11.4) (2023-01-18)
