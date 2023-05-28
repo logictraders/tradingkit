@@ -1,4 +1,4 @@
-ccxt==2.6.36
+ccxt==3.1.10
 docopt~=0.6.2
 python-dateutil~=2.8.1
 plotly==5.12.0
